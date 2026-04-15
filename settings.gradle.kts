@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Basketball Rotation"
+rootProject.name = "BasketballRotation"
 include(":app")
  
