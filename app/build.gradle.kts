@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.basketballrotation"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -32,10 +32,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         compose = true
     }
@@ -45,10 +41,17 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2026.04.00")
+    implementation("com.google.android.material:material:1.12.0")
+    val composeBom = platform("androidx.compose:compose-bom:2026.03.01")
     implementation(composeBom)
 
     implementation("androidx.core:core-ktx:1.18.0")
