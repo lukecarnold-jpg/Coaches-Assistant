@@ -53,7 +53,8 @@ class BasketballRepository(
                     gameId = gameId,
                     timestamp = System.currentTimeMillis(),
                     type = EventType.START_LINEUP.name,
-                    note = idsToCsv(normalizedIds)
+                    note = idsToCsv(normalizedIds),
+                    gameTimeMillis = calculateCurrentGameTime(game)
                 )
             )
         }
@@ -79,7 +80,8 @@ class BasketballRepository(
                     timestamp = System.currentTimeMillis(),
                     type = EventType.SUBSTITUTION.name,
                     playerId = playerInId,
-                    relatedPlayerId = playerOutId
+                    relatedPlayerId = playerOutId,
+                    gameTimeMillis = calculateCurrentGameTime(game)
                 )
             )
         }
@@ -96,22 +98,61 @@ class BasketballRepository(
                     timestamp = System.currentTimeMillis(),
                     type = EventType.SCORE.name,
                     playerId = playerId,
-                    points = points
+                    points = points,
+                    gameTimeMillis = calculateCurrentGameTime(game)
                 )
             )
         }
     }
 
-    suspend fun addFoul(gameId: Long, playerId: Long) {
-        gameEventDao.insert(
-            GameEventEntity(
-                gameId = gameId,
-                timestamp = System.currentTimeMillis(),
-                type = EventType.FOUL.name,
-                playerId = playerId,
-                points = 0
+    suspend fun addFoul(gameId: Long, playerId: Long, adjustment: Int = 1) {
+        database.withTransaction {
+            val game = gameDao.getById(gameId) ?: return@withTransaction
+            gameEventDao.insert(
+                GameEventEntity(
+                    gameId = gameId,
+                    timestamp = System.currentTimeMillis(),
+                    type = EventType.FOUL.name,
+                    playerId = playerId,
+                    points = adjustment,
+                    gameTimeMillis = calculateCurrentGameTime(game)
+                )
             )
-        )
+        }
+    }
+
+    suspend fun toggleTimer(gameId: Long) {
+        database.withTransaction {
+            val game = gameDao.getById(gameId) ?: return@withTransaction
+            val now = System.currentTimeMillis()
+
+            if (game.timerLastStartedAt == null) {
+                // Start
+                gameDao.update(game.copy(timerLastStartedAt = now))
+            } else {
+                // Stop
+                val elapsed = now - game.timerLastStartedAt
+                gameDao.update(
+                    game.copy(
+                        runningTimeMillis = game.runningTimeMillis + elapsed,
+                        timerLastStartedAt = null
+                    )
+                )
+            }
+        }
+    }
+
+    suspend fun setGameTime(gameId: Long, timeMillis: Long) {
+        database.withTransaction {
+            val game = gameDao.getById(gameId) ?: return@withTransaction
+            gameDao.update(game.copy(runningTimeMillis = timeMillis, timerLastStartedAt = null))
+        }
+    }
+
+    private fun calculateCurrentGameTime(game: GameEntity): Long {
+        val base = game.runningTimeMillis
+        val start = game.timerLastStartedAt ?: return base
+        return base + (System.currentTimeMillis() - start)
     }
 
     suspend fun exportPlayersCsv(contentResolver: ContentResolver, uri: Uri) {
@@ -142,7 +183,7 @@ class BasketballRepository(
 
             contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
                 writer.appendLine(
-                    "gameId,gameTitle,opponent,createdAt,teamScoreAtExport,eventId,eventTimestamp,eventType,playerName,playerNumber,relatedPlayerName,relatedPlayerNumber,points,note"
+                    "gameId,gameTitle,opponent,createdAt,teamScoreAtExport,eventId,eventTimestamp,eventGameTime,eventType,playerName,playerNumber,relatedPlayerName,relatedPlayerNumber,points,note"
                 )
 
                 if (events.isEmpty()) {
@@ -182,12 +223,13 @@ class BasketballRepository(
                                 game.teamScore.toString(),
                                 event.id.toString(),
                                 escapeCsv(formatDate(event.timestamp)),
+                                formatDuration(event.gameTimeMillis),
                                 escapeCsv(event.type),
                                 escapeCsv(player?.name.orEmpty()),
                                 player?.jerseyNumber?.toString().orEmpty(),
                                 escapeCsv(relatedPlayer?.name.orEmpty()),
                                 relatedPlayer?.jerseyNumber?.toString().orEmpty(),
-                                if (event.points == 0) "" else event.points.toString(),
+                                if (event.points == 0 && EventType.fromRaw(event.type) != EventType.FOUL) "" else event.points.toString(),
                                 escapeCsv(note)
                             ).joinToString(",")
                         )
@@ -209,6 +251,13 @@ class BasketballRepository(
     private fun formatDate(timeMillis: Long): String {
         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         return formatter.format(Date(timeMillis))
+    }
+
+    private fun formatDuration(millis: Long): String {
+        val totalSeconds = millis / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
 
     private fun escapeCsv(value: String): String {

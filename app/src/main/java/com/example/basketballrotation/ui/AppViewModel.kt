@@ -83,7 +83,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     }
 
                     EventType.FOUL -> event.playerId?.let { playerId ->
-                        foulsByPlayer[playerId] = (foulsByPlayer[playerId] ?: 0) + 1
+                        foulsByPlayer[playerId] = (foulsByPlayer[playerId] ?: 0) + event.points
                     }
 
                     else -> Unit
@@ -203,7 +203,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun addFoul(playerId: Long) {
+    fun addFoul(playerId: Long, adjustment: Int = 1) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {
             _messages.tryEmit("Create or select a game first.")
@@ -211,7 +211,21 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         viewModelScope.launch {
-            repository.addFoul(gameId, playerId)
+            repository.addFoul(gameId, playerId, adjustment)
+        }
+    }
+
+    fun toggleTimer() {
+        val gameId = selectedGame.value?.id ?: return
+        viewModelScope.launch {
+            repository.toggleTimer(gameId)
+        }
+    }
+
+    fun setGameTime(timeMillis: Long) {
+        val gameId = selectedGame.value?.id ?: return
+        viewModelScope.launch {
+            repository.setGameTime(gameId, timeMillis)
         }
     }
 

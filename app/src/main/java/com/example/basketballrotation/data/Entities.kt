@@ -29,7 +29,9 @@ data class GameEntity(
     val opponent: String,
     val createdAt: Long,
     val teamScore: Int = 0,
-    val onCourtCsv: String = ""
+    val onCourtCsv: String = "",
+    val runningTimeMillis: Long = 0,
+    val timerLastStartedAt: Long? = null
 )
 
 @Entity(
@@ -44,7 +46,8 @@ data class GameEventEntity(
     val playerId: Long? = null,
     val relatedPlayerId: Long? = null,
     val points: Int = 0,
-    val note: String = ""
+    val note: String = "",
+    val gameTimeMillis: Long = 0
 )
 
 fun GameEntity.onCourtIds(): List<Long> =

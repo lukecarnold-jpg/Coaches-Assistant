@@ -41,6 +41,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,8 +58,21 @@ import com.example.basketballrotation.data.GameEventEntity
 import com.example.basketballrotation.data.PlayerEntity
 import com.example.basketballrotation.data.displayLabel
 import com.example.basketballrotation.data.onCourtIds
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import com.example.basketballrotation.ui.AppViewModel
 import com.example.basketballrotation.ui.PlayerGameStat
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -141,6 +155,8 @@ private fun BasketballApp(appViewModel: AppViewModel = viewModel()) {
                 onSubstitute = appViewModel::substitute,
                 onAddScore = appViewModel::addScore,
                 onAddFoul = appViewModel::addFoul,
+                onToggleTimer = appViewModel::toggleTimer,
+                onSetGameTime = appViewModel::setGameTime,
                 onExportGame = appViewModel::exportSelectedGameCsv,
                 onExportPlayers = appViewModel::exportPlayersCsv
             )
@@ -255,7 +271,9 @@ private fun GameScreen(
     onSetLineup: (List<Long>) -> Unit,
     onSubstitute: (Long?, Long?) -> Unit,
     onAddScore: (Long, Int) -> Unit,
-    onAddFoul: (Long) -> Unit,
+    onAddFoul: (Long, Int) -> Unit,
+    onToggleTimer: () -> Unit,
+    onSetGameTime: (Long) -> Unit,
     onExportGame: (Uri) -> Unit,
     onExportPlayers: (Uri) -> Unit
 ) {
@@ -376,7 +394,16 @@ private fun GameScreen(
         if (selectedGame == null) {
             EmptyMessage("Select a game to track rotation, scoring, and fouls.")
         } else {
-            SectionCard(title = "Current score") {
+            SectionCard(title = "Game clock & score") {
+                GameClock(
+                    runningTimeMillis = selectedGame.runningTimeMillis,
+                    timerLastStartedAt = selectedGame.timerLastStartedAt,
+                    onToggleTimer = onToggleTimer,
+                    onSetGameTime = onSetGameTime
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
                 Text(
                     text = selectedGame.teamScore.toString(),
                     style = MaterialTheme.typography.displayMedium,
@@ -615,10 +642,109 @@ private fun SectionCard(
 }
 
 @Composable
+private fun GameClock(
+    runningTimeMillis: Long,
+    timerLastStartedAt: Long?,
+    onToggleTimer: () -> Unit,
+    onSetGameTime: (Long) -> Unit
+) {
+    var displayTime by remember(runningTimeMillis, timerLastStartedAt) {
+        mutableLongStateOf(runningTimeMillis)
+    }
+
+    var isEditing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(timerLastStartedAt) {
+        if (timerLastStartedAt != null) {
+            while (true) {
+                displayTime = runningTimeMillis + (System.currentTimeMillis() - timerLastStartedAt)
+                delay(100)
+            }
+        } else {
+            displayTime = runningTimeMillis
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = formatDuration(displayTime),
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Bold,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+            )
+
+            Row {
+                IconButton(onClick = { isEditing = !isEditing }) {
+                    Icon(Icons.Default.Settings, contentDescription = "Edit time")
+                }
+                Button(
+                    onClick = onToggleTimer,
+                    colors = if (timerLastStartedAt != null) {
+                        ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    } else {
+                        ButtonDefaults.buttonColors()
+                    }
+                ) {
+                    Icon(
+                        if (timerLastStartedAt != null) {
+                            ImageVector.vectorResource(id = android.R.drawable.ic_media_pause)
+                        } else {
+                            Icons.Default.PlayArrow
+                        },
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(if (timerLastStartedAt != null) "Stop" else "Start")
+                }
+            }
+        }
+
+        if (isEditing) {
+            var minutesText by remember { mutableStateOf((displayTime / 60000).toString()) }
+            var secondsText by remember { mutableStateOf(((displayTime % 60000) / 1000).toString()) }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = minutesText,
+                    onValueChange = { minutesText = it.filter { c -> c.isDigit() } },
+                    label = { Text("Min") },
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = secondsText,
+                    onValueChange = { secondsText = it.filter { c -> c.isDigit() } },
+                    label = { Text("Sec") },
+                    modifier = Modifier.weight(1f)
+                )
+                Button(onClick = {
+                    val mins = minutesText.toLongOrNull() ?: 0L
+                    val secs = secondsText.toLongOrNull() ?: 0L
+                    onSetGameTime((mins * 60 + secs) * 1000)
+                    isEditing = false
+                }) {
+                    Text("Set")
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun PlayerActionCard(
     stat: PlayerGameStat,
     onAddScore: (Long, Int) -> Unit,
-    onAddFoul: (Long) -> Unit
+    onAddFoul: (Long, Int) -> Unit
 ) {
     OutlinedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -655,8 +781,43 @@ private fun PlayerActionCard(
                 SmallActionButton(label = "+3", modifier = Modifier.weight(1f)) {
                     onAddScore(stat.player.id, 3)
                 }
-                SmallActionButton(label = "Foul", modifier = Modifier.weight(1f)) {
-                    onAddFoul(stat.player.id)
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Fouls",
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                OutlinedCard(
+                    shape = RoundedCornerShape(8.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = { onAddFoul(stat.player.id, -1) },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Text("-", fontWeight = FontWeight.Bold)
+                        }
+                        Text(
+                            text = stat.fouls.toString(),
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(
+                            onClick = { onAddFoul(stat.player.id, 1) },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add foul", modifier = Modifier.size(16.dp))
+                        }
+                    }
                 }
             }
         }
@@ -761,4 +922,11 @@ private fun eventDescription(
 private fun formatTime(timestamp: Long): String {
     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     return formatter.format(Date(timestamp))
+}
+
+private fun formatDuration(millis: Long): String {
+    val totalSeconds = millis / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
 }
