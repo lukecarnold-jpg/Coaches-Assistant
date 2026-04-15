@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -49,6 +48,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     val selectedGame: StateFlow<GameEntity?> =
+        @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
         combine(games, selectedGameId) { gameList, chosenId ->
             when {
                 gameList.isEmpty() -> null
@@ -61,6 +61,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             null
         )
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val selectedGameEvents = selectedGame.flatMapLatest { game ->
         if (game == null) flowOf(emptyList()) else repository.observeEvents(game.id)
     }.stateIn(
@@ -110,9 +111,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
                 when {
                     gameList.isEmpty() -> selectedGameId.value = null
-                    currentSelection == null -> selectedGameId.value = gameList.first().id
+                    currentSelection == null -> selectedGameId.value = gameList.firstOrNull()?.id
                     gameList.none { it.id == currentSelection } -> {
-                        selectedGameId.value = gameList.first().id
+                        selectedGameId.value = gameList.firstOrNull()?.id
                     }
                 }
             }

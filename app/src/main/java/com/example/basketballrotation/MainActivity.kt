@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,7 +49,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.basketballrotation.data.EventType
@@ -196,7 +194,6 @@ private fun RosterScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            this as RowScope
             Button(
                 onClick = {
                     val jerseyLooksValid =
@@ -399,7 +396,6 @@ private fun GameScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    this as RowScope
                     OutlinedButton(
                         onClick = { exportGameLauncher.launch("game_${selectedGame.id}.csv") },
                         modifier = Modifier.weight(1f)
@@ -554,7 +550,7 @@ private fun GameScreen(
                                     }
 
                                     if (stat.onCourt) {
-                                        StatusBadge("On court")
+                                        StatusBadge()
                                     }
                                 }
                             }
@@ -643,7 +639,7 @@ private fun PlayerActionCard(
                     Text("Points: ${stat.points}   Fouls: ${stat.fouls}")
                 }
 
-                StatusBadge("On court")
+                StatusBadge()
             }
 
             Row(
@@ -713,7 +709,7 @@ private fun EmptyMessage(text: String) {
 }
 
 @Composable
-private fun StatusBadge(text: String) {
+private fun StatusBadge(text: String = "On court") {
     Box(
         modifier = Modifier
             .background(
