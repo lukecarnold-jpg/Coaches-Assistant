@@ -95,21 +95,26 @@ class BasketballRepository(
         }
     }
 
-    suspend fun addScore(gameId: Long, playerId: Long, points: Int) {
+    suspend fun addScore(gameId: Long, playerId: Long?, points: Int) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
 
-            gameDao.update(game.copy(teamScore = game.teamScore + points))
-            gameEventDao.insert(
-                GameEventEntity(
-                    gameId = gameId,
-                    timestamp = System.currentTimeMillis(),
-                    type = EventType.SCORE.name,
-                    playerId = playerId,
-                    points = points,
-                    gameTimeMillis = calculateCurrentGameTime(game)
+            if (playerId == null) {
+                // Adjusting opponent score
+                gameDao.update(game.copy(opponentScore = (game.opponentScore + points).coerceAtLeast(0)))
+            } else {
+                gameDao.update(game.copy(teamScore = (game.teamScore + points).coerceAtLeast(0)))
+                gameEventDao.insert(
+                    GameEventEntity(
+                        gameId = gameId,
+                        timestamp = System.currentTimeMillis(),
+                        type = EventType.SCORE.name,
+                        playerId = playerId,
+                        points = points,
+                        gameTimeMillis = calculateCurrentGameTime(game)
+                    )
                 )
-            )
+            }
         }
     }
 

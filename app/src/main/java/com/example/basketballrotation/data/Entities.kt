@@ -29,6 +29,7 @@ data class GameEntity(
     val opponent: String,
     val createdAt: Long,
     val teamScore: Int = 0,
+    val opponentScore: Int = 0,
     val onCourtCsv: String = "",
     val runningTimeMillis: Long = 0,
     val timerLastStartedAt: Long? = null

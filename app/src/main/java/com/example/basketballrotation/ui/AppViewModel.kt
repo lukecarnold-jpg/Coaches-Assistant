@@ -263,7 +263,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun addScore(playerId: Long, points: Int) {
+    fun addScore(playerId: Long?, points: Int) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {
             _messages.tryEmit("Create or select a game first.")

@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -404,7 +405,7 @@ private fun GameScreen(
     onSelectGame: (Long) -> Unit,
     onSetLineup: (List<Long>) -> Unit,
     onSubstitute: (Long?, Long?) -> Unit,
-    onAddScore: (Long, Int) -> Unit,
+    onAddScore: (Long?, Int) -> Unit,
     onAddFoul: (Long, Int) -> Unit,
     onToggleTimer: () -> Unit,
     onSetGameTime: (Long) -> Unit,
@@ -538,17 +539,44 @@ private fun GameScreen(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-                Text(
-                    text = selectedGame.teamScore.toString(),
-                    style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Us", style = MaterialTheme.typography.labelMedium)
+                        Text(
+                            text = selectedGame.teamScore.toString(),
+                            style = MaterialTheme.typography.displayMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Row {
+                            IconButton(onClick = { onAddScore(onCourtIds.firstOrNull(), -1) }) {
+                                Text("-1", style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
 
-                if (selectedGame.opponent.isNotBlank()) {
-                    Text(
-                        text = "Opponent: ${selectedGame.opponent}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = selectedGame.opponent.ifBlank { "Them" },
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            text = selectedGame.opponentScore.toString(),
+                            style = MaterialTheme.typography.displayMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Row {
+                            IconButton(onClick = { onAddScore(null, -1) }) {
+                                Text("-1", style = MaterialTheme.typography.bodySmall)
+                            }
+                            IconButton(onClick = { onAddScore(null, 1) }) {
+                                Text("+1", style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
                 }
 
                 Spacer(Modifier.height(8.dp))
@@ -925,6 +953,15 @@ private fun PlayerActionCard(
                         fontWeight = FontWeight.SemiBold
                     )
                     Text("Points: ${stat.points}   Fouls: ${stat.fouls}")
+                    Row {
+                        TextButton(
+                            onClick = { onAddScore(stat.player.id, -1) },
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.height(24.dp)
+                        ) {
+                            Text("-1 pt", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
                     Text(
                         text = "Shift: ${formatDuration(shiftDisplayTime)}",
                         style = MaterialTheme.typography.bodySmall,
