@@ -62,6 +62,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ButtonDefaults
@@ -833,7 +834,7 @@ private fun GameClock(
                 ) {
                     Icon(
                         if (timerLastStartedAt != null) {
-                            ImageVector.vectorResource(id = android.R.drawable.ic_media_pause)
+                            Icons.Default.Info
                         } else {
                             Icons.Default.PlayArrow
                         },
