@@ -91,7 +91,8 @@ class MainActivity : ComponentActivity() {
 
 enum class AppTab {
     ROSTER,
-    GAME
+    GAME,
+    SETTINGS
 }
 
 @Composable
@@ -127,6 +128,12 @@ private fun BasketballApp(appViewModel: AppViewModel = viewModel()) {
                     icon = { Text("🏀") },
                     label = { Text("Game") }
                 )
+                NavigationBarItem(
+                    selected = currentTab == AppTab.SETTINGS.name,
+                    onClick = { currentTab = AppTab.SETTINGS.name },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    label = { Text("Settings") }
+                )
             }
         }
     ) { paddingValues ->
@@ -137,6 +144,8 @@ private fun BasketballApp(appViewModel: AppViewModel = viewModel()) {
                     .padding(paddingValues),
                 players = players,
                 onAddPlayer = appViewModel::addPlayer,
+                onUpdatePlayer = appViewModel::updatePlayer,
+                onDeletePlayer = appViewModel::deletePlayer,
                 onExportPlayers = appViewModel::exportPlayersCsv
             )
 
@@ -160,6 +169,68 @@ private fun BasketballApp(appViewModel: AppViewModel = viewModel()) {
                 onExportGame = appViewModel::exportSelectedGameCsv,
                 onExportPlayers = appViewModel::exportPlayersCsv
             )
+
+            AppTab.SETTINGS -> SettingsScreen(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                onClearAllData = appViewModel::clearAllData
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsScreen(
+    modifier: Modifier = Modifier,
+    onClearAllData: () -> Unit
+) {
+    var showConfirm by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Settings",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+
+        SectionCard(title = "Data management") {
+            Text("Clear all local data including players, games, and events. This action cannot be undone.")
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = { showConfirm = true },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text("Clear all data")
+            }
+        }
+
+        SectionCard(title = "Exports") {
+            Text("To view exported CSV files, use your device's file manager (e.g., Files or Downloads app).")
+        }
+
+        if (showConfirm) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showConfirm = false },
+                title = { Text("Confirm deletion") },
+                text = { Text("Are you sure you want to delete all data? This will remove all players and games.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onClearAllData()
+                        showConfirm = false
+                    }) {
+                        Text("Delete everything", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirm = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
@@ -169,10 +240,16 @@ private fun RosterScreen(
     modifier: Modifier = Modifier,
     players: List<PlayerEntity>,
     onAddPlayer: (String, String) -> Unit,
+    onUpdatePlayer: (PlayerEntity, String, String) -> Unit,
+    onDeletePlayer: (Long) -> Unit,
     onExportPlayers: (Uri) -> Unit
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var jerseyNumber by rememberSaveable { mutableStateOf("") }
+
+    var editingPlayer by remember { mutableStateOf<PlayerEntity?>(null) }
+    var editName by remember { mutableStateOf("") }
+    var editJerseyNumber by remember { mutableStateOf("") }
 
     val exportRosterLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv")
@@ -212,15 +289,9 @@ private fun RosterScreen(
         ) {
             Button(
                 onClick = {
-                    val jerseyLooksValid =
-                        jerseyNumber.isBlank() || jerseyNumber.toIntOrNull() != null
-
                     onAddPlayer(name, jerseyNumber)
-
-                    if (name.isNotBlank() && jerseyLooksValid) {
-                        name = ""
-                        jerseyNumber = ""
-                    }
+                    name = ""
+                    jerseyNumber = ""
                 },
                 modifier = Modifier.weight(1f)
             ) {
@@ -239,18 +310,80 @@ private fun RosterScreen(
             EmptyMessage("No players yet. Add your roster first.")
         } else {
             players.forEach { player ->
-                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                if (editingPlayer?.id == player.id) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
-                        Text(
-                            text = player.displayLabel(),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = editName,
+                                onValueChange = { editName = it },
+                                label = { Text("Player name") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            OutlinedTextField(
+                                value = editJerseyNumber,
+                                onValueChange = { editJerseyNumber = it },
+                                label = { Text("Jersey number") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Button(
+                                    onClick = {
+                                        onUpdatePlayer(player, editName, editJerseyNumber)
+                                        editingPlayer = null
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Save")
+                                }
+                                TextButton(
+                                    onClick = { editingPlayer = null },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Cancel")
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = player.displayLabel(),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+
+                            Row {
+                                TextButton(onClick = {
+                                    editingPlayer = player
+                                    editName = player.name
+                                    editJerseyNumber = player.jerseyNumber?.toString() ?: ""
+                                }) {
+                                    Text("Edit")
+                                }
+                                TextButton(
+                                    onClick = { onDeletePlayer(player.id) },
+                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                ) {
+                                    Text("Remove")
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -487,7 +620,9 @@ private fun GameScreen(
                                 PlayerActionCard(
                                     stat = stat,
                                     onAddScore = onAddScore,
-                                    onAddFoul = onAddFoul
+                                    onAddFoul = onAddFoul,
+                                    gameRunningTimeMillis = selectedGame.runningTimeMillis,
+                                    gameTimerLastStartedAt = selectedGame.timerLastStartedAt
                                 )
                             }
                         }
@@ -577,7 +712,13 @@ private fun GameScreen(
                                     }
 
                                     if (stat.onCourt) {
-                                        StatusBadge()
+                                        Column(horizontalAlignment = Alignment.End) {
+                                            StatusBadge()
+                                            Text(
+                                                text = formatDuration(stat.currentShiftTimeMillis),
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -744,8 +885,28 @@ private fun GameClock(
 private fun PlayerActionCard(
     stat: PlayerGameStat,
     onAddScore: (Long, Int) -> Unit,
-    onAddFoul: (Long, Int) -> Unit
+    onAddFoul: (Long, Int) -> Unit,
+    gameRunningTimeMillis: Long,
+    gameTimerLastStartedAt: Long?
 ) {
+    var shiftDisplayTime by remember(stat.currentShiftTimeMillis, gameTimerLastStartedAt) {
+        mutableLongStateOf(stat.currentShiftTimeMillis)
+    }
+
+    LaunchedEffect(gameTimerLastStartedAt) {
+        if (gameTimerLastStartedAt != null) {
+            while (true) {
+                val liveGameTime = gameRunningTimeMillis + (System.currentTimeMillis() - gameTimerLastStartedAt)
+                // currentShiftTimeMillis was calculated as (game.runningTimeMillis - enteredAt)
+                // We add the same "live" offset to the shift time
+                shiftDisplayTime = stat.currentShiftTimeMillis + (System.currentTimeMillis() - gameTimerLastStartedAt)
+                delay(100)
+            }
+        } else {
+            shiftDisplayTime = stat.currentShiftTimeMillis
+        }
+    }
+
     OutlinedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -763,9 +924,15 @@ private fun PlayerActionCard(
                         fontWeight = FontWeight.SemiBold
                     )
                     Text("Points: ${stat.points}   Fouls: ${stat.fouls}")
+                    Text(
+                        text = "Shift: ${formatDuration(shiftDisplayTime)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
-                StatusBadge()
+                StatusBadge(if (stat.currentShiftTimeMillis > 0 || gameTimerLastStartedAt != null) "ON COURT" else "BENCH")
             }
 
             Row(

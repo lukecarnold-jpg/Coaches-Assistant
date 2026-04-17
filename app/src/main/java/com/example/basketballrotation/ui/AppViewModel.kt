@@ -25,7 +25,8 @@ data class PlayerGameStat(
     val player: PlayerEntity,
     val points: Int,
     val fouls: Int,
-    val onCourt: Boolean
+    val onCourt: Boolean,
+    val currentShiftTimeMillis: Long
 )
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -75,9 +76,29 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             val onCourt = game?.onCourtIds()?.toSet().orEmpty()
             val pointsByPlayer = mutableMapOf<Long, Int>()
             val foulsByPlayer = mutableMapOf<Long, Int>()
+            val lastEnteredAt = mutableMapOf<Long, Long>()
 
-            events.forEach { event ->
+            // Sort events by time to track state chronologically
+            val sortedEvents = events.sortedBy { it.gameTimeMillis }
+
+            sortedEvents.forEach { event ->
                 when (EventType.fromRaw(event.type)) {
+                    EventType.START_LINEUP -> {
+                        // All starting players entered at the game time of the event (usually 0)
+                        game?.onCourtIds()?.forEach { id ->
+                            lastEnteredAt[id] = event.gameTimeMillis
+                        }
+                    }
+
+                    EventType.SUBSTITUTION -> {
+                        event.playerId?.let { playerInId ->
+                            lastEnteredAt[playerInId] = event.gameTimeMillis
+                        }
+                        event.relatedPlayerId?.let { playerOutId ->
+                            lastEnteredAt.remove(playerOutId)
+                        }
+                    }
+
                     EventType.SCORE -> event.playerId?.let { playerId ->
                         pointsByPlayer[playerId] = (pointsByPlayer[playerId] ?: 0) + event.points
                     }
@@ -85,17 +106,35 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     EventType.FOUL -> event.playerId?.let { playerId ->
                         foulsByPlayer[playerId] = (foulsByPlayer[playerId] ?: 0) + event.points
                     }
+                }
+            }
 
-                    else -> Unit
+            // Fallback for players currently on court if no event found (shouldn't happen with proper event logging)
+            onCourt.forEach { id ->
+                if (!lastEnteredAt.containsKey(id)) {
+                    lastEnteredAt[id] = 0L
                 }
             }
 
             playerList.map { player ->
+                val isOnCourt = onCourt.contains(player.id)
+                val enteredAt = lastEnteredAt[player.id] ?: 0L
+                
+                // We'll use game.runningTimeMillis as a baseline if timer is stopped, 
+                // but the UI will need the "live" game time for the active ticker.
+                // For now, let's store the raw 'enteredAt' or calculate duration based on recorded game time.
+                val shiftTime = if (isOnCourt) {
+                    (game?.runningTimeMillis ?: 0L) - enteredAt
+                } else {
+                    0L
+                }
+
                 PlayerGameStat(
                     player = player,
                     points = pointsByPlayer[player.id] ?: 0,
                     fouls = foulsByPlayer[player.id] ?: 0,
-                    onCourt = onCourt.contains(player.id)
+                    onCourt = isOnCourt,
+                    currentShiftTimeMillis = maxOf(0L, shiftTime)
                 )
             }
         }.stateIn(
@@ -140,6 +179,39 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.addPlayer(trimmedName, jerseyNumber)
             _messages.emit("Player added.")
+        }
+    }
+
+    fun updatePlayer(player: PlayerEntity, newName: String, newJerseyNumberText: String) {
+        val trimmedName = newName.trim()
+        if (trimmedName.isBlank()) {
+            _messages.tryEmit("Name cannot be empty.")
+            return
+        }
+
+        val jerseyNumber = newJerseyNumberText.trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
+        if (newJerseyNumberText.isNotBlank() && jerseyNumber == null) {
+            _messages.tryEmit("Jersey number must be numeric.")
+            return
+        }
+
+        viewModelScope.launch {
+            repository.updatePlayer(player.copy(name = trimmedName, jerseyNumber = jerseyNumber))
+            _messages.emit("Player updated.")
+        }
+    }
+
+    fun deletePlayer(playerId: Long) {
+        viewModelScope.launch {
+            repository.deletePlayer(playerId)
+            _messages.emit("Player removed.")
+        }
+    }
+
+    fun clearAllData() {
+        viewModelScope.launch {
+            repository.clearAllData()
+            _messages.emit("All data cleared.")
         }
     }
 

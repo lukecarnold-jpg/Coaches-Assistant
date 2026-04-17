@@ -32,6 +32,14 @@ class BasketballRepository(
         )
     }
 
+    suspend fun updatePlayer(player: PlayerEntity) {
+        playerDao.update(player)
+    }
+
+    suspend fun deletePlayer(playerId: Long) {
+        playerDao.deleteById(playerId)
+    }
+
     suspend fun createGame(title: String, opponent: String): Long {
         return gameDao.insert(
             GameEntity(
@@ -146,6 +154,14 @@ class BasketballRepository(
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
             gameDao.update(game.copy(runningTimeMillis = timeMillis, timerLastStartedAt = null))
+        }
+    }
+
+    suspend fun clearAllData() {
+        database.withTransaction {
+            gameEventDao.deleteAll()
+            gameDao.deleteAll()
+            playerDao.deleteAll()
         }
     }
 

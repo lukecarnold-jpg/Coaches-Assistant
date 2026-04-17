@@ -17,6 +17,15 @@ interface PlayerDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(player: PlayerEntity): Long
+
+    @Update
+    suspend fun update(player: PlayerEntity)
+
+    @Query("DELETE FROM players WHERE id = :playerId")
+    suspend fun deleteById(playerId: Long)
+
+    @Query("DELETE FROM players")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -32,6 +41,9 @@ interface GameDao {
 
     @Update
     suspend fun update(game: GameEntity)
+
+    @Query("DELETE FROM games")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -44,4 +56,7 @@ interface GameEventDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(event: GameEventEntity): Long
+
+    @Query("DELETE FROM game_events")
+    suspend fun deleteAll()
 }
