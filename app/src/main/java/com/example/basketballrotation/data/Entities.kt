@@ -8,7 +8,8 @@ enum class EventType {
     START_LINEUP,
     SUBSTITUTION,
     SCORE,
-    FOUL;
+    FOUL,
+    MVP_VOTE;
 
     companion object {
         fun fromRaw(raw: String): EventType = entries.firstOrNull { it.name == raw } ?: SCORE
@@ -30,6 +31,7 @@ data class GameEntity(
     val createdAt: Long,
     val teamScore: Int = 0,
     val opponentScore: Int = 0,
+    val mvpVotesJson: String = "{}", // Map<Long, Int> serialized
     val onCourtCsv: String = "",
     val runningTimeMillis: Long = 0,
     val timerLastStartedAt: Long? = null

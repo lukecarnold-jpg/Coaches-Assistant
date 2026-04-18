@@ -25,6 +25,7 @@ data class PlayerGameStat(
     val player: PlayerEntity,
     val points: Int,
     val fouls: Int,
+    val mvpVotes: Int,
     val onCourt: Boolean,
     val currentShiftTimeMillis: Long
 )
@@ -106,7 +107,25 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     EventType.FOUL -> event.playerId?.let { playerId ->
                         foulsByPlayer[playerId] = (foulsByPlayer[playerId] ?: 0) + event.points
                     }
+
+                    EventType.MVP_VOTE -> {} // Votes are stored in gameEntity directly for simplicity
                 }
+            }
+
+            val mvpVotesMap = try {
+                val map = mutableMapOf<Long, Int>()
+                val json = game?.mvpVotesJson?.removeSurrounding("{", "}") ?: ""
+                if (json.isNotEmpty()) {
+                    json.split(",").forEach { pair ->
+                        val parts = pair.split(":")
+                        if (parts.size == 2) {
+                            map[parts[0].trim().toLong()] = parts[1].trim().toInt()
+                        }
+                    }
+                }
+                map
+            } catch (e: Exception) {
+                emptyMap<Long, Int>()
             }
 
             // Fallback for players currently on court if no event found (shouldn't happen with proper event logging)
@@ -133,6 +152,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     player = player,
                     points = pointsByPlayer[player.id] ?: 0,
                     fouls = foulsByPlayer[player.id] ?: 0,
+                    mvpVotes = mvpVotesMap[player.id] ?: 0,
                     onCourt = isOnCourt,
                     currentShiftTimeMillis = maxOf(0L, shiftTime)
                 )
@@ -291,6 +311,22 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val gameId = selectedGame.value?.id ?: return
         viewModelScope.launch {
             repository.toggleTimer(gameId)
+        }
+    }
+
+    fun resetTimer() {
+        val gameId = selectedGame.value?.id ?: return
+        viewModelScope.launch {
+            repository.resetTimer(gameId)
+            _messages.emit("Timer reset to 0:00.")
+        }
+    }
+
+    fun addMvpVote(playerId: Long) {
+        val gameId = selectedGame.value?.id ?: return
+        viewModelScope.launch {
+            repository.addMvpVote(gameId, playerId)
+            _messages.emit("MVP vote recorded.")
         }
     }
 

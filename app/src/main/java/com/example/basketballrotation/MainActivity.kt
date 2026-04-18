@@ -167,6 +167,8 @@ private fun BasketballApp(appViewModel: AppViewModel = viewModel()) {
                 onAddScore = appViewModel::addScore,
                 onAddFoul = appViewModel::addFoul,
                 onToggleTimer = appViewModel::toggleTimer,
+                onResetTimer = appViewModel::resetTimer,
+                onAddMvpVote = appViewModel::addMvpVote,
                 onSetGameTime = appViewModel::setGameTime,
                 onExportGame = appViewModel::exportSelectedGameCsv,
                 onExportPlayers = appViewModel::exportPlayersCsv
@@ -407,7 +409,9 @@ private fun GameScreen(
     onSubstitute: (Long?, Long?) -> Unit,
     onAddScore: (Long?, Int) -> Unit,
     onAddFoul: (Long, Int) -> Unit,
+    onAddMvpVote: (Long) -> Unit,
     onToggleTimer: () -> Unit,
+    onResetTimer: () -> Unit,
     onSetGameTime: (Long) -> Unit,
     onExportGame: (Uri) -> Unit,
     onExportPlayers: (Uri) -> Unit
@@ -534,6 +538,7 @@ private fun GameScreen(
                     runningTimeMillis = selectedGame.runningTimeMillis,
                     timerLastStartedAt = selectedGame.timerLastStartedAt,
                     onToggleTimer = onToggleTimer,
+                    onResetTimer = onResetTimer,
                     onSetGameTime = onSetGameTime
                 )
 
@@ -650,6 +655,7 @@ private fun GameScreen(
                                     stat = stat,
                                     onAddScore = onAddScore,
                                     onAddFoul = onAddFoul,
+                                    onAddMvpVote = onAddMvpVote,
                                     gameRunningTimeMillis = selectedGame.runningTimeMillis,
                                     gameTimerLastStartedAt = selectedGame.timerLastStartedAt
                                 )
@@ -737,7 +743,7 @@ private fun GameScreen(
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.SemiBold
                                         )
-                                        Text("Points: ${stat.points}   Fouls: ${stat.fouls}")
+                                        Text("Points: ${stat.points}   Fouls: ${stat.fouls}   Votes: ${stat.mvpVotes}")
                                     }
 
                                     if (stat.onCourt) {
@@ -816,6 +822,7 @@ private fun GameClock(
     runningTimeMillis: Long,
     timerLastStartedAt: Long?,
     onToggleTimer: () -> Unit,
+    onResetTimer: () -> Unit,
     onSetGameTime: (Long) -> Unit
 ) {
     var displayTime by remember(runningTimeMillis, timerLastStartedAt) {
@@ -851,6 +858,9 @@ private fun GameClock(
             Row {
                 IconButton(onClick = { isEditing = !isEditing }) {
                     Icon(Icons.Default.Settings, contentDescription = "Edit time")
+                }
+                IconButton(onClick = onResetTimer) {
+                    Text("🔄", style = MaterialTheme.typography.titleLarge)
                 }
                 Button(
                     onClick = onToggleTimer,
@@ -915,6 +925,7 @@ private fun PlayerActionCard(
     stat: PlayerGameStat,
     onAddScore: (Long, Int) -> Unit,
     onAddFoul: (Long, Int) -> Unit,
+    onAddMvpVote: (Long) -> Unit,
     gameRunningTimeMillis: Long,
     gameTimerLastStartedAt: Long?
 ) {
@@ -970,7 +981,18 @@ private fun PlayerActionCard(
                     )
                 }
 
-                StatusBadge(if (stat.currentShiftTimeMillis > 0 || gameTimerLastStartedAt != null) "ON COURT" else "BENCH")
+                Column(horizontalAlignment = Alignment.End) {
+                    StatusBadge(if (stat.currentShiftTimeMillis > 0 || gameTimerLastStartedAt != null) "ON COURT" else "BENCH")
+                    Spacer(Modifier.height(4.dp))
+                    TextButton(
+                        onClick = { onAddMvpVote(stat.player.id) },
+                        contentPadding = PaddingValues(horizontal = 8.dp),
+                        modifier = Modifier.height(32.dp),
+                        colors = ButtonDefaults.textButtonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                    ) {
+                        Text("MVP Vote (${stat.mvpVotes})", style = MaterialTheme.typography.labelSmall)
+                    }
+                }
             }
 
             Row(
@@ -1120,6 +1142,11 @@ private fun eventDescription(
         EventType.FOUL -> {
             val playerName = event.playerId?.let(playersById::get)?.displayLabel().orEmpty()
             "$playerName foul"
+        }
+
+        EventType.MVP_VOTE -> {
+            val playerName = event.playerId?.let(playersById::get)?.displayLabel().orEmpty()
+            "$playerName MVP vote"
         }
     }
 }
