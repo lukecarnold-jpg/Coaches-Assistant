@@ -1,0 +1,41 @@
+# Basketball Rotation & Stats Tracker - Development History
+
+## Version 1.0 (Initial Release)
+- Basic player roster management (Name, Optional Jersey Number).
+- Game creation and selection.
+- Starting lineup selection (5 players).
+- Real-time substitution tracking.
+- Basic scoring (+1, +2, +3) and foul tracking.
+- Simple game clock (Start/Stop).
+- CSV export for roster and individual games.
+- Persistent storage using Room Database.
+
+## Version 1.1 (Scoring & UI Enhancements)
+- Added manual score adjustments for the home team (including -1 pt corrections).
+- Added Opponent score tracking with manual +1/-1 controls.
+- Fixed layout issues where long player names would overflow.
+- Enhanced the Game Clock with a Reset button (🔄).
+- Enabled manual time editing for the game clock to sync with official timers.
+
+## Version 1.2 (MVP & Branding)
+- Implemented an MVP Voting system:
+    - Added "MVP Vote" buttons to active player action cards.
+    - Added vote tallying in the Game Stats section.
+    - Votes are persisted in the database and included in CSV exports.
+- Updated the App Launcher Icon:
+    - Designed a custom orange basketball with black vector lines.
+    - Updated adaptive icons and legacy bitmap resources.
+- Database Migration: Incremented schema to Version 2 to support MVP data and opponent scores.
+
+## Version 1.3 (Validation & Management)
+- **Jersey Number Requirement:**
+    - Changed Jersey Number from an optional to a mandatory field.
+    - Implemented UI validation with a red error alert box when adding players with missing info.
+    - Simplified sorting logic in the database (now sorting directly by integer jersey number).
+- **Game Management:**
+    - Added "Delete Game" functionality to the tracker list.
+    - Implemented cascading deletes for game events to keep the database clean.
+- **Stability:**
+    - Incremented Database schema to Version 3 to handle non-nullable jersey column.
+    - Fixed "Unnecessary safe call" and other minor Kotlin compiler warnings.
+    - Verified full project build and finalized README.md documentation.
