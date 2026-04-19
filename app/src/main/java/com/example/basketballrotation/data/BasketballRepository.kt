@@ -23,7 +23,7 @@ class BasketballRepository(
     fun observeEvents(gameId: Long): Flow<List<GameEventEntity>> =
         gameEventDao.observeByGame(gameId)
 
-    suspend fun addPlayer(name: String, jerseyNumber: Int?): Long {
+    suspend fun addPlayer(name: String, jerseyNumber: Int): Long {
         return playerDao.insert(
             PlayerEntity(
                 name = name.trim(),
@@ -231,7 +231,7 @@ class BasketballRepository(
                         listOf(
                             player.id.toString(),
                             escapeCsv(player.name),
-                            player.jerseyNumber?.toString().orEmpty()
+                            player.jerseyNumber.toString()
                         ).joinToString(",")
                     )
                 }

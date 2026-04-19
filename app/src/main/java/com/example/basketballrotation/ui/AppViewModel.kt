@@ -190,9 +190,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        val jerseyNumber = jerseyNumberText.trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
-        if (jerseyNumberText.isNotBlank() && jerseyNumber == null) {
-            _messages.tryEmit("Jersey number must be numeric.")
+        val jerseyNumber = jerseyNumberText.trim().toIntOrNull()
+        if (jerseyNumber == null) {
+            _messages.tryEmit("Jersey number is required and must be numeric.")
             return
         }
 
@@ -209,9 +209,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        val jerseyNumber = newJerseyNumberText.trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
-        if (newJerseyNumberText.isNotBlank() && jerseyNumber == null) {
-            _messages.tryEmit("Jersey number must be numeric.")
+        val jerseyNumber = newJerseyNumberText.trim().toIntOrNull()
+        if (jerseyNumber == null) {
+            _messages.tryEmit("Jersey number is required and must be numeric.")
             return
         }
 
