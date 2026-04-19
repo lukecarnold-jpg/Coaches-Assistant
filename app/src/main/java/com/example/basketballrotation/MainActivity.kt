@@ -170,6 +170,7 @@ private fun BasketballApp(appViewModel: AppViewModel = viewModel()) {
                 onResetTimer = appViewModel::resetTimer,
                 onAddMvpVote = appViewModel::addMvpVote,
                 onSetGameTime = appViewModel::setGameTime,
+                onDeleteGame = appViewModel::deleteGame,
                 onExportGame = appViewModel::exportSelectedGameCsv,
                 onExportPlayers = appViewModel::exportPlayersCsv
             )
@@ -250,6 +251,7 @@ private fun RosterScreen(
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var jerseyNumber by rememberSaveable { mutableStateOf("") }
+    var showError by rememberSaveable { mutableStateOf(false) }
 
     var editingPlayer by remember { mutableStateOf<PlayerEntity?>(null) }
     var editName by remember { mutableStateOf("") }
@@ -275,17 +277,42 @@ private fun RosterScreen(
 
         OutlinedTextField(
             value = name,
-            onValueChange = { name = it },
+            onValueChange = { 
+                name = it
+                showError = false 
+            },
             label = { Text("Player name") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = showError && name.isBlank()
         )
 
         OutlinedTextField(
             value = jerseyNumber,
-            onValueChange = { jerseyNumber = it },
-            label = { Text("Jersey number (optional)") },
-            modifier = Modifier.fillMaxWidth()
+            onValueChange = { 
+                jerseyNumber = it
+                showError = false 
+            },
+            label = { Text("Jersey number") },
+            modifier = Modifier.fillMaxWidth(),
+            isError = showError && jerseyNumber.isBlank()
         )
+
+        if (showError) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                )
+            ) {
+                Text(
+                    text = "Both Name and Jersey Number are required.",
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -293,9 +320,14 @@ private fun RosterScreen(
         ) {
             Button(
                 onClick = {
-                    onAddPlayer(name, jerseyNumber)
-                    name = ""
-                    jerseyNumber = ""
+                    if (name.isBlank() || jerseyNumber.isBlank()) {
+                        showError = true
+                    } else {
+                        onAddPlayer(name, jerseyNumber)
+                        name = ""
+                        jerseyNumber = ""
+                        showError = false
+                    }
                 },
                 modifier = Modifier.weight(1f)
             ) {
@@ -376,7 +408,7 @@ private fun RosterScreen(
                                 TextButton(onClick = {
                                     editingPlayer = player
                                     editName = player.name
-                                    editJerseyNumber = player.jerseyNumber?.toString() ?: ""
+                                    editJerseyNumber = player.jerseyNumber.toString()
                                 }) {
                                     Text("Edit")
                                 }
@@ -413,6 +445,7 @@ private fun GameScreen(
     onToggleTimer: () -> Unit,
     onResetTimer: () -> Unit,
     onSetGameTime: (Long) -> Unit,
+    onDeleteGame: (Long) -> Unit,
     onExportGame: (Uri) -> Unit,
     onExportPlayers: (Uri) -> Unit
 ) {
@@ -520,8 +553,16 @@ private fun GameScreen(
                                     Text("Score: ${game.teamScore}")
                                 }
 
-                                TextButton(onClick = { onSelectGame(game.id) }) {
-                                    Text(if (selected) "Selected" else "Select")
+                                Column {
+                                    TextButton(onClick = { onSelectGame(game.id) }) {
+                                        Text(if (selected) "Selected" else "Select")
+                                    }
+                                    TextButton(
+                                        onClick = { onDeleteGame(game.id) },
+                                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                    ) {
+                                        Text("Delete")
+                                    }
                                 }
                             }
                         }

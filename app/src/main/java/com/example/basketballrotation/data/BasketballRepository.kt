@@ -50,6 +50,13 @@ class BasketballRepository(
         )
     }
 
+    suspend fun deleteGame(gameId: Long) {
+        database.withTransaction {
+            gameEventDao.deleteByGame(gameId)
+            gameDao.deleteById(gameId)
+        }
+    }
+
     suspend fun selectStartingLineup(gameId: Long, playerIds: List<Long>) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction

@@ -245,6 +245,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun deleteGame(gameId: Long) {
+        viewModelScope.launch {
+            repository.deleteGame(gameId)
+            _messages.emit("Game and related events deleted.")
+        }
+    }
+
     fun setStartingLineup(playerIds: List<Long>) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {

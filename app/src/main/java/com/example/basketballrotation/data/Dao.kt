@@ -42,6 +42,9 @@ interface GameDao {
     @Update
     suspend fun update(game: GameEntity)
 
+    @Query("DELETE FROM games WHERE id = :gameId")
+    suspend fun deleteById(gameId: Long)
+
     @Query("DELETE FROM games")
     suspend fun deleteAll()
 }
@@ -56,6 +59,9 @@ interface GameEventDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(event: GameEventEntity): Long
+
+    @Query("DELETE FROM game_events WHERE gameId = :gameId")
+    suspend fun deleteByGame(gameId: Long)
 
     @Query("DELETE FROM game_events")
     suspend fun deleteAll()
