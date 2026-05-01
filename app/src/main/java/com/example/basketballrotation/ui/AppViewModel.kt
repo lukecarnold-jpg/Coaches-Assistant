@@ -27,7 +27,7 @@ data class PlayerGameStat(
     val fouls: Int,
     val mvpVotes: Int,
     val onCourt: Boolean,
-    val currentShiftTimeMillis: Long
+    val currentShiftTimeMillis: Long,
 )
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -40,13 +40,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val players = repository.players.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
-        emptyList()
+        emptyList(),
     )
 
     val games = repository.games.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
-        emptyList()
+        emptyList(),
     )
 
     val selectedGame: StateFlow<GameEntity?> =
@@ -69,7 +69,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
-        emptyList()
+        emptyList(),
     )
 
     val selectedGameStats =
@@ -124,8 +124,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
                 map
-            } catch (e: Exception) {
-                emptyMap<Long, Int>()
+            } catch (_: Exception) {
+                emptyMap()
             }
 
             // Fallback for players currently on court if no event found (shouldn't happen with proper event logging)
@@ -192,7 +192,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
         val jerseyNumber = jerseyNumberText.trim().toIntOrNull()
         // Jersey number is now optional, only error if they entered something that isn't a number
-        if (jerseyNumberText.trim().isNotEmpty() && jerseyNumber == null) {
+        if ((jerseyNumberText.trim().isNotEmpty()) && (jerseyNumber == null)) {
             _messages.tryEmit("Jersey number must be numeric.")
             return
         }
@@ -211,7 +211,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         val jerseyNumber = newJerseyNumberText.trim().toIntOrNull()
-        if (newJerseyNumberText.trim().isNotEmpty() && jerseyNumber == null) {
+        if ((newJerseyNumberText.trim().isNotEmpty()) && (jerseyNumber == null)) {
             _messages.tryEmit("Jersey number must be numeric.")
             return
         }
@@ -276,7 +276,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _messages.tryEmit("Create or select a game first.")
             return
         }
-        if (playerInId == null || playerOutId == null) {
+        if ((playerInId == null) || (playerOutId == null)) {
             _messages.tryEmit("Pick one player in and one player out.")
             return
         }

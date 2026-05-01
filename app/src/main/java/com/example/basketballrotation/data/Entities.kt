@@ -20,7 +20,7 @@ enum class EventType {
 data class PlayerEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    val jerseyNumber: Int? = null
+    val jerseyNumber: Int? = null,
 )
 
 @Entity(tableName = "games")
@@ -34,7 +34,7 @@ data class GameEntity(
     val mvpVotesJson: String = "{}", // Map<Long, Int> serialized
     val onCourtCsv: String = "",
     val runningTimeMillis: Long = 0,
-    val timerLastStartedAt: Long? = null
+    val timerLastStartedAt: Long? = null,
 )
 
 @Entity(

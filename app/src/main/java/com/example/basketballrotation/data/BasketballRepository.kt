@@ -11,7 +11,7 @@ import java.util.Date
 import java.util.Locale
 
 class BasketballRepository(
-    private val database: AppDatabase
+    private val database: AppDatabase,
 ) {
     private val playerDao = database.playerDao()
     private val gameDao = database.gameDao()
@@ -60,7 +60,7 @@ class BasketballRepository(
     suspend fun selectStartingLineup(gameId: Long, playerIds: List<Long>) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
-            val normalizedIds = playerIds.distinct().take(5)
+            val normalizedIds = playerIds.asSequence().distinct().take(5).toList()
 
             gameDao.update(game.copy(onCourtCsv = idsToCsv(normalizedIds)))
             gameEventDao.insert(
@@ -199,8 +199,8 @@ class BasketballRepository(
                     }
                 }
                 map
-            } catch (e: Exception) {
-                mutableMapOf<Long, Int>()
+            } catch (_: Exception) {
+                mutableMapOf()
             }
 
             currentVotes[playerId] = (currentVotes[playerId] ?: 0) + 1
@@ -300,7 +300,7 @@ class BasketballRepository(
                                 player?.jerseyNumber?.toString().orEmpty(),
                                 escapeCsv(relatedPlayer?.name.orEmpty()),
                                 relatedPlayer?.jerseyNumber?.toString().orEmpty(),
-                                if (event.points == 0 && EventType.fromRaw(event.type) != EventType.FOUL) "" else event.points.toString(),
+                                if ((event.points == 0) && (EventType.fromRaw(event.type) != EventType.FOUL)) "" else event.points.toString(),
                                 escapeCsv(note)
                             ).joinToString(",")
                         )
@@ -312,6 +312,7 @@ class BasketballRepository(
 
     private fun lineupNoteToNames(note: String, players: Map<Long, PlayerEntity>): String {
         val names = note.split(',')
+            .asSequence()
             .mapNotNull { raw -> raw.trim().toLongOrNull() }
             .mapNotNull(players::get)
             .map(PlayerEntity::displayLabel)

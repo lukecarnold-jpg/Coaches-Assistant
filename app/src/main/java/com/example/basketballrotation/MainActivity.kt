@@ -70,7 +70,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.vectorResource
 import com.example.basketballrotation.ui.AppViewModel
 import com.example.basketballrotation.ui.PlayerGameStat
@@ -122,7 +122,7 @@ private fun BasketballApp(appViewModel: AppViewModel = viewModel()) {
                     selected = currentTab == AppTab.ROSTER.name,
                     onClick = { currentTab = AppTab.ROSTER.name },
                     icon = { Text("👥") },
-                    label = { Text("Roster") }
+                    label = { Text("Roster") },
                 )
                 NavigationBarItem(
                     selected = currentTab == AppTab.GAME.name,
@@ -190,7 +190,7 @@ private fun SettingsScreen(
     modifier: Modifier = Modifier,
     onClearAllData: () -> Unit
 ) {
-    var showConfirm by remember { mutableStateOf(false) }
+    var showConfirm by remember { mutableStateOf(value = false) }
 
     Column(
         modifier = modifier.padding(16.dp),
@@ -223,10 +223,12 @@ private fun SettingsScreen(
                 title = { Text("Confirm deletion") },
                 text = { Text("Are you sure you want to delete all data? This will remove all players and games.") },
                 confirmButton = {
-                    TextButton(onClick = {
-                        onClearAllData()
-                        showConfirm = false
-                    }) {
+                    TextButton(
+                        onClick = {
+                            onClearAllData()
+                            showConfirm = false
+                        }
+                    ) {
                         Text("Delete everything", color = MaterialTheme.colorScheme.error)
                     }
                 },
@@ -260,7 +262,7 @@ private fun RosterScreen(
     val exportRosterLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv")
     ) { uri ->
-        if (uri != null) onExportPlayers(uri)
+        uri?.let(onExportPlayers)
     }
 
     Column(
@@ -454,13 +456,13 @@ private fun GameScreen(
     val exportGameLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv")
     ) { uri ->
-        if (uri != null) onExportGame(uri)
+        uri?.let(onExportGame)
     }
 
     val exportRosterLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv")
     ) { uri ->
-        if (uri != null) onExportPlayers(uri)
+        uri?.let(onExportPlayers)
     }
 
     val startingLineupSelection = remember(selectedGame?.id) { mutableStateListOf<Long>() }
@@ -666,7 +668,7 @@ private fun GameScreen(
                                 Checkbox(
                                     checked = checked,
                                     onCheckedChange = { newValue ->
-                                        if (newValue && !checked && startingLineupSelection.size < 5) {
+                                        if (newValue && !checked && (startingLineupSelection.size < 5)) {
                                             startingLineupSelection.add(player.id)
                                         }
                                         if (!newValue && checked) {
@@ -718,9 +720,10 @@ private fun GameScreen(
                             onCourtStats.forEach { stat ->
                                 SelectablePlayerRow(
                                     text = stat.player.displayLabel(),
-                                    selected = playerOutId == stat.player.id,
-                                    onClick = { playerOutId = stat.player.id }
-                                )
+                                    selected = playerOutId == stat.player.id
+                                ) {
+                                    playerOutId = stat.player.id
+                                }
                             }
                         }
 
@@ -740,9 +743,10 @@ private fun GameScreen(
                                 benchStats.forEach { stat ->
                                     SelectablePlayerRow(
                                         text = stat.player.displayLabel(),
-                                        selected = playerInId == stat.player.id,
-                                        onClick = { playerInId = stat.player.id }
-                                    )
+                                        selected = playerInId == stat.player.id
+                                    ) {
+                                        playerInId = stat.player.id
+                                    }
                                 }
                             }
                         }
@@ -976,7 +980,6 @@ private fun PlayerActionCard(
     LaunchedEffect(gameTimerLastStartedAt) {
         if (gameTimerLastStartedAt != null) {
             while (true) {
-                val liveGameTime = gameRunningTimeMillis + (System.currentTimeMillis() - gameTimerLastStartedAt)
                 // currentShiftTimeMillis was calculated as (game.runningTimeMillis - enteredAt)
                 // We add the same "live" offset to the shift time
                 shiftDisplayTime = stat.currentShiftTimeMillis + (System.currentTimeMillis() - gameTimerLastStartedAt)
@@ -1161,6 +1164,7 @@ private fun eventDescription(
     return when (EventType.fromRaw(event.type)) {
         EventType.START_LINEUP -> {
             val names = event.note.split(',')
+                .asSequence()
                 .mapNotNull { raw -> raw.trim().toLongOrNull() }
                 .mapNotNull(playersById::get)
                 .joinToString(" | ") { it.displayLabel() }
