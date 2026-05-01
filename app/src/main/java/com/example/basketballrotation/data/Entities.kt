@@ -39,7 +39,7 @@ data class GameEntity(
 
 @Entity(
     tableName = "game_events",
-    indices = [Index("gameId"), Index("playerId"), Index("relatedPlayerId")]
+    indices = [Index("gameId"), Index("playerId"), Index("relatedPlayerId")],
 )
 data class GameEventEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
