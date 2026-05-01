@@ -6,7 +6,7 @@ A comprehensive Android application designed for team managers and coaches to st
 
 ### 👥 Roster Management
 - **Add/Remove Players:** Easily manage your team list.
-- **Required Details:** Enforces valid Player Names and Jersey Numbers to ensure accurate tracking.
+- **Required Details:** Enforces a valid Player Name to ensure accurate tracking. Jersey numbers are optional.
 - **In-place Editing:** Update player details directly from the roster list.
 
 ### 🏀 Game Tracking

@@ -292,9 +292,8 @@ private fun RosterScreen(
                 jerseyNumber = it
                 showError = false 
             },
-            label = { Text("Jersey number") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = showError && jerseyNumber.isBlank()
+            label = { Text("Jersey number (optional)") },
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (showError) {
@@ -306,7 +305,7 @@ private fun RosterScreen(
                 )
             ) {
                 Text(
-                    text = "Both Name and Jersey Number are required.",
+                    text = "Player Name is required.",
                     modifier = Modifier.padding(12.dp),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
@@ -320,7 +319,7 @@ private fun RosterScreen(
         ) {
             Button(
                 onClick = {
-                    if (name.isBlank() || jerseyNumber.isBlank()) {
+                    if (name.isBlank()) {
                         showError = true
                     } else {
                         onAddPlayer(name, jerseyNumber)
@@ -364,7 +363,7 @@ private fun RosterScreen(
                             OutlinedTextField(
                                 value = editJerseyNumber,
                                 onValueChange = { editJerseyNumber = it },
-                                label = { Text("Jersey number") },
+                                label = { Text("Jersey number (optional)") },
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Row(
@@ -408,7 +407,7 @@ private fun RosterScreen(
                                 TextButton(onClick = {
                                     editingPlayer = player
                                     editName = player.name
-                                    editJerseyNumber = player.jerseyNumber.toString()
+                                    editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
                                 }) {
                                     Text("Edit")
                                 }

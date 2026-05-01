@@ -20,7 +20,7 @@ enum class EventType {
 data class PlayerEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    val jerseyNumber: Int
+    val jerseyNumber: Int? = null
 )
 
 @Entity(tableName = "games")
@@ -59,4 +59,4 @@ fun GameEntity.onCourtIds(): List<Long> =
 
 fun idsToCsv(ids: Collection<Long>): String = ids.joinToString(",")
 
-fun PlayerEntity.displayLabel(): String = "#$jerseyNumber $name"
+fun PlayerEntity.displayLabel(): String = if (jerseyNumber != null) "#$jerseyNumber $name" else name
