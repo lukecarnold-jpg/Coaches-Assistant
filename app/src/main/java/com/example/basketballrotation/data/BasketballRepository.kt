@@ -28,7 +28,7 @@ class BasketballRepository(
             PlayerEntity(
                 name = name.trim(),
                 jerseyNumber = jerseyNumber,
-            )
+            ),
         )
     }
 
@@ -53,7 +53,7 @@ class BasketballRepository(
                 createdAt = System.currentTimeMillis(),
                 useQuarters = useQuarters,
                 periodDurationMillis = periodDurationMillis,
-            )
+            ),
         )
     }
 
@@ -143,7 +143,7 @@ class BasketballRepository(
                     timestamp = System.currentTimeMillis(),
                     type = EventType.START_LINEUP.name,
                     note = idsToCsv(normalizedIds),
-                    gameTimeMillis = calculateCurrentGameTime(game)
+                    gameTimeMillis = calculateCurrentGameTime(game),
                 )
             )
         }
@@ -170,7 +170,7 @@ class BasketballRepository(
                     type = EventType.SUBSTITUTION.name,
                     playerId = playerInId,
                     relatedPlayerId = playerOutId,
-                    gameTimeMillis = calculateCurrentGameTime(game)
+                    gameTimeMillis = calculateCurrentGameTime(game),
                 )
             )
         }
@@ -192,7 +192,7 @@ class BasketballRepository(
                         type = EventType.SCORE.name,
                         playerId = playerId,
                         points = points,
-                        gameTimeMillis = calculateCurrentGameTime(game)
+                        gameTimeMillis = calculateCurrentGameTime(game),
                     )
                 )
             }
@@ -209,7 +209,7 @@ class BasketballRepository(
                     type = EventType.FOUL.name,
                     playerId = playerId,
                     points = adjustment,
-                    gameTimeMillis = calculateCurrentGameTime(game)
+                    gameTimeMillis = calculateCurrentGameTime(game),
                 )
             )
         }
@@ -288,7 +288,7 @@ class BasketballRepository(
                     timestamp = System.currentTimeMillis(),
                     type = EventType.MVP_VOTE.name,
                     playerId = playerId,
-                    gameTimeMillis = calculateCurrentGameTime(game)
+                    gameTimeMillis = calculateCurrentGameTime(game),
                 )
             )
         }

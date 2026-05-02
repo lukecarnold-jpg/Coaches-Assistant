@@ -157,13 +157,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     fouls = foulsByPlayer[player.id] ?: 0,
                     mvpVotes = mvpVotesMap[player.id] ?: 0,
                     onCourt = isOnCourt,
-                    currentShiftTimeMillis = maxOf(0L, shiftTime)
+                    currentShiftTimeMillis = maxOf(0L, shiftTime),
                 )
             }
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
-            emptyList()
+            emptyList(),
         )
 
     init {
