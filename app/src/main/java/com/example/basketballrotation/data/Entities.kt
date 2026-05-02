@@ -9,7 +9,9 @@ enum class EventType {
     SUBSTITUTION,
     SCORE,
     FOUL,
-    MVP_VOTE;
+    MVP_VOTE,
+    PERIOD_CHANGE,
+    GAME_END;
 
     companion object {
         fun fromRaw(raw: String): EventType = entries.firstOrNull { it.name == raw } ?: SCORE
@@ -33,8 +35,12 @@ data class GameEntity(
     val opponentScore: Int = 0,
     val mvpVotesJson: String = "{}", // Map<Long, Int> serialized
     val onCourtCsv: String = "",
-    val runningTimeMillis: Long = 0,
+    val runningTimeMillis: Long = 0, // Elapsed time in current period
     val timerLastStartedAt: Long? = null,
+    val isFinished: Boolean = false,
+    val useQuarters: Boolean = false,
+    val currentPeriod: Int = 1,
+    val periodDurationMillis: Long = 10 * 60 * 1000L, // Default 10 mins
 )
 
 @Entity(
@@ -50,7 +56,7 @@ data class GameEventEntity(
     val relatedPlayerId: Long? = null,
     val points: Int = 0,
     val note: String = "",
-    val gameTimeMillis: Long = 0
+    val gameTimeMillis: Long = 0,
 )
 
 fun GameEntity.onCourtIds(): List<Long> =

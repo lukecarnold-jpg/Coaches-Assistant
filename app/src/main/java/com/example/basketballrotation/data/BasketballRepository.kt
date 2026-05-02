@@ -27,7 +27,7 @@ class BasketballRepository(
         return playerDao.insert(
             PlayerEntity(
                 name = name.trim(),
-                jerseyNumber = jerseyNumber
+                jerseyNumber = jerseyNumber,
             )
         )
     }
@@ -40,14 +40,88 @@ class BasketballRepository(
         playerDao.deleteById(playerId)
     }
 
-    suspend fun createGame(title: String, opponent: String): Long {
+    suspend fun createGame(
+        title: String,
+        opponent: String,
+        useQuarters: Boolean = false,
+        periodDurationMillis: Long = 10 * 60 * 1000L,
+    ): Long {
         return gameDao.insert(
             GameEntity(
                 title = title.trim(),
                 opponent = opponent.trim(),
-                createdAt = System.currentTimeMillis()
+                createdAt = System.currentTimeMillis(),
+                useQuarters = useQuarters,
+                periodDurationMillis = periodDurationMillis,
             )
         )
+    }
+
+    suspend fun advancePeriod(gameId: Long) {
+        database.withTransaction {
+            val game = gameDao.getById(gameId) ?: return@withTransaction
+            val maxPeriods = if (game.useQuarters) 4 else 2
+            
+            if (game.currentPeriod < maxPeriods) {
+                gameDao.update(
+                    game.copy(
+                        currentPeriod = game.currentPeriod + 1,
+                        runningTimeMillis = 0L,
+                        timerLastStartedAt = null,
+                        onCourtCsv = "", // Reset court to force new lineup
+                    )
+                )
+                gameEventDao.insert(
+                    GameEventEntity(
+                        gameId = gameId,
+                        timestamp = System.currentTimeMillis(),
+                        type = EventType.PERIOD_CHANGE.name,
+                        note = "Started Period ${game.currentPeriod + 1}",
+                        gameTimeMillis = 0L,
+                    )
+                )
+            }
+        }
+    }
+
+    suspend fun endGame(gameId: Long) {
+        database.withTransaction {
+            val game = gameDao.getById(gameId) ?: return@withTransaction
+            gameDao.update(game.copy(isFinished = true, timerLastStartedAt = null))
+            gameEventDao.insert(
+                GameEventEntity(
+                    gameId = gameId,
+                    timestamp = System.currentTimeMillis(),
+                    type = EventType.GAME_END.name,
+                    note = "Game Ended",
+                    gameTimeMillis = calculateCurrentGameTime(game),
+                )
+            )
+        }
+    }
+
+    suspend fun updateEvent(event: GameEventEntity) {
+        database.withTransaction {
+            val oldEvent = gameEventDao.getByGame(event.gameId).find { it.id == event.id } ?: return@withTransaction
+            gameEventDao.update(event)
+            
+            // If it's a score event, adjust the game total
+            if (event.type == EventType.SCORE.name) {
+                val game = gameDao.getById(event.gameId) ?: return@withTransaction
+                val diff = event.points - oldEvent.points
+                gameDao.update(game.copy(teamScore = (game.teamScore + diff).coerceAtLeast(0)))
+            }
+        }
+    }
+
+    suspend fun deleteEvent(event: GameEventEntity) {
+        database.withTransaction {
+            gameEventDao.deleteById(event.id)
+            if (event.type == EventType.SCORE.name) {
+                val game = gameDao.getById(event.gameId) ?: return@withTransaction
+                gameDao.update(game.copy(teamScore = (game.teamScore - event.points).coerceAtLeast(0)))
+            }
+        }
     }
 
     suspend fun deleteGame(gameId: Long) {

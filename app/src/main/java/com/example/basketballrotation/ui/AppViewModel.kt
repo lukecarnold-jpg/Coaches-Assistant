@@ -8,6 +8,7 @@ import com.example.basketballrotation.data.AppDatabase
 import com.example.basketballrotation.data.BasketballRepository
 import com.example.basketballrotation.data.EventType
 import com.example.basketballrotation.data.GameEntity
+import com.example.basketballrotation.data.GameEventEntity
 import com.example.basketballrotation.data.PlayerEntity
 import com.example.basketballrotation.data.onCourtIds
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -60,7 +61,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
-            null
+            null,
         )
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -109,6 +110,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     }
 
                     EventType.MVP_VOTE -> {} // Votes are stored in gameEntity directly for simplicity
+                    EventType.PERIOD_CHANGE -> {}
+                    EventType.GAME_END -> {}
                 }
             }
 
@@ -236,13 +239,44 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun createGame(title: String, opponent: String) {
+    fun createGame(title: String, opponent: String, useQuarters: Boolean, periodMins: Int) {
         val finalTitle = title.trim().ifBlank { "Game ${games.value.size + 1}" }
+        val durationMillis = periodMins * 60 * 1000L
 
         viewModelScope.launch {
-            val gameId = repository.createGame(finalTitle, opponent)
+            val gameId = repository.createGame(finalTitle, opponent, useQuarters, durationMillis)
             selectedGameId.value = gameId
             _messages.emit("Game created.")
+        }
+    }
+
+    fun advancePeriod() {
+        val gameId = selectedGame.value?.id ?: return
+        viewModelScope.launch {
+            repository.advancePeriod(gameId)
+            _messages.emit("Advanced to next period.")
+        }
+    }
+
+    fun endGame() {
+        val gameId = selectedGame.value?.id ?: return
+        viewModelScope.launch {
+            repository.endGame(gameId)
+            _messages.emit("Game finalized.")
+        }
+    }
+
+    fun updateEvent(event: GameEventEntity) {
+        viewModelScope.launch {
+            repository.updateEvent(event)
+            _messages.emit("Event updated.")
+        }
+    }
+
+    fun deleteEvent(event: GameEventEntity) {
+        viewModelScope.launch {
+            repository.deleteEvent(event)
+            _messages.emit("Event removed.")
         }
     }
 

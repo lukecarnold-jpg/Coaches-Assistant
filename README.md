@@ -12,11 +12,15 @@ A comprehensive Android application designed for team managers and coaches to st
 ### 🏀 Game Tracking
 - **Live Rotation:** Track exactly who is on the court and how long their current shift has lasted.
 - **Game History:** View and manage your list of games, with the ability to **Delete** (🗑️) older or concluded records.
+- **Flexible Game Structure:** Support for both **Halves** or **Quarters** with customizable period durations.
 - **Advanced Scoring:** 
     - Log 1, 2, or 3-point plays for individual players.
     - Manual score adjustments (including negative corrections) for both your team and the opponent.
 - **Foul Tracking:** Keep a running count of fouls per player with quick increment/decrement controls.
-- **Game Clock:** Interactive timer with start, stop, and **Reset** (🔄) functionality. Supports manual time entry for precise synchronization.
+- **Game Clock:** Interactive **Countdown** timer with start, stop, and **Reset** (🔄) functionality. Supports manual time entry for precise synchronization.
+- **Period Management:** Change the starting lineup at the beginning of each period (Half or Quarter).
+- **Post-Game Editing:** Correct mistakes after the buzzer by editing or deleting events (scores, fouls, etc.) directly from the event log.
+- **End Game:** Formally conclude games to finalize stats and prevent accidental further edits.
 
 ### 🏆 MVP Voting
 - **Live Voting:** Cast MVP votes for players during the game directly from their action cards.

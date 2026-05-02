@@ -60,6 +60,12 @@ interface GameEventDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(event: GameEventEntity): Long
 
+    @Update
+    suspend fun update(event: GameEventEntity)
+
+    @Query("DELETE FROM game_events WHERE id = :eventId")
+    suspend fun deleteById(eventId: Long)
+
     @Query("DELETE FROM game_events WHERE gameId = :gameId")
     suspend fun deleteByGame(gameId: Long)
 
