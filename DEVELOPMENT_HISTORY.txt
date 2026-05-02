@@ -50,3 +50,10 @@
 - **Game Finalization:** Added "End Game" functionality to lock games and save final states.
 - **Database Migration:** Incremented schema to Version 5 for period-based tracking and game status.
 - **UI/UX:** Added period labels (Q1, H1, etc.) and enhanced the game clock visibility.
+
+## Version 1.5 (Data Retention & Maintenance)
+- **Schema Exporting:** Enabled Room schema exporting for safer version migrations.
+- **Auto Backup:** Configured `backup_rules` and `data_extraction_rules` to ensure roster and game data survive app updates and cloud restores.
+- **Downgrade Safety:** Restricted destructive migration to downgrades only, protecting production data during standard upgrades.
+- **Refactoring:** Completed a full project review to fix minor warnings, exhaustive when-branches, and trailing comma consistency.
+- **UI Synchronization:** Fixed a bug where editing a player would occasionally show stale data in the edit form.

@@ -410,7 +410,11 @@ private fun RosterScreen(
 
                             Row {
                                 TextButton(
-                                    onClick = { editingPlayer = player }
+                                    onClick = {
+                                        editingPlayer = player
+                                        editName = player.name
+                                        editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
+                                    }
                                 ) {
                                     Text("Edit")
                                 }

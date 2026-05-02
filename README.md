@@ -27,7 +27,7 @@ A comprehensive Android application designed for team managers and coaches to st
 - **Tallying:** View the total vote count for each player in the game stats section.
 
 ### 📊 Data & Exports
-- **Persistence:** All data is saved locally using Room Database, surviving app restarts.
+- **Persistence:** All data is saved locally using Room Database. The project is configured with schema tracking and Android Auto Backup to ensure your team roster and game history are preserved across app updates and device transfers.
 - **CSV Export:** 
     - Export the full Team Roster.
     - Export detailed Game Logs including every point, foul, substitution, and MVP vote.

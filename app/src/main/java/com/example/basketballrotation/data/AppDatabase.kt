@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [PlayerEntity::class, GameEntity::class, GameEventEntity::class],
     version = 5,
-    exportSchema = false
+    exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun playerDao(): PlayerDao
@@ -26,7 +26,9 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "basketball_rotation.db"
                 )
-                    .fallbackToDestructiveMigration()
+                    // Allows destructive migration only on downgrade to prevent data loss on app updates.
+                    // For version upgrades, migrations should be provided via @Database(autoMigrations = [...])
+                    .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
                     .build()
                     .also { INSTANCE = it }
             }
