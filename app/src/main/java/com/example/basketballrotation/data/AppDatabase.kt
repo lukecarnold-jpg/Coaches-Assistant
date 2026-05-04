@@ -24,7 +24,7 @@ abstract class AppDatabase : RoomDatabase() {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "basketball_rotation.db"
+                    "basketball_rotation.db",
                 )
                     // Allows destructive migration only on downgrade to prevent data loss on app updates.
                     // For version upgrades, migrations should be provided via @Database(autoMigrations = [...])

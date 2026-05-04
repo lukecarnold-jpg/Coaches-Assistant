@@ -34,6 +34,9 @@ A comprehensive Android application designed for team managers and coaches to st
     - Files are saved to the device's public Downloads/Documents folder for easy sharing.
 
 ### 🎨 Modern UI/UX
+- **Adaptive Layout:** Responsive design that auto-adjusts for **Phones** and **Tablets**.
+    - **Phones:** Bottom navigation for easy thumb access.
+    - **Tablets/Foldables:** Navigation rail and multi-column layouts to leverage larger screen real estate.
 - **Material 3 Design:** Clean, modern interface with intuitive navigation.
 - **Basketball Theme:** Custom orange-and-black basketball themed app icon and themed UI elements.
 - **Real-time Feedback:** Instant UI updates for timer shifts and scoring events.

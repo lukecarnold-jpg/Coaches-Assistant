@@ -29,6 +29,11 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
@@ -70,7 +75,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.ui.res.vectorResource
 import com.example.basketballrotation.ui.AppViewModel
 import com.example.basketballrotation.ui.PlayerGameStat
 import kotlinx.coroutines.delay
@@ -79,12 +83,14 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val windowSizeClass = calculateWindowSizeClass(this)
             MaterialTheme {
-                BasketballApp()
+                BasketballApp(windowSizeClass.widthSizeClass)
             }
         }
     }
@@ -97,7 +103,10 @@ enum class AppTab {
 }
 
 @Composable
-private fun BasketballApp(appViewModel: AppViewModel = viewModel()) {
+private fun BasketballApp(
+    widthSizeClass: WindowWidthSizeClass,
+    appViewModel: AppViewModel = viewModel(),
+) {
     val players by appViewModel.players.collectAsState()
     val games by appViewModel.games.collectAsState()
     val selectedGame by appViewModel.selectedGame.collectAsState()
@@ -107,83 +116,110 @@ private fun BasketballApp(appViewModel: AppViewModel = viewModel()) {
     var currentTab by rememberSaveable { mutableStateOf(AppTab.ROSTER.name) }
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val isExpanded = widthSizeClass != WindowWidthSizeClass.Compact
+
     LaunchedEffect(Unit) {
         appViewModel.messages.collectLatest { message ->
             snackbarHostState.showSnackbar(message)
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
+    Row(modifier = Modifier.fillMaxSize()) {
+        if (isExpanded) {
+            NavigationRail {
+                NavigationRailItem(
                     selected = currentTab == AppTab.ROSTER.name,
                     onClick = { currentTab = AppTab.ROSTER.name },
                     icon = { Text("👥") },
                     label = { Text("Roster") },
                 )
-                NavigationBarItem(
+                NavigationRailItem(
                     selected = currentTab == AppTab.GAME.name,
                     onClick = { currentTab = AppTab.GAME.name },
                     icon = { Text("🏀") },
                     label = { Text("Game") },
                 )
-                NavigationBarItem(
+                NavigationRailItem(
                     selected = currentTab == AppTab.SETTINGS.name,
                     onClick = { currentTab = AppTab.SETTINGS.name },
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text("Settings") }
+                    label = { Text("Settings") },
                 )
             }
         }
-    ) { paddingValues ->
-        when (AppTab.valueOf(currentTab)) {
-            AppTab.ROSTER -> RosterScreen(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                players = players,
-                onAddPlayer = appViewModel::addPlayer,
-                onUpdatePlayer = appViewModel::updatePlayer,
-                onDeletePlayer = appViewModel::deletePlayer,
-                onExportPlayers = appViewModel::exportPlayersCsv
-            )
 
-            AppTab.GAME -> GameScreen(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                players = players,
-                games = games,
-                selectedGame = selectedGame,
-                stats = stats,
-                events = events,
-                onCreateGame = appViewModel::createGame,
-                onSelectGame = appViewModel::selectGame,
-                onSetLineup = appViewModel::setStartingLineup,
-                onSubstitute = appViewModel::substitute,
-                onAddScore = appViewModel::addScore,
-                onAddFoul = appViewModel::addFoul,
-                onToggleTimer = appViewModel::toggleTimer,
-                onResetTimer = appViewModel::resetTimer,
-                onAddMvpVote = appViewModel::addMvpVote,
-                onSetGameTime = appViewModel::setGameTime,
-                onDeleteGame = appViewModel::deleteGame,
-                onExportGame = appViewModel::exportSelectedGameCsv,
-                onExportPlayers = appViewModel::exportPlayersCsv,
-                onAdvancePeriod = appViewModel::advancePeriod,
-                onEndGame = appViewModel::endGame,
-                onUpdateEvent = appViewModel::updateEvent,
-                onDeleteEvent = appViewModel::deleteEvent
-            )
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            bottomBar = {
+                if (!isExpanded) {
+                    NavigationBar {
+                        NavigationBarItem(
+                            selected = currentTab == AppTab.ROSTER.name,
+                            onClick = { currentTab = AppTab.ROSTER.name },
+                            icon = { Text("👥") },
+                            label = { Text("Roster") },
+                        )
+                        NavigationBarItem(
+                            selected = currentTab == AppTab.GAME.name,
+                            onClick = { currentTab = AppTab.GAME.name },
+                            icon = { Text("🏀") },
+                            label = { Text("Game") },
+                        )
+                        NavigationBarItem(
+                            selected = currentTab == AppTab.SETTINGS.name,
+                            onClick = { currentTab = AppTab.SETTINGS.name },
+                            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                            label = { Text("Settings") },
+                        )
+                    }
+                }
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                when (AppTab.valueOf(currentTab)) {
+                    AppTab.ROSTER -> RosterScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        isExpanded = isExpanded,
+                        players = players,
+                        onAddPlayer = appViewModel::addPlayer,
+                        onUpdatePlayer = appViewModel::updatePlayer,
+                        onDeletePlayer = appViewModel::deletePlayer,
+                        onExportPlayers = appViewModel::exportPlayersCsv,
+                    )
 
-            AppTab.SETTINGS -> SettingsScreen(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                onClearAllData = appViewModel::clearAllData
-            )
+                    AppTab.GAME -> GameScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        isExpanded = isExpanded,
+                        players = players,
+                        games = games,
+                        selectedGame = selectedGame,
+                        stats = stats,
+                        events = events,
+                        onCreateGame = appViewModel::createGame,
+                        onSelectGame = appViewModel::selectGame,
+                        onSetLineup = appViewModel::setStartingLineup,
+                        onSubstitute = appViewModel::substitute,
+                        onAddScore = appViewModel::addScore,
+                        onAddFoul = appViewModel::addFoul,
+                        onToggleTimer = appViewModel::toggleTimer,
+                        onResetTimer = appViewModel::resetTimer,
+                        onAddMvpVote = appViewModel::addMvpVote,
+                        onSetGameTime = appViewModel::setGameTime,
+                        onDeleteGame = appViewModel::deleteGame,
+                        onExportGame = appViewModel::exportSelectedGameCsv,
+                        onExportPlayers = appViewModel::exportPlayersCsv,
+                        onAdvancePeriod = appViewModel::advancePeriod,
+                        onEndGame = appViewModel::endGame,
+                        onUpdateEvent = appViewModel::updateEvent,
+                        onDeleteEvent = appViewModel::deleteEvent,
+                    )
+
+                    AppTab.SETTINGS -> SettingsScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        onClearAllData = appViewModel::clearAllData,
+                    )
+                }
+            }
         }
     }
 }
@@ -248,6 +284,7 @@ private fun SettingsScreen(
 @Composable
 private fun RosterScreen(
     modifier: Modifier = Modifier,
+    isExpanded: Boolean,
     players: List<PlayerEntity>,
     onAddPlayer: (String, String) -> Unit,
     onUpdatePlayer: (PlayerEntity, String, String) -> Unit,
@@ -280,12 +317,129 @@ private fun RosterScreen(
             fontWeight = FontWeight.Bold
         )
 
+        if (isExpanded) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    RosterForm(
+                        name = name,
+                        onNameChange = {
+                            name = it
+                            showError = false
+                        },
+                        jerseyNumber = jerseyNumber,
+                        onJerseyNumberChange = {
+                            jerseyNumber = it
+                            showError = false
+                        },
+                        showError = showError,
+                        onAddPlayer = {
+                            if (name.isBlank()) {
+                                showError = true
+                            } else {
+                                onAddPlayer(name, jerseyNumber)
+                                name = ""
+                                jerseyNumber = ""
+                                showError = false
+                            }
+                        },
+                        onExportPlayers = { exportRosterLauncher.launch("players.csv") }
+                    )
+                }
+
+                Column(
+                    modifier = Modifier.weight(1.5f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    RosterList(
+                        players = players,
+                        editingPlayer = editingPlayer,
+                        editName = editName,
+                        onEditNameChange = { editName = it },
+                        editJerseyNumber = editJerseyNumber,
+                        onEditJerseyNumberChange = { editJerseyNumber = it },
+                        onSaveUpdate = { player ->
+                            onUpdatePlayer(player, editName, editJerseyNumber)
+                            editingPlayer = null
+                        },
+                        onCancelEdit = { editingPlayer = null },
+                        onStartEdit = { player ->
+                            editingPlayer = player
+                            editName = player.name
+                            editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
+                        },
+                        onDeletePlayer = onDeletePlayer
+                    )
+                }
+            }
+        } else {
+            RosterForm(
+                name = name,
+                onNameChange = {
+                    name = it
+                    showError = false
+                },
+                jerseyNumber = jerseyNumber,
+                onJerseyNumberChange = {
+                    jerseyNumber = it
+                    showError = false
+                },
+                showError = showError,
+                onAddPlayer = {
+                    if (name.isBlank()) {
+                        showError = true
+                    } else {
+                        onAddPlayer(name, jerseyNumber)
+                        name = ""
+                        jerseyNumber = ""
+                        showError = false
+                    }
+                },
+                onExportPlayers = { exportRosterLauncher.launch("players.csv") }
+            )
+
+            RosterList(
+                players = players,
+                editingPlayer = editingPlayer,
+                editName = editName,
+                onEditNameChange = { editName = it },
+                editJerseyNumber = editJerseyNumber,
+                onEditJerseyNumberChange = { editJerseyNumber = it },
+                onSaveUpdate = { player ->
+                    onUpdatePlayer(player, editName, editJerseyNumber)
+                    editingPlayer = null
+                },
+                onCancelEdit = { editingPlayer = null },
+                onStartEdit = { player ->
+                    editingPlayer = player
+                    editName = player.name
+                    editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
+                },
+                onDeletePlayer = onDeletePlayer
+            )
+        }
+    }
+}
+
+@Composable
+private fun RosterForm(
+    name: String,
+    onNameChange: (String) -> Unit,
+    jerseyNumber: String,
+    onJerseyNumberChange: (String) -> Unit,
+    showError: Boolean,
+    onAddPlayer: () -> Unit,
+    onExportPlayers: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         OutlinedTextField(
             value = name,
-            onValueChange = { 
-                name = it
-                showError = false 
-            },
+            onValueChange = onNameChange,
             label = { Text("Player name") },
             modifier = Modifier.fillMaxWidth(),
             isError = showError && name.isBlank()
@@ -293,10 +447,7 @@ private fun RosterScreen(
 
         OutlinedTextField(
             value = jerseyNumber,
-            onValueChange = { 
-                jerseyNumber = it
-                showError = false 
-            },
+            onValueChange = onJerseyNumberChange,
             label = { Text("Jersey number (optional)") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -323,107 +474,105 @@ private fun RosterScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
-                onClick = {
-                    if (name.isBlank()) {
-                        showError = true
-                    } else {
-                        onAddPlayer(name, jerseyNumber)
-                        name = ""
-                        jerseyNumber = ""
-                        showError = false
-                    }
-                },
+                onClick = onAddPlayer,
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Add player")
             }
 
             OutlinedButton(
-                onClick = { exportRosterLauncher.launch("players.csv") },
+                onClick = onExportPlayers,
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Export roster CSV")
             }
         }
+    }
+}
 
-        if (players.isEmpty()) {
-            EmptyMessage("No players yet. Add your roster first.")
-        } else {
-            players.forEach { player ->
-                if (editingPlayer?.id == player.id) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+@Composable
+private fun RosterList(
+    players: List<PlayerEntity>,
+    editingPlayer: PlayerEntity?,
+    editName: String,
+    onEditNameChange: (String) -> Unit,
+    editJerseyNumber: String,
+    onEditJerseyNumberChange: (String) -> Unit,
+    onSaveUpdate: (PlayerEntity) -> Unit,
+    onCancelEdit: () -> Unit,
+    onStartEdit: (PlayerEntity) -> Unit,
+    onDeletePlayer: (Long) -> Unit
+) {
+    if (players.isEmpty()) {
+        EmptyMessage("No players yet. Add your roster first.")
+    } else {
+        players.forEach { player ->
+            if (editingPlayer?.id == player.id) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        OutlinedTextField(
+                            value = editName,
+                            onValueChange = onEditNameChange,
+                            label = { Text("Player name") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = editJerseyNumber,
+                            onValueChange = onEditJerseyNumberChange,
+                            label = { Text("Jersey number (optional)") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            OutlinedTextField(
-                                value = editName,
-                                onValueChange = { editName = it },
-                                label = { Text("Player name") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            OutlinedTextField(
-                                value = editJerseyNumber,
-                                onValueChange = { editJerseyNumber = it },
-                                label = { Text("Jersey number (optional)") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            Button(
+                                onClick = { onSaveUpdate(player) },
+                                modifier = Modifier.weight(1f)
                             ) {
-                                Button(
-                                    onClick = {
-                                        onUpdatePlayer(player, editName, editJerseyNumber)
-                                        editingPlayer = null
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text("Save")
-                                }
-                                TextButton(
-                                    onClick = { editingPlayer = null },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text("Cancel")
-                                }
+                                Text("Save")
+                            }
+                            TextButton(
+                                onClick = onCancelEdit,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Cancel")
                             }
                         }
                     }
-                } else {
-                    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = player.displayLabel(),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                }
+            } else {
+                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = player.displayLabel(),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
 
-                            Row {
-                                TextButton(
-                                    onClick = {
-                                        editingPlayer = player
-                                        editName = player.name
-                                        editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
-                                    }
-                                ) {
-                                    Text("Edit")
-                                }
-                                TextButton(
-                                    onClick = { onDeletePlayer(player.id) },
-                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                                ) {
-                                    Text("Remove")
-                                }
+                        Row {
+                            TextButton(
+                                onClick = { onStartEdit(player) }
+                            ) {
+                                Text("Edit")
+                            }
+                            TextButton(
+                                onClick = { onDeletePlayer(player.id) },
+                                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                            ) {
+                                Text("Remove")
                             }
                         }
                     }
@@ -436,6 +585,7 @@ private fun RosterScreen(
 @Composable
 private fun GameScreen(
     modifier: Modifier = Modifier,
+    isExpanded: Boolean,
     players: List<PlayerEntity>,
     games: List<GameEntity>,
     selectedGame: GameEntity?,
@@ -487,442 +637,167 @@ private fun GameScreen(
     val onCourtIds = selectedGame?.onCourtIds()?.toSet().orEmpty()
     val playerById = players.associateBy { it.id }
 
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = "Game tracker",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-
-        SectionCard(title = "Create a game") {
-            OutlinedTextField(
-                value = gameTitle,
-                onValueChange = { gameTitle = it },
-                label = { Text("Game title") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = opponent,
-                onValueChange = { opponent = it },
-                label = { Text("Opponent") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = useQuarters, onCheckedChange = { useQuarters = it })
-                Text("Use Quarters (instead of Halves)")
+    if (isExpanded) {
+        Row(
+            modifier = modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                if (selectedGame != null) {
+                    GameControlPanel(
+                        selectedGame = selectedGame,
+                        onToggleTimer = onToggleTimer,
+                        onResetTimer = onResetTimer,
+                        onSetGameTime = onSetGameTime,
+                        onAddScore = onAddScore,
+                        onCourtIds = onCourtIds,
+                        exportGameLauncher = exportGameLauncher,
+                        exportRosterLauncher = exportRosterLauncher,
+                        players = players,
+                        startingLineupSelection = startingLineupSelection,
+                        onSetLineup = onSetLineup,
+                        onCourtStats = onCourtStats,
+                        onAddFoul = onAddFoul,
+                        onAddMvpVote = onAddMvpVote,
+                        onAdvancePeriod = onAdvancePeriod,
+                        onEndGame = onEndGame,
+                        playerOutId = playerOutId,
+                        onPlayerOutClick = { playerOutId = it },
+                        benchStats = benchStats,
+                        playerInId = playerInId,
+                        onPlayerInClick = { playerInId = it },
+                        onSubstitute = {
+                            onSubstitute(playerInId, playerOutId)
+                            playerInId = null
+                            playerOutId = null
+                        }
+                    )
+                } else {
+                    EmptyMessage("Select or create a game to start tracking.")
+                }
             }
 
-            OutlinedTextField(
-                value = periodMins,
-                onValueChange = { periodMins = it.filter { c -> c.isDigit() } },
-                label = { Text("Period duration (minutes)") },
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                GameStatsPanel(
+                    stats = stats,
+                    events = events,
+                    playerById = playerById,
+                    onEditEvent = { editingEvent = it },
+                    onDeleteEvent = onDeleteEvent,
+                    gameTitle = gameTitle,
+                    onGameTitleChange = { gameTitle = it },
+                    opponent = opponent,
+                    onOpponentChange = { opponent = it },
+                    useQuarters = useQuarters,
+                    onUseQuartersChange = { useQuarters = it },
+                    periodMins = periodMins,
+                    onPeriodMinsChange = { periodMins = it },
+                    onCreateGame = {
+                        onCreateGame(gameTitle, opponent, useQuarters, periodMins.toIntOrNull() ?: 10)
+                        gameTitle = ""
+                        opponent = ""
+                    },
+                    games = games,
+                    onSelectGame = onSelectGame,
+                    onDeleteGame = onDeleteGame,
+                    selectedGameId = selectedGame?.id
+                )
+            }
+        }
+    } else {
+        Column(
+            modifier = modifier
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Game tracker",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
             )
 
-            Spacer(Modifier.height(8.dp))
-
-            Button(
-                onClick = {
+            GameStatsPanel(
+                stats = emptyList(), // Hidden in this mode or moved
+                events = emptyList(),
+                playerById = emptyMap(),
+                onEditEvent = {},
+                onDeleteEvent = {},
+                gameTitle = gameTitle,
+                onGameTitleChange = { gameTitle = it },
+                opponent = opponent,
+                onOpponentChange = { opponent = it },
+                useQuarters = useQuarters,
+                onUseQuartersChange = { useQuarters = it },
+                periodMins = periodMins,
+                onPeriodMinsChange = { periodMins = it },
+                onCreateGame = {
                     onCreateGame(gameTitle, opponent, useQuarters, periodMins.toIntOrNull() ?: 10)
                     gameTitle = ""
                     opponent = ""
-                }
-            ) {
-                Text("Create game")
-            }
-        }
+                },
+                games = games,
+                onSelectGame = onSelectGame,
+                onDeleteGame = onDeleteGame,
+                selectedGameId = selectedGame?.id,
+                onlyManagement = true
+            )
 
-        SectionCard(title = "Games") {
-            if (games.isEmpty()) {
-                EmptyMessage("No games yet.")
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    games.forEach { game ->
-                        val selected = selectedGame?.id == game.id
-
-                        OutlinedCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            border = BorderStroke(
-                                width = if (selected) 2.dp else 1.dp,
-                                color = if (selected) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.outline
-                                }
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text(
-                                        text = game.title,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    if (game.opponent.isNotBlank()) {
-                                        Text("Opponent: ${game.opponent}")
-                                    }
-                                    Text("Score: ${game.teamScore}")
-                                }
-
-                                Column {
-                                    TextButton(onClick = { onSelectGame(game.id) }) {
-                                        Text(if (selected) "Selected" else "Select")
-                                    }
-                                    TextButton(
-                                        onClick = { onDeleteGame(game.id) },
-                                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                                    ) {
-                                        Text("Delete")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (selectedGame == null) {
-            EmptyMessage("Select a game to track rotation, scoring, and fouls.")
-        } else {
-            SectionCard(title = "Game clock & score") {
-                val periodName = if (selectedGame.useQuarters) "Q${selectedGame.currentPeriod}" else "H${selectedGame.currentPeriod}"
-                Text(
-                    text = "Period: $periodName",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                GameClock(
-                    game = selectedGame,
+            if (selectedGame != null) {
+                GameControlPanel(
+                    selectedGame = selectedGame,
                     onToggleTimer = onToggleTimer,
                     onResetTimer = onResetTimer,
-                    onSetGameTime = onSetGameTime
+                    onSetGameTime = onSetGameTime,
+                    onAddScore = onAddScore,
+                    onCourtIds = onCourtIds,
+                    exportGameLauncher = exportGameLauncher,
+                    exportRosterLauncher = exportRosterLauncher,
+                    players = players,
+                    startingLineupSelection = startingLineupSelection,
+                    onSetLineup = onSetLineup,
+                    onCourtStats = onCourtStats,
+                    onAddFoul = onAddFoul,
+                    onAddMvpVote = onAddMvpVote,
+                    onAdvancePeriod = onAdvancePeriod,
+                    onEndGame = onEndGame,
+                    playerOutId = playerOutId,
+                    onPlayerOutClick = { playerOutId = it },
+                    benchStats = benchStats,
+                    playerInId = playerInId,
+                    onPlayerInClick = { playerInId = it },
+                    onSubstitute = {
+                        onSubstitute(playerInId, playerOutId)
+                        playerInId = null
+                        playerOutId = null
+                    }
                 )
 
-                if (!selectedGame.isFinished) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        val maxPeriods = if (selectedGame.useQuarters) 4 else 2
-                        if (selectedGame.currentPeriod < maxPeriods) {
-                            OutlinedButton(onClick = onAdvancePeriod, modifier = Modifier.weight(1f)) {
-                                Text("Next Period")
-                            }
-                        }
-                        Button(
-                            onClick = onEndGame,
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                        ) {
-                            Text("End Game")
-                        }
-                    }
-                } else {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
-                    ) {
-                        Text(
-                            "GAME FINISHED",
-                            modifier = Modifier.padding(8.dp).align(Alignment.CenterHorizontally),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Us", style = MaterialTheme.typography.labelMedium)
-                        Text(
-                            text = selectedGame.teamScore.toString(),
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Row {
-                            IconButton(onClick = { onAddScore(onCourtIds.firstOrNull(), -1) }) {
-                                Text("-1", style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                    }
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = selectedGame.opponent.ifBlank { "Them" },
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                        Text(
-                            text = selectedGame.opponentScore.toString(),
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Row {
-                            IconButton(onClick = { onAddScore(null, -1) }) {
-                                Text("-1", style = MaterialTheme.typography.bodySmall)
-                            }
-                            IconButton(onClick = { onAddScore(null, 1) }) {
-                                Text("+1", style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = { exportGameLauncher.launch("game_${selectedGame.id}.csv") },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Export game CSV")
-                    }
-
-                    OutlinedButton(
-                        onClick = { exportRosterLauncher.launch("players.csv") },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Export roster CSV")
-                    }
-                }
-            }
-
-            if (players.size < 5) {
-                EmptyMessage("You need at least 5 players in the roster before you can set the lineup.")
-            } else {
-                if (onCourtIds.size < 5) {
-                    SectionCard(title = "Set starting lineup") {
-                        Text("Select exactly 5 players.")
-                        Spacer(Modifier.height(8.dp))
-
-                        players.forEach { player ->
-                            val checked = startingLineupSelection.contains(player.id)
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Checkbox(
-                                    checked = checked,
-                                    onCheckedChange = { newValue ->
-                                        if (newValue && !checked && (startingLineupSelection.size < 5)) {
-                                            startingLineupSelection.add(player.id)
-                                        }
-                                        if (!newValue && checked) {
-                                            startingLineupSelection.remove(player.id)
-                                        }
-                                    }
-                                )
-                                Text(player.displayLabel())
-                            }
-                        }
-
-                        Spacer(Modifier.height(8.dp))
-
-                        Button(
-                            onClick = { onSetLineup(startingLineupSelection.toList()) },
-                            enabled = startingLineupSelection.size == 5
-                        ) {
-                            Text("Save starting lineup")
-                        }
-                    }
-                } else {
-                    SectionCard(title = "Players on court") {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            onCourtStats.forEach { stat ->
-                    PlayerActionCard(
-                        stat = stat,
-                        onAddScore = onAddScore,
-                        onAddFoul = onAddFoul,
-                        onAddMvpVote = onAddMvpVote,
-                        gameTimerLastStartedAt = selectedGame.timerLastStartedAt,
-                        enabled = !selectedGame.isFinished
-                    )
-                            }
-                        }
-                    }
-
-                    if (!selectedGame.isFinished) {
-                        SectionCard(title = "Substitution") {
-                            Text("Choose one player to come out and one player to come in.")
-                            Spacer(Modifier.height(8.dp))
-
-                            Text(
-                                text = "Player out",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Spacer(Modifier.height(4.dp))
-
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                onCourtStats.forEach { stat ->
-                                    SelectablePlayerRow(
-                                        text = stat.player.displayLabel(),
-                                        selected = playerOutId == stat.player.id
-                                    ) {
-                                        playerOutId = stat.player.id
-                                    }
-                                }
-                            }
-
-                            Spacer(Modifier.height(12.dp))
-
-                            Text(
-                                text = "Player in",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Spacer(Modifier.height(4.dp))
-
-                            if (benchStats.isEmpty()) {
-                                EmptyMessage("No bench players available.")
-                            } else {
-                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    benchStats.forEach { stat ->
-                                        SelectablePlayerRow(
-                                            text = stat.player.displayLabel(),
-                                            selected = playerInId == stat.player.id
-                                        ) {
-                                            playerInId = stat.player.id
-                                        }
-                                    }
-                                }
-                            }
-
-                            Spacer(Modifier.height(8.dp))
-
-                            Button(
-                                onClick = {
-                                    onSubstitute(playerInId, playerOutId)
-                                    playerInId = null
-                                    playerOutId = null
-                                },
-                                enabled = (playerInId != null) && (playerOutId != null)
-                            ) {
-                                Text("Record substitution")
-                            }
-                        }
-                    }
-                }
-            }
-
-            SectionCard(title = "Game stats") {
-                if (stats.isEmpty()) {
-                    EmptyMessage("No stats yet.")
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        stats.forEach { stat ->
-                            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text(
-                                            text = stat.player.displayLabel(),
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                        Text("Points: ${stat.points}   Fouls: ${stat.fouls}   Votes: ${stat.mvpVotes}")
-                                    }
-
-                                    if (stat.onCourt) {
-                                        Column(horizontalAlignment = Alignment.End) {
-                                            StatusBadge()
-                                            Text(
-                                                text = formatDuration(stat.currentShiftTimeMillis),
-                                                style = MaterialTheme.typography.labelSmall
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            SectionCard(title = "Recent events") {
-                if (events.isEmpty()) {
-                    EmptyMessage("No events yet.")
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        events.forEach { event ->
-                            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(
-                                        modifier = Modifier.weight(1f),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Text(
-                                            text = eventDescription(event, playerById),
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                        Text(
-                                            text = "${formatTime(event.timestamp)} | ${formatDuration(event.gameTimeMillis)}",
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
-                                    
-                                    Row {
-                                        IconButton(onClick = { editingEvent = event }) {
-                                            Text("✏️")
-                                        }
-                                        IconButton(onClick = { onDeleteEvent(event) }) {
-                                            Text("🗑️")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                GameStatsPanel(
+                    stats = stats,
+                    events = events,
+                    playerById = playerById,
+                    onEditEvent = { editingEvent = it },
+                    onDeleteEvent = onDeleteEvent,
+                    onlyStats = true
+                )
             }
         }
     }
 
-    if (editingEvent != null) {
+    editingEvent?.let { event ->
         EventEditDialog(
-            event = editingEvent!!,
+            event = event,
             onDismiss = { editingEvent = null }
         ) { updated ->
             onUpdateEvent(updated)
@@ -975,6 +850,466 @@ private fun EventEditDialog(
             }
         }
     )
+}
+
+@Composable
+private fun GameControlPanel(
+    selectedGame: GameEntity,
+    onToggleTimer: () -> Unit,
+    onResetTimer: () -> Unit,
+    onSetGameTime: (Long) -> Unit,
+    onAddScore: (Long?, Int) -> Unit,
+    onCourtIds: Set<Long>,
+    exportGameLauncher: androidx.activity.result.ActivityResultLauncher<String>,
+    exportRosterLauncher: androidx.activity.result.ActivityResultLauncher<String>,
+    players: List<PlayerEntity>,
+    startingLineupSelection: MutableList<Long>,
+    onSetLineup: (List<Long>) -> Unit,
+    onCourtStats: List<PlayerGameStat>,
+    onAddFoul: (Long, Int) -> Unit,
+    onAddMvpVote: (Long) -> Unit,
+    onAdvancePeriod: () -> Unit,
+    onEndGame: () -> Unit,
+    playerOutId: Long?,
+    onPlayerOutClick: (Long) -> Unit,
+    benchStats: List<PlayerGameStat>,
+    playerInId: Long?,
+    onPlayerInClick: (Long) -> Unit,
+    onSubstitute: () -> Unit
+) {
+    SectionCard(title = "Game clock & score") {
+        val periodName = if (selectedGame.useQuarters) "Q${selectedGame.currentPeriod}" else "H${selectedGame.currentPeriod}"
+        Text(
+            text = "Period: $periodName",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        GameClock(
+            game = selectedGame,
+            onToggleTimer = onToggleTimer,
+            onResetTimer = onResetTimer,
+            onSetGameTime = onSetGameTime
+        )
+
+        if (!selectedGame.isFinished) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val maxPeriods = if (selectedGame.useQuarters) 4 else 2
+                if (selectedGame.currentPeriod < maxPeriods) {
+                    OutlinedButton(onClick = onAdvancePeriod, modifier = Modifier.weight(1f)) {
+                        Text("Next Period")
+                    }
+                }
+                Button(
+                    onClick = onEndGame,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("End Game")
+                }
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            ) {
+                Text(
+                    "GAME FINISHED",
+                    modifier = Modifier.padding(8.dp).align(Alignment.CenterHorizontally),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Us", style = MaterialTheme.typography.labelMedium)
+                Text(
+                    text = selectedGame.teamScore.toString(),
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Row {
+                    IconButton(onClick = { onAddScore(onCourtIds.firstOrNull(), -1) }) {
+                        Text("-1", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = selectedGame.opponent.ifBlank { "Them" },
+                    style = MaterialTheme.typography.labelMedium
+                )
+                Text(
+                    text = selectedGame.opponentScore.toString(),
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Row {
+                    IconButton(onClick = { onAddScore(null, -1) }) {
+                        Text("-1", style = MaterialTheme.typography.bodySmall)
+                    }
+                    IconButton(onClick = { onAddScore(null, 1) }) {
+                        Text("+1", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = { exportGameLauncher.launch("game_${selectedGame.id}.csv") },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Export game CSV")
+            }
+
+            OutlinedButton(
+                onClick = { exportRosterLauncher.launch("players.csv") },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Export roster CSV")
+            }
+        }
+    }
+
+    if (players.size < 5) {
+        EmptyMessage("You need at least 5 players in the roster before you can set the lineup.")
+    } else {
+        if (onCourtIds.size < 5) {
+            SectionCard(title = "Set starting lineup") {
+                Text("Select exactly 5 players.")
+                Spacer(Modifier.height(8.dp))
+
+                players.forEach { player ->
+                    val checked = startingLineupSelection.contains(player.id)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checked,
+                            onCheckedChange = { newValue ->
+                                if (newValue && !checked && (startingLineupSelection.size < 5)) {
+                                    startingLineupSelection.add(player.id)
+                                }
+                                if (!newValue && checked) {
+                                    startingLineupSelection.remove(player.id)
+                                }
+                            }
+                        )
+                        Text(player.displayLabel())
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Button(
+                    onClick = { onSetLineup(startingLineupSelection.toList()) },
+                    enabled = startingLineupSelection.size == 5
+                ) {
+                    Text("Save starting lineup")
+                }
+            }
+        } else {
+            SectionCard(title = "Players on court") {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    onCourtStats.forEach { stat ->
+                        PlayerActionCard(
+                            stat = stat,
+                            onAddScore = onAddScore,
+                            onAddFoul = onAddFoul,
+                            onAddMvpVote = onAddMvpVote,
+                            gameTimerLastStartedAt = selectedGame.timerLastStartedAt,
+                            enabled = !selectedGame.isFinished
+                        )
+                    }
+                }
+            }
+
+            if (!selectedGame.isFinished) {
+                SectionCard(title = "Substitution") {
+                    Text("Choose one player to come out and one player to come in.")
+                    Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        text = "Player out",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(Modifier.height(4.dp))
+
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        onCourtStats.forEach { stat ->
+                            SelectablePlayerRow(
+                                text = stat.player.displayLabel(),
+                                selected = playerOutId == stat.player.id
+                            ) {
+                                onPlayerOutClick(stat.player.id)
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Text(
+                        text = "Player in",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(Modifier.height(4.dp))
+
+                    if (benchStats.isEmpty()) {
+                        EmptyMessage("No bench players available.")
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            benchStats.forEach { stat ->
+                                SelectablePlayerRow(
+                                    text = stat.player.displayLabel(),
+                                    selected = playerInId == stat.player.id
+                                ) {
+                                    onPlayerInClick(stat.player.id)
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Button(
+                        onClick = onSubstitute,
+                        enabled = (playerInId != null) && (playerOutId != null)
+                    ) {
+                        Text("Record substitution")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GameStatsPanel(
+    stats: List<PlayerGameStat> = emptyList(),
+    events: List<GameEventEntity> = emptyList(),
+    playerById: Map<Long, PlayerEntity> = emptyMap(),
+    onEditEvent: (GameEventEntity) -> Unit = {},
+    onDeleteEvent: (GameEventEntity) -> Unit = {},
+    gameTitle: String = "",
+    onGameTitleChange: (String) -> Unit = {},
+    opponent: String = "",
+    onOpponentChange: (String) -> Unit = {},
+    useQuarters: Boolean = false,
+    onUseQuartersChange: (Boolean) -> Unit = {},
+    periodMins: String = "10",
+    onPeriodMinsChange: (String) -> Unit = {},
+    onCreateGame: () -> Unit = {},
+    games: List<GameEntity> = emptyList(),
+    onSelectGame: (Long) -> Unit = {},
+    onDeleteGame: (Long) -> Unit = {},
+    selectedGameId: Long? = null,
+    onlyManagement: Boolean = false,
+    onlyStats: Boolean = false
+) {
+    if (!onlyStats) {
+        SectionCard(title = "Create a game") {
+            OutlinedTextField(
+                value = gameTitle,
+                onValueChange = onGameTitleChange,
+                label = { Text("Game title") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = opponent,
+                onValueChange = onOpponentChange,
+                label = { Text("Opponent") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = useQuarters, onCheckedChange = onUseQuartersChange)
+                Text("Use Quarters (instead of Halves)")
+            }
+
+            OutlinedTextField(
+                value = periodMins,
+                onValueChange = { onPeriodMinsChange(it.filter { c -> c.isDigit() }) },
+                label = { Text("Period duration (minutes)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Button(onClick = onCreateGame) {
+                Text("Create game")
+            }
+        }
+
+        SectionCard(title = "Games") {
+            if (games.isEmpty()) {
+                EmptyMessage("No games yet.")
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    games.forEach { game ->
+                        val selected = selectedGameId == game.id
+
+                        OutlinedCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            border = BorderStroke(
+                                width = if (selected) 2.dp else 1.dp,
+                                color = if (selected) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.outline
+                                }
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(
+                                        text = game.title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    if (game.opponent.isNotBlank()) {
+                                        Text("Opponent: ${game.opponent}")
+                                    }
+                                    Text("Score: ${game.teamScore}")
+                                }
+
+                                Column {
+                                    TextButton(onClick = { onSelectGame(game.id) }) {
+                                        Text(if (selected) "Selected" else "Select")
+                                    }
+                                    TextButton(
+                                        onClick = { onDeleteGame(game.id) },
+                                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                    ) {
+                                        Text("Delete")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (!onlyManagement) {
+        SectionCard(title = "Game stats") {
+            if (stats.isEmpty()) {
+                EmptyMessage("No stats yet.")
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    stats.forEach { stat ->
+                        OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(
+                                        text = stat.player.displayLabel(),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text("Points: ${stat.points}   Fouls: ${stat.fouls}   Votes: ${stat.mvpVotes}")
+                                }
+
+                                if (stat.onCourt) {
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        StatusBadge()
+                                        Text(
+                                            text = formatDuration(stat.currentShiftTimeMillis),
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        SectionCard(title = "Recent events") {
+            if (events.isEmpty()) {
+                EmptyMessage("No events yet.")
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    events.forEach { event ->
+                        OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = eventDescription(event, playerById),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Text(
+                                        text = "${formatTime(event.timestamp)} | ${formatDuration(event.gameTimeMillis)}",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+
+                                Row {
+                                    IconButton(onClick = { onEditEvent(event) }) {
+                                        Text("✏️")
+                                    }
+                                    IconButton(onClick = { onDeleteEvent(event) }) {
+                                        Text("🗑️")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable

@@ -57,3 +57,10 @@
 - **Downgrade Safety:** Restricted destructive migration to downgrades only, protecting production data during standard upgrades.
 - **Refactoring:** Completed a full project review to fix minor warnings, exhaustive when-branches, and trailing comma consistency.
 - **UI Synchronization:** Fixed a bug where editing a player would occasionally show stale data in the edit form.
+
+## Version 1.6 (Adaptive Tablet Layout)
+- **Window Size Classes:** Integrated Material 3 Window Size Classes to detect device form factors.
+- **NavigationRail:** Added a side navigation rail for expanded screens (tablets/foldables/landscape).
+- **Multi-column Roster:** Updated the Roster screen to show the input form and list side-by-side on larger screens.
+- **Split-screen Game Tracker:** Redesigned the Game screen to display game controls and stats simultaneously in two columns when expanded.
+- **Component Refactoring:** Extracted several UI components (RosterForm, RosterList, GameControlPanel, GameStatsPanel) to improve maintainability and enable reuse across adaptive layouts.
