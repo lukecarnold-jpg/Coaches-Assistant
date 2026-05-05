@@ -31,9 +31,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
@@ -83,14 +81,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val windowSizeClass = calculateWindowSizeClass(this)
             MaterialTheme {
-                BasketballApp(windowSizeClass.widthSizeClass)
+                BasketballApp()
             }
         }
     }
@@ -104,7 +100,6 @@ enum class AppTab {
 
 @Composable
 private fun BasketballApp(
-    widthSizeClass: WindowWidthSizeClass,
     appViewModel: AppViewModel = viewModel(),
 ) {
     val players by appViewModel.players.collectAsState()
@@ -116,7 +111,8 @@ private fun BasketballApp(
     var currentTab by rememberSaveable { mutableStateOf(AppTab.ROSTER.name) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val isExpanded = widthSizeClass != WindowWidthSizeClass.Compact
+    val configuration = LocalConfiguration.current
+    val isExpanded = (configuration.screenWidthDp >= 600)
 
     LaunchedEffect(Unit) {
         appViewModel.messages.collectLatest { message ->
@@ -149,33 +145,38 @@ private fun BasketballApp(
         }
 
         Scaffold(
+            modifier = Modifier.weight(1f),
             snackbarHost = { SnackbarHost(snackbarHostState) },
             bottomBar = {
                 if (!isExpanded) {
                     NavigationBar {
                         NavigationBarItem(
-                            selected = currentTab == AppTab.ROSTER.name,
+                            selected = (currentTab == AppTab.ROSTER.name),
                             onClick = { currentTab = AppTab.ROSTER.name },
                             icon = { Text("👥") },
                             label = { Text("Roster") },
                         )
                         NavigationBarItem(
-                            selected = currentTab == AppTab.GAME.name,
+                            selected = (currentTab == AppTab.GAME.name),
                             onClick = { currentTab = AppTab.GAME.name },
                             icon = { Text("🏀") },
                             label = { Text("Game") },
                         )
                         NavigationBarItem(
-                            selected = currentTab == AppTab.SETTINGS.name,
+                            selected = (currentTab == AppTab.SETTINGS.name),
                             onClick = { currentTab = AppTab.SETTINGS.name },
                             icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                             label = { Text("Settings") },
                         )
                     }
                 }
-            }
+            },
         ) { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+            ) {
                 when (AppTab.valueOf(currentTab)) {
                     AppTab.ROSTER -> RosterScreen(
                         modifier = Modifier.fillMaxSize(),

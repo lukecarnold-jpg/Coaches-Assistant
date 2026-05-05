@@ -64,3 +64,9 @@
 - **Multi-column Roster:** Updated the Roster screen to show the input form and list side-by-side on larger screens.
 - **Split-screen Game Tracker:** Redesigned the Game screen to display game controls and stats simultaneously in two columns when expanded.
 - **Component Refactoring:** Extracted several UI components (RosterForm, RosterList, GameControlPanel, GameStatsPanel) to improve maintainability and enable reuse across adaptive layouts.
+
+## Version 1.7 (Stability & Tablet Fix)
+- **Theme Migration:** Migrated the app theme from `MaterialComponents` to `Material3` to resolve a crash on launch occurring on some tablet devices when using `ComponentActivity`.
+- **Layout Stability:** Added `Modifier.weight(1f)` to the main `Scaffold` within the tablet `Row` to ensure correct measurement and prevent potential measurement-related crashes.
+- **Window Size Detection:** Replaced the experimental `WindowSizeClass` API with `LocalConfiguration.current.screenWidthDp` for determining adaptive layouts, improving compatibility and initialization speed.
+- **UI Consistency:** Standardized the initialization of edit forms and ensured exhaustive event handling across all device form factors.
