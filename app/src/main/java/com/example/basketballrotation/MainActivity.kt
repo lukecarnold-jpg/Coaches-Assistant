@@ -290,7 +290,7 @@ private fun RosterScreen(
     onAddPlayer: (String, String) -> Unit,
     onUpdatePlayer: (PlayerEntity, String, String) -> Unit,
     onDeletePlayer: (Long) -> Unit,
-    onExportPlayers: (Uri) -> Unit
+    onExportPlayers: (Uri) -> Unit,
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var jerseyNumber by rememberSaveable { mutableStateOf("") }
@@ -435,7 +435,7 @@ private fun RosterForm(
     onJerseyNumberChange: (String) -> Unit,
     showError: Boolean,
     onAddPlayer: () -> Unit,
-    onExportPlayers: () -> Unit
+    onExportPlayers: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         OutlinedTextField(
@@ -502,7 +502,7 @@ private fun RosterList(
     onSaveUpdate: (PlayerEntity) -> Unit,
     onCancelEdit: () -> Unit,
     onStartEdit: (PlayerEntity) -> Unit,
-    onDeletePlayer: (Long) -> Unit
+    onDeletePlayer: (Long) -> Unit,
 ) {
     if (players.isEmpty()) {
         EmptyMessage("No players yet. Add your roster first.")
@@ -608,7 +608,7 @@ private fun GameScreen(
     onAdvancePeriod: () -> Unit,
     onEndGame: () -> Unit,
     onUpdateEvent: (GameEventEntity) -> Unit,
-    onDeleteEvent: (GameEventEntity) -> Unit
+    onDeleteEvent: (GameEventEntity) -> Unit,
 ) {
     var gameTitle by rememberSaveable { mutableStateOf("") }
     var opponent by rememberSaveable { mutableStateOf("") }
@@ -811,7 +811,7 @@ private fun GameScreen(
 private fun EventEditDialog(
     event: GameEventEntity,
     onDismiss: () -> Unit,
-    onConfirm: (GameEventEntity) -> Unit
+    onConfirm: (GameEventEntity) -> Unit,
 ) {
     var points by remember { mutableStateOf(event.points.toString()) }
     var note by remember { mutableStateOf(event.note) }
@@ -876,7 +876,7 @@ private fun GameControlPanel(
     benchStats: List<PlayerGameStat>,
     playerInId: Long?,
     onPlayerInClick: (Long) -> Unit,
-    onSubstitute: () -> Unit
+    onSubstitute: () -> Unit,
 ) {
     SectionCard(title = "Game clock & score") {
         val periodName = if (selectedGame.useQuarters) "Q${selectedGame.currentPeriod}" else "H${selectedGame.currentPeriod}"
@@ -1129,7 +1129,7 @@ private fun GameStatsPanel(
     onDeleteGame: (Long) -> Unit = {},
     selectedGameId: Long? = null,
     onlyManagement: Boolean = false,
-    onlyStats: Boolean = false
+    onlyStats: Boolean = false,
 ) {
     if (!onlyStats) {
         SectionCard(title = "Create a game") {
@@ -1316,7 +1316,7 @@ private fun GameStatsPanel(
 @Composable
 private fun SectionCard(
     title: String,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1341,7 +1341,7 @@ private fun GameClock(
     game: GameEntity,
     onToggleTimer: () -> Unit,
     onResetTimer: () -> Unit,
-    onSetGameTime: (Long) -> Unit
+    onSetGameTime: (Long) -> Unit,
 ) {
     val runningTimeMillis = game.runningTimeMillis
     val timerLastStartedAt = game.timerLastStartedAt
@@ -1454,7 +1454,7 @@ private fun PlayerActionCard(
     onAddFoul: (Long, Int) -> Unit,
     onAddMvpVote: (Long) -> Unit,
     gameTimerLastStartedAt: Long?,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     var shiftDisplayTime by remember(stat.currentShiftTimeMillis, gameTimerLastStartedAt) {
         mutableLongStateOf(stat.currentShiftTimeMillis)

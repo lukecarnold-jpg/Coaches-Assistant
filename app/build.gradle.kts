@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.example.basketballrotation"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.basketballrotation"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
     }
@@ -55,7 +55,7 @@ ksp {
 
 dependencies {
     implementation(libs.material)
-    val composeBom = platform("androidx.compose:compose-bom:2026.03.01")
+    val composeBom = platform("androidx.compose:compose-bom:2026.04.01")
     implementation(composeBom)
 
     implementation(libs.androidx.core.ktx)

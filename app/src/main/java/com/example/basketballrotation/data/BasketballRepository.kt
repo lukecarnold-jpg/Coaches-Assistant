@@ -69,7 +69,7 @@ class BasketballRepository(
                         runningTimeMillis = 0L,
                         timerLastStartedAt = null,
                         onCourtCsv = "", // Reset court to force new lineup
-                    )
+                    ),
                 )
                 gameEventDao.insert(
                     GameEventEntity(
