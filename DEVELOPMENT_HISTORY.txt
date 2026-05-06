@@ -70,3 +70,9 @@
 - **Layout Stability:** Added `Modifier.weight(1f)` to the main `Scaffold` within the tablet `Row` to ensure correct measurement and prevent potential measurement-related crashes.
 - **Window Size Detection:** Replaced the experimental `WindowSizeClass` API with `LocalConfiguration.current.screenWidthDp` for determining adaptive layouts, improving compatibility and initialization speed.
 - **UI Consistency:** Standardized the initialization of edit forms and ensured exhaustive event handling across all device form factors.
+
+## Version 1.8 (AI Training Assistant)
+- **Training Section:** Added a new top-level section for coach training and player development.
+- **AI Drill Generation:** Integrated Google Gemini AI to generate age-appropriate basketball drills.
+- **Dynamic Age Selection:** Implemented a dropdown menu with support for Mini Ball (5-6) through Under 18 age groups.
+- **Networking:** Added necessary internet permissions and Generative AI dependencies to support real-time drill generation.

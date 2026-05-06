@@ -26,6 +26,11 @@ A comprehensive Android application designed for team managers and coaches to st
 - **Live Voting:** Cast MVP votes for players during the game directly from their action cards.
 - **Tallying:** View the total vote count for each player in the game stats section.
 
+### 🏋️ Training Section (AI-Powered)
+- **Age-Appropriate Drills:** Access drills tailored for specific age groups, from Mini Ball (Ages 5-6) to Under 18's.
+- **AI Integration:** Uses Google Gemini AI to generate customized basketball drills on-demand.
+- **Teaching Points:** Each drill includes a clear description and key teaching points for coaches.
+
 ### 📊 Data & Exports
 - **Persistence:** All data is saved locally using Room Database. The project is configured with schema tracking and Android Auto Backup to ensure your team roster and game history are preserved across app updates and device transfers.
 - **CSV Export:** 

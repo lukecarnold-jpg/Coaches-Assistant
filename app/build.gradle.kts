@@ -69,6 +69,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material3:material3-window-size-class")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     val roomVersion = "2.8.4"
