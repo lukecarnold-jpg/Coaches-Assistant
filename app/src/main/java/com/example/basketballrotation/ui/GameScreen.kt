@@ -241,11 +241,12 @@ fun GameScreen(
     editingEvent?.let { event ->
         EventEditDialog(
             event = event,
-            onDismiss = { editingEvent = null }
-        ) { updated ->
-            onUpdateEvent(updated)
-            editingEvent = null
-        }
+            onDismiss = { editingEvent = null },
+            onConfirm = { updated ->
+                onUpdateEvent(updated)
+                editingEvent = null
+            }
+        )
     }
 }
 
@@ -258,7 +259,7 @@ fun EventEditDialog(
     var points by remember { mutableStateOf(event.points.toString()) }
     var note by remember { mutableStateOf(event.note) }
     
-    androidx.compose.material3.AlertDialog(
+    AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Edit Event") },
         text = {
