@@ -2,6 +2,7 @@ package com.example.basketballrotation.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,41 +31,74 @@ fun TrainingScreen(
         "Under 18's",
     )
     
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(value = false) }
     var selectedAgeGroup by rememberSaveable { mutableStateOf(ageGroups.first()) }
 
     if (isExpanded) {
-        Row(
-            modifier = modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+        Column(modifier = modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                TrainingSelectionPanel(
-                    selectedAgeGroup = selectedAgeGroup,
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it },
-                    ageGroups = ageGroups,
-                    onAgeGroupSelect = {
-                        selectedAgeGroup = it
-                        expanded = false
-                    },
-                    onGenerateClick = { trainingViewModel.generateDrills(selectedAgeGroup) },
-                    isLoading = uiState is TrainingUiState.Loading,
+                Text(
+                    text = "Training drills",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
                 )
+
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        "COMING SOON",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
             }
 
-            Column(
-                modifier = Modifier
-                    .weight(1.5f)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                TrainingResultsPanel(uiState = uiState)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    SectionCard(title = "Coming Soon") {
+                        Text(
+                            "We are currently developing interactive training modules, video demonstrations, and progress tracking for all age groups. Stay tuned!",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                    TrainingSelectionPanel(
+                        selectedAgeGroup = selectedAgeGroup,
+                        expanded = expanded,
+                        onExpandedChange = { expanded = it },
+                        ageGroups = ageGroups,
+                        onAgeGroupSelect = {
+                            selectedAgeGroup = it
+                            expanded = false
+                        },
+                        onGenerateClick = { trainingViewModel.generateDrills(selectedAgeGroup) },
+                        isLoading = uiState is TrainingUiState.Loading,
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .weight(1.5f)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    TrainingResultsPanel(uiState = uiState)
+                }
             }
         }
     } else {
@@ -74,11 +108,30 @@ fun TrainingScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(
-                text = "Training drills",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Training drills",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                )
+                
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        "COMING SOON",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
 
             TrainingSelectionPanel(
                 selectedAgeGroup = selectedAgeGroup,
@@ -92,6 +145,13 @@ fun TrainingScreen(
                 onGenerateClick = { trainingViewModel.generateDrills(selectedAgeGroup) },
                 isLoading = uiState is TrainingUiState.Loading,
             )
+
+            SectionCard(title = "Coming Soon") {
+                Text(
+                    "We are currently developing interactive training modules, video demonstrations, and progress tracking for all age groups. Stay tuned!",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
 
             TrainingResultsPanel(uiState = uiState)
         }
