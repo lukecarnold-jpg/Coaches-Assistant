@@ -82,3 +82,9 @@
     - Switched hardcoded dependencies to Version Catalog (`libs.versions.toml`).
     - Updated AI and Compose libraries to latest stable versions.
     - Performed comprehensive code review and refactoring for better performance and maintenance.
+
+## Version 1.9 (Attendance & Game Logic)
+- **End Game Enhancements:** Updated the "End Game" button to automatically clear the "On Court" status of all players, ensuring post-game stats are cleanly separated from active rotation tracking.
+- **Absent Player Tracking:** Added a new "Manage Attendance" feature for each game. Coaches can now flag players as "Absent" for specific games.
+- **Attendance Filtering:** Absent players are automatically excluded from the court/bench lists and stats views for that specific game, keeping the interface focused on available players.
+- **Database Schema Update:** Incremented schema to Version 6 to support per-game attendance records.

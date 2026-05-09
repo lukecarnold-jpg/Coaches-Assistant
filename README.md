@@ -20,7 +20,8 @@ A comprehensive Android application designed for team managers and coaches to st
 - **Game Clock:** Interactive **Countdown** timer with start, stop, and **Reset** (🔄) functionality. Supports manual time entry for precise synchronization.
 - **Period Management:** Change the starting lineup at the beginning of each period (Half or Quarter).
 - **Post-Game Editing:** Correct mistakes after the buzzer by editing or deleting events (scores, fouls, etc.) directly from the event log.
-- **End Game:** Formally conclude games to finalize stats and prevent accidental further edits.
+- **Attendance Tracking:** Flag players as "Absent" for specific games to keep the court and bench views focused only on available players.
+- **End Game:** Formally conclude games to finalize stats, reset the court status, and prevent accidental further edits.
 
 ### 🏆 MVP Voting
 - **Live Voting:** Cast MVP votes for players during the game directly from their action cards.

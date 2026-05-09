@@ -41,6 +41,7 @@ data class GameEntity(
     val useQuarters: Boolean = false,
     val currentPeriod: Int = 1,
     val periodDurationMillis: Long = 10 * 60 * 1000L, // Default 10 mins
+    val absentPlayerIdsCsv: String = "",
 )
 
 @Entity(
@@ -61,6 +62,10 @@ data class GameEventEntity(
 
 fun GameEntity.onCourtIds(): List<Long> =
     onCourtCsv.split(',')
+        .mapNotNull { value -> value.trim().takeIf { it.isNotEmpty() }?.toLongOrNull() }
+
+fun GameEntity.absentPlayerIds(): List<Long> =
+    absentPlayerIdsCsv.split(',')
         .mapNotNull { value -> value.trim().takeIf { it.isNotEmpty() }?.toLongOrNull() }
 
 fun idsToCsv(ids: Collection<Long>): String = ids.joinToString(",")

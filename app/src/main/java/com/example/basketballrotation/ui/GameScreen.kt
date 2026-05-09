@@ -49,6 +49,7 @@ fun GameScreen(
     onExportPlayers: (Uri) -> Unit,
     onAdvancePeriod: () -> Unit,
     onEndGame: () -> Unit,
+    onUpdateAbsentPlayers: (List<Long>) -> Unit,
     onUpdateEvent: (GameEventEntity) -> Unit,
     onDeleteEvent: (GameEventEntity) -> Unit,
 ) {
@@ -56,6 +57,7 @@ fun GameScreen(
     var opponent by rememberSaveable { mutableStateOf("") }
     var useQuarters by rememberSaveable { mutableStateOf(value = false) }
     var periodMins by rememberSaveable { mutableStateOf("10") }
+    var showAttendanceDialog by remember { mutableStateOf(false) }
 
     val exportGameLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv"),
@@ -109,6 +111,7 @@ fun GameScreen(
                         onAddMvpVote = onAddMvpVote,
                         onAdvancePeriod = onAdvancePeriod,
                         onEndGame = onEndGame,
+                        onManageAttendance = { showAttendanceDialog = true },
                         playerOutId = playerOutId,
                         onPlayerOutClick = { playerOutId = it },
                         benchStats = benchStats,
@@ -214,6 +217,7 @@ fun GameScreen(
                     onAddMvpVote = onAddMvpVote,
                     onAdvancePeriod = onAdvancePeriod,
                     onEndGame = onEndGame,
+                    onManageAttendance = { showAttendanceDialog = true },
                     playerOutId = playerOutId,
                     onPlayerOutClick = { playerOutId = it },
                     benchStats = benchStats,
@@ -246,6 +250,76 @@ fun GameScreen(
             editingEvent = null
         }
     }
+
+    if (showAttendanceDialog && selectedGame != null) {
+        AttendanceDialog(
+            players = players,
+            absentPlayerIds = selectedGame.absentPlayerIds(),
+            onDismiss = { showAttendanceDialog = false },
+            onConfirm = { ids ->
+                onUpdateAbsentPlayers(ids)
+                showAttendanceDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun AttendanceDialog(
+    players: List<PlayerEntity>,
+    absentPlayerIds: List<Long>,
+    onDismiss: () -> Unit,
+    onConfirm: (List<Long>) -> Unit
+) {
+    val currentAbsent = remember { mutableStateListOf<Long>().apply { addAll(absentPlayerIds) } }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Manage Attendance") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("Select players who are ABSENT for this game.")
+                players.forEach { player ->
+                    val isAbsent = currentAbsent.contains(player.id)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (isAbsent) currentAbsent.remove(player.id)
+                                else currentAbsent.add(player.id)
+                            }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = isAbsent,
+                            onCheckedChange = {
+                                if (it) currentAbsent.add(player.id)
+                                else currentAbsent.remove(player.id)
+                            }
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(player.displayLabel())
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(currentAbsent.toList()) }) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
@@ -314,6 +388,7 @@ fun GameControlPanel(
     onAddMvpVote: (Long) -> Unit,
     onAdvancePeriod: () -> Unit,
     onEndGame: () -> Unit,
+    onManageAttendance: () -> Unit,
     playerOutId: Long?,
     onPlayerOutClick: (Long) -> Unit,
     benchStats: List<PlayerGameStat>,
@@ -354,6 +429,13 @@ fun GameControlPanel(
                 ) {
                     Text("End Game")
                 }
+            }
+
+            OutlinedButton(
+                onClick = onManageAttendance,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Manage Attendance (Flag Absent)")
             }
         } else {
             Card(

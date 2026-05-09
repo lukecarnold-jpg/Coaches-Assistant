@@ -180,6 +180,7 @@ private fun BasketballApp(
                         onExportPlayers = appViewModel::exportPlayersCsv,
                         onAdvancePeriod = appViewModel::advancePeriod,
                         onEndGame = appViewModel::endGame,
+                        onUpdateAbsentPlayers = appViewModel::updateAbsentPlayers,
                         onUpdateEvent = appViewModel::updateEvent,
                         onDeleteEvent = appViewModel::deleteEvent,
                     )

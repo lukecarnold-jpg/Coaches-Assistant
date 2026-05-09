@@ -29,7 +29,7 @@ class TrainingViewModel : ViewModel() {
     val uiState = _uiState.asStateFlow()
 
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-pro",
+        modelName = "gemini-1.5-flash",
         apiKey = apiKey,
     )
 
@@ -56,7 +56,12 @@ class TrainingViewModel : ViewModel() {
                     _uiState.value = TrainingUiState.Success(drills)
                 }
             } catch (e: Exception) {
-                _uiState.value = TrainingUiState.Error(e.localizedMessage ?: "Unknown error occurred")
+                val errorMessage = if (e.message?.contains("NOT_FOUND") == true) {
+                    "The selected AI model was not found. Please ensure you are using a supported Gemini model name."
+                } else {
+                    e.localizedMessage ?: "Unknown error occurred"
+                }
+                _uiState.value = TrainingUiState.Error(errorMessage)
             }
         }
     }

@@ -87,7 +87,13 @@ class BasketballRepository(
     suspend fun endGame(gameId: Long) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
-            gameDao.update(game.copy(isFinished = true, timerLastStartedAt = null))
+            gameDao.update(
+                game.copy(
+                    isFinished = true,
+                    timerLastStartedAt = null,
+                    onCourtCsv = "", // Reset player on court status
+                ),
+            )
             gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
@@ -95,8 +101,15 @@ class BasketballRepository(
                     type = EventType.GAME_END.name,
                     note = "Game Ended",
                     gameTimeMillis = calculateCurrentGameTime(game),
-                )
+                ),
             )
+        }
+    }
+
+    suspend fun updateAbsentPlayers(gameId: Long, playerIds: List<Long>) {
+        database.withTransaction {
+            val game = gameDao.getById(gameId) ?: return@withTransaction
+            gameDao.update(game.copy(absentPlayerIdsCsv = idsToCsv(playerIds)))
         }
     }
 

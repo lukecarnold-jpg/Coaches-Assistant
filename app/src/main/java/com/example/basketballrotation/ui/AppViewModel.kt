@@ -10,6 +10,7 @@ import com.example.basketballrotation.data.EventType
 import com.example.basketballrotation.data.GameEntity
 import com.example.basketballrotation.data.GameEventEntity
 import com.example.basketballrotation.data.PlayerEntity
+import com.example.basketballrotation.data.absentPlayerIds
 import com.example.basketballrotation.data.onCourtIds
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -76,6 +77,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val selectedGameStats =
         combine(players, selectedGame, selectedGameEvents) { playerList, game, events ->
             val onCourt = game?.onCourtIds()?.toSet().orEmpty()
+            val absent = game?.absentPlayerIds()?.toSet().orEmpty()
             val pointsByPlayer = mutableMapOf<Long, Int>()
             val foulsByPlayer = mutableMapOf<Long, Int>()
             val lastEnteredAt = mutableMapOf<Long, Long>()
@@ -138,28 +140,32 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
-            playerList.map { player ->
-                val isOnCourt = onCourt.contains(player.id)
-                val enteredAt = lastEnteredAt[player.id] ?: 0L
-                
-                // We'll use game.runningTimeMillis as a baseline if timer is stopped, 
-                // but the UI will need the "live" game time for the active ticker.
-                // For now, let's store the raw 'enteredAt' or calculate duration based on recorded game time.
-                val shiftTime = if (isOnCourt) {
-                    (game?.runningTimeMillis ?: 0L) - enteredAt
-                } else {
-                    0L
-                }
+            playerList
+                .asSequence()
+                .filter { !absent.contains(it.id) }
+                .map { player ->
+                    val isOnCourt = onCourt.contains(player.id)
+                    val enteredAt = lastEnteredAt[player.id] ?: 0L
+                    
+                    // We'll use game.runningTimeMillis as a baseline if timer is stopped, 
+                    // but the UI will need the "live" game time for the active ticker.
+                    // For now, let's store the raw 'enteredAt' or calculate duration based on recorded game time.
+                    val shiftTime = if (isOnCourt) {
+                        (game?.runningTimeMillis ?: 0L) - enteredAt
+                    } else {
+                        0L
+                    }
 
-                PlayerGameStat(
-                    player = player,
-                    points = pointsByPlayer[player.id] ?: 0,
-                    fouls = foulsByPlayer[player.id] ?: 0,
-                    mvpVotes = mvpVotesMap[player.id] ?: 0,
-                    onCourt = isOnCourt,
-                    currentShiftTimeMillis = maxOf(0L, shiftTime),
-                )
-            }
+                    PlayerGameStat(
+                        player = player,
+                        points = pointsByPlayer[player.id] ?: 0,
+                        fouls = foulsByPlayer[player.id] ?: 0,
+                        mvpVotes = mvpVotesMap[player.id] ?: 0,
+                        onCourt = isOnCourt,
+                        currentShiftTimeMillis = maxOf(0L, shiftTime),
+                    )
+                }
+                .toList()
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
@@ -262,7 +268,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val gameId = selectedGame.value?.id ?: return
         viewModelScope.launch {
             repository.endGame(gameId)
-            _messages.emit("Game finalized.")
+            _messages.emit("Game finalized and court reset.")
+        }
+    }
+
+    fun updateAbsentPlayers(playerIds: List<Long>) {
+        val gameId = selectedGame.value?.id ?: return
+        viewModelScope.launch {
+            repository.updateAbsentPlayers(gameId, playerIds)
+            _messages.emit("Attendance updated.")
         }
     }
 
