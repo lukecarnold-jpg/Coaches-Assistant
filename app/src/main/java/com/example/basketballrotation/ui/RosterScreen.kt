@@ -61,7 +61,7 @@ fun RosterScreen(
         modifier = modifier
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
             text = "Team roster",
@@ -100,7 +100,9 @@ fun RosterScreen(
                                 showError = false
                             }
                         },
-                        onExportPlayers = { exportRosterLauncher.launch("players.csv") }
+                        onExportPlayers = {
+                            exportRosterLauncher.launch("players.csv")
+                        }
                     )
                 }
 
@@ -152,7 +154,9 @@ fun RosterScreen(
                         showError = false
                     }
                 },
-                onExportPlayers = { exportRosterLauncher.launch("players.csv") }
+                onExportPlayers = {
+                exportRosterLauncher.launch("players.csv")
+            }
             )
 
             RosterList(

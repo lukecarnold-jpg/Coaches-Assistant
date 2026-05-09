@@ -2,6 +2,7 @@ package com.example.basketballrotation.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.basketballrotation.BuildConfig
 import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,9 +22,8 @@ sealed class TrainingUiState {
 }
 
 class TrainingViewModel : ViewModel() {
-    // Note: In a real production app, this key should be stored securely (e.g., BuildConfig or secrets.xml)
-    // and definitely not hardcoded in plain text.
-    private val apiKey = "YOUR_GEMINI_API_KEY_HERE"
+    // Securely loaded from local.properties via build.gradle.kts
+    private val apiKey = BuildConfig.GEMINI_API_KEY
     
     private val _uiState = MutableStateFlow<TrainingUiState>(TrainingUiState.Idle)
     val uiState = _uiState.asStateFlow()
@@ -34,8 +34,8 @@ class TrainingViewModel : ViewModel() {
     )
 
     fun generateDrills(ageGroup: String) {
-        if (apiKey == "YOUR_GEMINI_API_KEY_HERE") {
-            _uiState.value = TrainingUiState.Error("Please set your Gemini API key in TrainingViewModel.kt")
+        if (apiKey.isBlank()) {
+            _uiState.value = TrainingUiState.Error("Please add your GEMINI_API_KEY to local.properties and rebuild.")
             return
         }
 

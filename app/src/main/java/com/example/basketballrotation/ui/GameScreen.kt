@@ -54,11 +54,11 @@ fun GameScreen(
 ) {
     var gameTitle by rememberSaveable { mutableStateOf("") }
     var opponent by rememberSaveable { mutableStateOf("") }
-    var useQuarters by rememberSaveable { mutableStateOf(false) }
+    var useQuarters by rememberSaveable { mutableStateOf(value = false) }
     var periodMins by rememberSaveable { mutableStateOf("10") }
 
     val exportGameLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("text/csv")
+        contract = ActivityResultContracts.CreateDocument("text/csv"),
     ) { uri ->
         uri?.let(onExportGame)
     }
@@ -265,7 +265,7 @@ fun EventEditDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Type: ${event.type}")
-                if (event.type == EventType.SCORE.name || event.type == EventType.FOUL.name) {
+                if ((event.type == EventType.SCORE.name) || (event.type == EventType.FOUL.name)) {
                     OutlinedTextField(
                         value = points,
                         onValueChange = { points = it },
@@ -282,9 +282,11 @@ fun EventEditDialog(
             }
         },
         confirmButton = {
-            Button(onClick = {
-                onConfirm(event.copy(points = points.toIntOrNull() ?: event.points, note = note))
-            }) {
+            Button(
+                onClick = {
+                    onConfirm(event.copy(points = points.toIntOrNull() ?: event.points, note = note))
+                }
+            ) {
                 Text("Save")
             }
         },

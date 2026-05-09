@@ -49,7 +49,7 @@ fun TrainingScreen(
 
                 Surface(
                     color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
                 ) {
                     Text(
                         "COMING SOON",
@@ -121,7 +121,7 @@ fun TrainingScreen(
                 
                 Surface(
                     color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
                 ) {
                     Text(
                         "COMING SOON",
@@ -183,7 +183,7 @@ fun TrainingSelectionPanel(
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                 modifier = Modifier
-                    .menuAnchor()
+                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
                     .fillMaxWidth(),
             )
 
@@ -215,7 +215,7 @@ fun TrainingSelectionPanel(
 
 @Composable
 fun TrainingResultsPanel(uiState: TrainingUiState) {
-    when (val state = uiState) {
+    when (uiState) {
         is TrainingUiState.Idle -> {
             EmptyMessage("Select an age group and click generate to see basketball drills tailored by AI.")
         }
@@ -227,7 +227,7 @@ fun TrainingResultsPanel(uiState: TrainingUiState) {
         }
 
         is TrainingUiState.Success -> {
-            state.drills.forEach { drill ->
+            uiState.drills.forEach { drill ->
                 DrillCard(drill)
             }
         }
@@ -241,7 +241,7 @@ fun TrainingResultsPanel(uiState: TrainingUiState) {
                 ),
             ) {
                 Text(
-                    text = state.message,
+                    text = uiState.message,
                     modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.bodyMedium,
                 )

@@ -1,8 +1,17 @@
+import java.util.Properties // ADDED: Needed to read local.properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
+}
+
+// ADDED: Load the API key from local.properties securely
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -15,6 +24,10 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+
+        // ADDED: Expose the API key to the app via BuildConfig
+        val apiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+        buildConfigField("String", "GEMINI_API_KEY", "\"$apiKey\"")
     }
 
     buildTypes {
@@ -34,6 +47,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true // ADDED: Enables generation of the BuildConfig class
     }
 
     packaging {
@@ -49,13 +63,12 @@ android {
     }
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
-
 dependencies {
+    // ADDED: Google AI SDK for the Training drills feature
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+
     implementation(libs.material)
-    val composeBom = platform("androidx.compose:compose-bom:2026.04.01")
+    val composeBom = platform("androidx.compose:compose-bom:2026.05.00")
     implementation(composeBom)
 
     implementation(libs.androidx.core.ktx)
@@ -67,9 +80,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material3:material3-window-size-class")
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     val roomVersion = "2.8.4"
@@ -80,7 +91,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform("androidx.compose:compose-bom:2026.03.01"))
+
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.05.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
