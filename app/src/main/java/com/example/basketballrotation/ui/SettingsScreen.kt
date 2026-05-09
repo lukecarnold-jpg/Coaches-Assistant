@@ -34,7 +34,7 @@ fun SettingsScreen(
         Text(
             text = "Settings",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
 
         SectionCard(title = "Data management") {

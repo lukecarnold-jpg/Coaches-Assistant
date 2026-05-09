@@ -72,11 +72,11 @@ fun RosterScreen(
         if (isExpanded) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     RosterForm(
                         name = name,
@@ -102,7 +102,7 @@ fun RosterScreen(
                         },
                         onExportPlayers = {
                             exportRosterLauncher.launch("players.csv")
-                        }
+                        },
                     )
                 }
 
@@ -156,7 +156,7 @@ fun RosterScreen(
                 },
                 onExportPlayers = {
                 exportRosterLauncher.launch("players.csv")
-            }
+            },
             )
 
             RosterList(

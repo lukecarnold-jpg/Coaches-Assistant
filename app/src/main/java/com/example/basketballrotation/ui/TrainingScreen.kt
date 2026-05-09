@@ -56,7 +56,7 @@ fun TrainingScreen(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                 }
             }
@@ -73,7 +73,7 @@ fun TrainingScreen(
                     SectionCard(title = "Coming Soon") {
                         Text(
                             "We are currently developing interactive training modules, video demonstrations, and progress tracking for all age groups. Stay tuned!",
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
                         )
                     }
 
@@ -128,7 +128,7 @@ fun TrainingScreen(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                 }
             }

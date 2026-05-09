@@ -78,7 +78,7 @@ class BasketballRepository(
                         type = EventType.PERIOD_CHANGE.name,
                         note = "Started Period ${game.currentPeriod + 1}",
                         gameTimeMillis = 0L,
-                    )
+                    ),
                 )
             }
         }

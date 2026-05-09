@@ -28,12 +28,12 @@ fun SectionCard(
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp)
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp),
         ) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             content()
         }
