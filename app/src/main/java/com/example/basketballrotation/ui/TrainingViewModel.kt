@@ -30,7 +30,7 @@ class TrainingViewModel : ViewModel() {
 
     private val generativeModel = GenerativeModel(
         modelName = "gemini-pro",
-        apiKey = apiKey
+        apiKey = apiKey,
     )
 
     fun generateDrills(ageGroup: String) {

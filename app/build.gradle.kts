@@ -65,7 +65,7 @@ android {
 
 dependencies {
     // ADDED: Google AI SDK for the Training drills feature
-    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+    implementation(libs.generativeai)
 
     implementation(libs.material)
     val composeBom = platform("androidx.compose:compose-bom:2026.05.00")

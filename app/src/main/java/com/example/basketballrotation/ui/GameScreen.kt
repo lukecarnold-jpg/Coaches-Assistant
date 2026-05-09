@@ -64,7 +64,7 @@ fun GameScreen(
     }
 
     val exportRosterLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("text/csv")
+        contract = ActivityResultContracts.CreateDocument("text/csv"),
     ) { uri ->
         uri?.let(onExportPlayers)
     }
@@ -219,12 +219,11 @@ fun GameScreen(
                     benchStats = benchStats,
                     playerInId = playerInId,
                     onPlayerInClick = { playerInId = it },
-                    onSubstitute = {
-                        onSubstitute(playerInId, playerOutId)
-                        playerInId = null
-                        playerOutId = null
-                    }
-                )
+                ) {
+                    onSubstitute(playerInId, playerOutId)
+                    playerInId = null
+                    playerOutId = null
+                }
 
                 GameStatsPanel(
                     stats = stats,
@@ -242,11 +241,10 @@ fun GameScreen(
         EventEditDialog(
             event = event,
             onDismiss = { editingEvent = null },
-            onConfirm = { updated ->
-                onUpdateEvent(updated)
-                editingEvent = null
-            }
-        )
+        ) { updated ->
+            onUpdateEvent(updated)
+            editingEvent = null
+        }
     }
 }
 
@@ -773,7 +771,7 @@ fun GameClock(
         mutableLongStateOf(runningTimeMillis)
     }
 
-    var isEditing by remember { mutableStateOf(false) }
+    var isEditing by remember { mutableStateOf(value = false) }
 
     LaunchedEffect(timerLastStartedAt) {
         if (timerLastStartedAt != null) {
@@ -856,12 +854,14 @@ fun GameClock(
                     label = { Text("Sec") },
                     modifier = Modifier.weight(1f)
                 )
-                Button(onClick = {
-                    val mins = minutesText.toLongOrNull() ?: 0L
-                    val secs = secondsText.toLongOrNull() ?: 0L
-                    onSetGameTime((mins * 60 + secs) * 1000)
-                    isEditing = false
-                }) {
+                Button(
+                    onClick = {
+                        val mins = minutesText.toLongOrNull() ?: 0L
+                        val secs = secondsText.toLongOrNull() ?: 0L
+                        onSetGameTime(((mins * 60) + secs) * 1000)
+                        isEditing = false
+                    }
+                ) {
                     Text("Set")
                 }
             }

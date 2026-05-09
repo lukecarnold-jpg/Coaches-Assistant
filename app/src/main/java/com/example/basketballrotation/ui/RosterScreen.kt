@@ -66,7 +66,7 @@ fun RosterScreen(
         Text(
             text = "Team roster",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
 
         if (isExpanded) {
