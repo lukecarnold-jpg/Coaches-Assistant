@@ -1,5 +1,6 @@
 package com.example.basketballrotation.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -41,6 +42,7 @@ data class GameEntity(
     val useQuarters: Boolean = false,
     val currentPeriod: Int = 1,
     val periodDurationMillis: Long = 10 * 60 * 1000L, // Default 10 mins
+    @ColumnInfo(defaultValue = "")
     val absentPlayerIdsCsv: String = "",
 )
 
