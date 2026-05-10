@@ -149,7 +149,7 @@ fun TrainingScreen(
             SectionCard(title = "Coming Soon") {
                 Text(
                     "We are currently developing interactive training modules, video demonstrations, and progress tracking for all age groups. Stay tuned!",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
 

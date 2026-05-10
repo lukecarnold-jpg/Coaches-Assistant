@@ -53,7 +53,7 @@ fun EmptyMessage(text: String, modifier: Modifier = Modifier) {
 fun SmallActionButton(
     label: String,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     androidx.compose.material3.OutlinedButton(onClick = onClick, modifier = modifier) {
         Text(label)
@@ -76,7 +76,7 @@ fun SelectablePlayerRow(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         color = background,
-        tonalElevation = if (selected) 2.dp else 0.dp
+        tonalElevation = if (selected) 2.dp else 0.dp,
     ) {
         Text(
             text = text,

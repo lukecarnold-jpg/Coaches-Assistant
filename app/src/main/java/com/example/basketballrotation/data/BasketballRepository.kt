@@ -157,7 +157,7 @@ class BasketballRepository(
                     type = EventType.START_LINEUP.name,
                     note = idsToCsv(normalizedIds),
                     gameTimeMillis = calculateCurrentGameTime(game),
-                )
+                ),
             )
         }
     }
@@ -184,7 +184,7 @@ class BasketballRepository(
                     playerId = playerInId,
                     relatedPlayerId = playerOutId,
                     gameTimeMillis = calculateCurrentGameTime(game),
-                )
+                ),
             )
         }
     }
@@ -206,7 +206,7 @@ class BasketballRepository(
                         playerId = playerId,
                         points = points,
                         gameTimeMillis = calculateCurrentGameTime(game),
-                    )
+                    ),
                 )
             }
         }
@@ -223,7 +223,7 @@ class BasketballRepository(
                     playerId = playerId,
                     points = adjustment,
                     gameTimeMillis = calculateCurrentGameTime(game),
-                )
+                ),
             )
         }
     }
@@ -242,8 +242,8 @@ class BasketballRepository(
                 gameDao.update(
                     game.copy(
                         runningTimeMillis = game.runningTimeMillis + elapsed,
-                        timerLastStartedAt = null
-                    )
+                        timerLastStartedAt = null,
+                    ),
                 )
             }
         }
@@ -302,7 +302,7 @@ class BasketballRepository(
                     type = EventType.MVP_VOTE.name,
                     playerId = playerId,
                     gameTimeMillis = calculateCurrentGameTime(game),
-                )
+                ),
             )
         }
     }
@@ -374,11 +374,13 @@ class BasketballRepository(
         var inQuotes = false
         
         for (char in line) {
-            when {
-                char == '\"' -> inQuotes = !inQuotes
-                char == ',' && !inQuotes -> {
+            when (char) {
+                '\"' -> inQuotes = !inQuotes
+                ',' -> if (!inQuotes) {
                     result.add(current.toString())
                     current = StringBuilder()
+                } else {
+                    current.append(char)
                 }
                 else -> current.append(char)
             }

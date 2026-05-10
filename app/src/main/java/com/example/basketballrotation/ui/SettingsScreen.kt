@@ -62,13 +62,15 @@ fun SettingsScreen(
                         onClick = {
                             onClearAllData()
                             showConfirm = false
-                        }
+                        },
                     ) {
                         Text("Delete everything", color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showConfirm = false }) {
+                    TextButton(
+                        onClick = { showConfirm = false },
+                    ) {
                         Text("Cancel")
                     }
                 }

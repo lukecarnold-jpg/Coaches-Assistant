@@ -110,15 +110,14 @@ fun RosterScreen(
                         onExportPlayers = {
                             exportRosterLauncher.launch("players.csv")
                         },
-                        onImportPlayers = {
-                            importRosterLauncher.launch(arrayOf("text/comma-separated-values", "text/csv"))
-                        },
-                    )
+                    ) {
+                        importRosterLauncher.launch(arrayOf("text/comma-separated-values", "text/csv"))
+                    }
                 }
 
                 Column(
                     modifier = Modifier.weight(1.5f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     RosterList(
                         players = players,
@@ -137,7 +136,7 @@ fun RosterScreen(
                             editName = player.name
                             editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
                         },
-                        onDeletePlayer = onDeletePlayer
+                        onDeletePlayer = onDeletePlayer,
                     )
                 }
             }
@@ -165,12 +164,11 @@ fun RosterScreen(
                     }
                 },
                 onExportPlayers = {
-                exportRosterLauncher.launch("players.csv")
-            },
-                onImportPlayers = {
-                    importRosterLauncher.launch(arrayOf("text/comma-separated-values", "text/csv"))
+                    exportRosterLauncher.launch("players.csv")
                 },
-            )
+            ) {
+                importRosterLauncher.launch(arrayOf("text/comma-separated-values", "text/csv"))
+            }
 
             RosterList(
                 players = players,
@@ -189,7 +187,7 @@ fun RosterScreen(
                     editName = player.name
                     editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
                 },
-                onDeletePlayer = onDeletePlayer
+                onDeletePlayer = onDeletePlayer,
             )
         }
     }
