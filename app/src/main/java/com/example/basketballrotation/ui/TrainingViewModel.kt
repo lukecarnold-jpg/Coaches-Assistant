@@ -28,10 +28,12 @@ class TrainingViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<TrainingUiState>(TrainingUiState.Idle)
     val uiState = _uiState.asStateFlow()
 
-    private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
-        apiKey = apiKey,
-    )
+    private val generativeModel by lazy {
+        GenerativeModel(
+            modelName = "gemini-1.5-flash",
+            apiKey = apiKey,
+        )
+    }
 
     fun generateDrills(ageGroup: String) {
         if (apiKey.isBlank()) {
