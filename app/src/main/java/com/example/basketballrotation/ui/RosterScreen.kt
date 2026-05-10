@@ -42,6 +42,7 @@ fun RosterScreen(
     onUpdatePlayer: (PlayerEntity, String, String) -> Unit,
     onDeletePlayer: (Long) -> Unit,
     onExportPlayers: (Uri) -> Unit,
+    onImportPlayers: (Uri) -> Unit,
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var jerseyNumber by rememberSaveable { mutableStateOf("") }
@@ -55,6 +56,12 @@ fun RosterScreen(
         contract = ActivityResultContracts.CreateDocument("text/csv"),
     ) { uri ->
         uri?.let(onExportPlayers)
+    }
+
+    val importRosterLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        uri?.let(onImportPlayers)
     }
 
     Column(
@@ -102,6 +109,9 @@ fun RosterScreen(
                         },
                         onExportPlayers = {
                             exportRosterLauncher.launch("players.csv")
+                        },
+                        onImportPlayers = {
+                            importRosterLauncher.launch(arrayOf("text/comma-separated-values", "text/csv"))
                         },
                     )
                 }
@@ -157,6 +167,9 @@ fun RosterScreen(
                 onExportPlayers = {
                 exportRosterLauncher.launch("players.csv")
             },
+                onImportPlayers = {
+                    importRosterLauncher.launch(arrayOf("text/comma-separated-values", "text/csv"))
+                },
             )
 
             RosterList(
@@ -191,6 +204,7 @@ fun RosterForm(
     showError: Boolean,
     onAddPlayer: () -> Unit,
     onExportPlayers: () -> Unit,
+    onImportPlayers: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         OutlinedTextField(
@@ -235,12 +249,24 @@ fun RosterForm(
             ) {
                 Text("Add player")
             }
+        }
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             OutlinedButton(
                 onClick = onExportPlayers,
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Export roster CSV")
+            }
+
+            OutlinedButton(
+                onClick = onImportPlayers,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Import roster CSV")
             }
         }
     }

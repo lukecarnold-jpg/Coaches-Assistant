@@ -35,8 +35,8 @@ A comprehensive Android application designed for team managers and coaches to st
 
 ### 📊 Data & Exports
 - **Persistence:** All data is saved locally using Room Database. The project is configured with schema tracking and Android Auto Backup to ensure your team roster and game history are preserved across app updates and device transfers.
-- **CSV Export:** 
-    - Export the full Team Roster.
+- **CSV Export/Import:** 
+    - Export and **Import** the full Team Roster.
     - Export detailed Game Logs including every point, foul, substitution, and MVP vote.
     - Files are saved to the device's public Downloads/Documents folder for easy sharing.
 

@@ -45,7 +45,7 @@ fun EmptyMessage(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = MaterialTheme.typography.bodyMedium,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 

@@ -42,7 +42,7 @@ fun SettingsScreen(
             Spacer(Modifier.height(8.dp))
             Button(
                 onClick = { showConfirm = true },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
             ) {
                 Text("Clear all data")
             }

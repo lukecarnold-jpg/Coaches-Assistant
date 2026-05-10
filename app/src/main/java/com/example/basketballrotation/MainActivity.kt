@@ -155,6 +155,7 @@ private fun BasketballApp(
                         onUpdatePlayer = appViewModel::updatePlayer,
                         onDeletePlayer = appViewModel::deletePlayer,
                         onExportPlayers = appViewModel::exportPlayersCsv,
+                        onImportPlayers = appViewModel::importPlayersCsv,
                     )
 
                     AppTab.GAME -> GameScreen(

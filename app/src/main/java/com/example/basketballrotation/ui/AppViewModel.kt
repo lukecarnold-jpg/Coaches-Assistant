@@ -405,6 +405,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun importPlayersCsv(uri: Uri) {
+        viewModelScope.launch {
+            runCatching {
+                repository.importPlayersCsv(getApplication<Application>().contentResolver, uri)
+            }.onSuccess {
+                _messages.emit("Roster CSV imported.")
+            }.onFailure {
+                _messages.emit(it.message ?: "Import failed.")
+            }
+        }
+    }
+
     fun exportSelectedGameCsv(uri: Uri) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {

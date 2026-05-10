@@ -8,6 +8,9 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [PlayerEntity::class, GameEntity::class, GameEventEntity::class],
     version = 6,
+    autoMigrations = [
+        androidx.room.AutoMigration(from = 5, to = 6),
+    ],
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,7 +29,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "basketball_rotation.db",
                 )
-                    .fallbackToDestructiveMigration(dropAllTables = true)
+                    .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
                     .build()
                     .also { INSTANCE = it }
             }

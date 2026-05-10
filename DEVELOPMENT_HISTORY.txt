@@ -88,3 +88,8 @@
 - **Absent Player Tracking:** Added a new "Manage Attendance" feature for each game. Coaches can now flag players as "Absent" for specific games.
 - **Attendance Filtering:** Absent players are automatically excluded from the court/bench lists and stats views for that specific game, keeping the interface focused on available players.
 - **Database Schema Update:** Incremented schema to Version 6 to support per-game attendance records.
+
+## Version 2.0 (Data Management & Import)
+- **Roster Import:** Added the ability to import player rosters from CSV files, streamlining team setup for new seasons.
+- **Data Retention Restored:** Re-implemented safe Room migrations (AutoMigration) and protected data from accidental deletion during app updates by disabling destructive upgrades.
+- **CSV Parser:** Developed a robust, quote-aware CSV parser to handle player names and data correctly during import.

@@ -325,12 +325,66 @@ class BasketballRepository(
                         listOf(
                             player.id.toString(),
                             escapeCsv(player.name),
-                            player.jerseyNumber?.toString().orEmpty()
-                        ).joinToString(",")
+                            player.jerseyNumber?.toString().orEmpty(),
+                        ).joinToString(","),
                     )
                 }
             } ?: error("Unable to open export file")
         }
+    }
+
+    suspend fun importPlayersCsv(contentResolver: ContentResolver, uri: Uri) {
+        withContext(Dispatchers.IO) {
+            contentResolver.openInputStream(uri)?.bufferedReader()?.use { reader ->
+                val lines = reader.readLines()
+                if (lines.isEmpty()) return@use
+
+                // Skip header if present
+                val startIdx = if (lines.first().contains("name", ignoreCase = true)) 1 else 0
+
+                database.withTransaction {
+                    for (i in startIdx until lines.size) {
+                        val line = lines[i]
+                        if (line.isBlank()) continue
+
+                        val parts = parseCsvLine(line)
+                        if (parts.size >= 2) {
+                            // Format: id, name, jerseyNumber (id is ignored for new inserts)
+                            val name = parts.getOrNull(1)?.trim()?.removeSurrounding("\"") ?: ""
+                            val jersey = parts.getOrNull(2)?.trim()?.removeSurrounding("\"")?.toIntOrNull()
+
+                            if (name.isNotBlank()) {
+                                playerDao.insert(
+                                    PlayerEntity(
+                                        name = name,
+                                        jerseyNumber = jersey,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+            } ?: error("Unable to open import file")
+        }
+    }
+
+    private fun parseCsvLine(line: String): List<String> {
+        val result = mutableListOf<String>()
+        var current = StringBuilder()
+        var inQuotes = false
+        
+        for (char in line) {
+            when {
+                char == '\"' -> inQuotes = !inQuotes
+                char == ',' && !inQuotes -> {
+                    result.add(current.toString())
+                    current = StringBuilder()
+                }
+                else -> current.append(char)
+            }
+        }
+        result.add(current.toString())
+        return result
     }
 
     suspend fun exportGameCsv(contentResolver: ContentResolver, gameId: Long, uri: Uri) {

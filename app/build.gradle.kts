@@ -1,4 +1,4 @@
-import java.util.Properties // ADDED: Needed to read local.properties
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -7,7 +7,6 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-// ADDED: Load the API key from local.properties securely
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -25,7 +24,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // ADDED: Expose the API key to the app via BuildConfig
         val apiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
         buildConfigField("String", "GEMINI_API_KEY", "\"$apiKey\"")
     }
@@ -47,7 +45,7 @@ android {
 
     buildFeatures {
         compose = true
-        buildConfig = true // ADDED: Enables generation of the BuildConfig class
+        buildConfig = true
     }
 
     packaging {
@@ -63,36 +61,38 @@ android {
     }
 }
 
-dependencies {
-    // ADDED: Google AI SDK for the Training drills feature
-    implementation(libs.generativeai)
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
 
+dependencies {
+    implementation(libs.generativeai)
     implementation(libs.material)
-    val composeBom = platform("androidx.compose:compose-bom:2026.05.00")
+    
+    val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
 
     implementation(libs.androidx.core.ktx)
-    implementation("androidx.activity:activity-compose:1.13.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.material3.windowSizeClass)
+    implementation(libs.compose.material.icons.extended)
+    debugImplementation(libs.compose.ui.tooling)
 
-    val roomVersion = "2.8.4"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
-    androidTestImplementation(platform("androidx.compose:compose-bom:2026.05.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.compose.ui.junit4)
+    debugImplementation(libs.compose.ui.manifest)
 }
