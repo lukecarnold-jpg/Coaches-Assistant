@@ -146,7 +146,12 @@ private fun BasketballApp(
                     .fillMaxSize()
                     .padding(paddingValues),
             ) {
-                when (AppTab.valueOf(currentTab)) {
+                val tab = try {
+                    AppTab.valueOf(currentTab)
+                } catch (e: Exception) {
+                    AppTab.ROSTER
+                }
+                when (tab) {
                     AppTab.ROSTER -> RosterScreen(
                         modifier = Modifier.fillMaxSize(),
                         isExpanded = isExpanded,
