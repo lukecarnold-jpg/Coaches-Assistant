@@ -16,7 +16,7 @@ A comprehensive Android application designed for team managers and coaches to st
 - **Game History:** View and manage your list of games, with the ability to **Delete** (🗑️) older or concluded records.
 - **Flexible Game Structure:** Support for both **Halves** or **Quarters** with customizable period durations.
 - **Coaching Notes:** 
-    - A dedicated coaching notes button appears in landscape orientation.
+    - A dedicated coaching notes button allows for quick recording of strategies and observations.
     - Opens a full-screen dialog supporting both **Keyboard** and **Stylus/Pen** input.
     - Notes are persisted locally and can be **Exported to .TXT** for sharing or archiving.
 - **Advanced Scoring:** 
@@ -50,7 +50,6 @@ A comprehensive Android application designed for team managers and coaches to st
 ### 🎨 Modern UI/UX
 - **Adaptive Layout:** Responsive design that auto-adjusts for **Phones** and **Tablets**.
     - **Phones:** Bottom navigation for easy thumb access.
-    - **Landscape Mode:** Reveals additional coaching tools like the **Coaching Notes** button.
     - **Tablets/Foldables:** Navigation rail and multi-column layouts to leverage larger screen real estate.
 - **Material 3 Design:** Clean, modern interface with intuitive navigation.
 - **Basketball Theme:** Custom orange-and-black basketball themed app icon and themed UI elements.

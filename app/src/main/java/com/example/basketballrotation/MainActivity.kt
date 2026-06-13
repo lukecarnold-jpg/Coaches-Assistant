@@ -70,7 +70,6 @@ private fun BasketballApp(
 
     val configuration = LocalConfiguration.current
     val isExpanded = (configuration.screenWidthDp >= 600)
-    val isLandscape = (configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE)
 
     LaunchedEffect(Unit) {
         appViewModel.messages.collectLatest { message ->
@@ -163,7 +162,6 @@ private fun BasketballApp(
                     AppTab.GAME -> GameScreen(
                         modifier = Modifier.fillMaxSize(),
                         isExpanded = isExpanded,
-                        isLandscape = isLandscape,
                         players = players,
                         games = games,
                         selectedGame = selectedGame,

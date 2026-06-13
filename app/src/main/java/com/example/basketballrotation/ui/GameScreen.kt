@@ -30,7 +30,6 @@ import java.util.*
 fun GameScreen(
     modifier: Modifier = Modifier,
     isExpanded: Boolean,
-    isLandscape: Boolean,
     players: List<PlayerEntity>,
     games: List<GameEntity>,
     selectedGame: GameEntity?,
@@ -169,7 +168,7 @@ fun GameScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (selectedGame != null && isLandscape) {
+                if (selectedGame != null) {
                     GameNotesPanel(
                         onClick = { showNotesDialog = true }
                     )
@@ -245,11 +244,9 @@ fun GameScreen(
             )
 
             if (selectedGame != null) {
-                if (isLandscape) {
-                    GameNotesPanel(
-                        onClick = { showNotesDialog = true }
-                    )
-                }
+                GameNotesPanel(
+                    onClick = { showNotesDialog = true }
+                )
 
                 GameControlPanel(
                     selectedGame = selectedGame,
