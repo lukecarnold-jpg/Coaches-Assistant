@@ -210,7 +210,7 @@ fun RosterForm(
             onValueChange = onNameChange,
             label = { Text("Player name") },
             modifier = Modifier.fillMaxWidth(),
-            isError = showError && name.isBlank()
+            isError = showError && name.isBlank(),
         )
 
         OutlinedTextField(

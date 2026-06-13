@@ -82,7 +82,7 @@ fun SelectablePlayerRow(
         Text(
             text = text,
             modifier = Modifier.padding(12.dp),
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
         )
     }
 }

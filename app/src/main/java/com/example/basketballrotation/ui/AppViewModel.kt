@@ -441,15 +441,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun exportSelectedGameCsv(uri: Uri) {
-        val gameId = selectedGame.value?.id
-        if (gameId == null) {
-            _messages.tryEmit("Select a game first.")
-            return
-        }
-        exportGameCsv(gameId, uri)
-    }
-
     fun exportGameNotesTxt(gameId: Long, uri: Uri) {
         viewModelScope.launch {
             runCatching {

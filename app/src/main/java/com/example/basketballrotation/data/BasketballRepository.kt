@@ -427,7 +427,7 @@ class BasketballRepository(
                             "",
                             "",
                             "",
-                            ""
+                            "",
                         ).joinToString(",")
                     )
                 } else {
