@@ -10,9 +10,12 @@ A comprehensive Android application designed for team managers and coaches to st
 - **In-place Editing:** Update player details directly from the roster list.
 
 ### 🏀 Game Tracking
-- **Live Rotation:** Track exactly who is on the court and how long their current shift has lasted.
+- **Advanced Rotation Management:** 
+    - Track exactly who is on the court with live tickers for **Current Shift** and **Total Playing Time**.
+    - **Batch Substitutions:** Preselect multiple players to come in and out before committing the rotation, allowing coaches to prepare during timeouts.
 - **Game History:** View and manage your list of games, with the ability to **Delete** (🗑️) older or concluded records.
 - **Flexible Game Structure:** Support for both **Halves** or **Quarters** with customizable period durations.
+- **Coaching Notes:** A persistent **Game Notes** section automatically appears in landscape orientation for recording strategies and observations.
 - **Advanced Scoring:** 
     - Log 1, 2, or 3-point plays for individual players.
     - Manual score adjustments (including negative corrections) for both your team and the opponent.
@@ -29,7 +32,7 @@ A comprehensive Android application designed for team managers and coaches to st
 
 ### 🏋️ Training Section (AI-Powered)
 - **Age-Appropriate Drills:** Access drills tailored for specific age groups, from Mini Ball (Ages 5-6) to Under 18's.
-- **AI Integration:** Uses Google Gemini AI to generate customized basketball drills on-demand.
+- **AI Integration:** Uses **Google Gemini 2.5 Flash** to generate customized, high-speed basketball drills on-demand.
 - **Teaching Points:** Each drill includes a clear description and key teaching points for coaches.
 - **Continuous Development:** New interactive training modules and video demonstrations are currently in development ("Coming Soon").
 
@@ -37,12 +40,13 @@ A comprehensive Android application designed for team managers and coaches to st
 - **Persistence:** All data is saved locally using Room Database. The project is configured with schema tracking and Android Auto Backup to ensure your team roster and game history are preserved across app updates and device transfers.
 - **CSV Export/Import:** 
     - Export and **Import** the full Team Roster.
-    - Export detailed Game Logs including every point, foul, substitution, and MVP vote.
+    - Export detailed Game Logs including every point, foul, substitution, MVP vote, and **Game Notes**.
     - Files are saved to the device's public Downloads/Documents folder for easy sharing.
 
 ### 🎨 Modern UI/UX
 - **Adaptive Layout:** Responsive design that auto-adjusts for **Phones** and **Tablets**.
     - **Phones:** Bottom navigation for easy thumb access.
+    - **Landscape Mode:** Reveals additional coaching tools like the **Game Notes** panel.
     - **Tablets/Foldables:** Navigation rail and multi-column layouts to leverage larger screen real estate.
 - **Material 3 Design:** Clean, modern interface with intuitive navigation.
 - **Basketball Theme:** Custom orange-and-black basketball themed app icon and themed UI elements.
@@ -51,7 +55,8 @@ A comprehensive Android application designed for team managers and coaches to st
 ## Technical Details
 - **Architecture:** MVVM (Model-View-ViewModel)
 - **UI Framework:** Jetpack Compose
-- **Database:** Room (SQLite) with multi-version migration support.
+- **Database:** Room (SQLite) with multi-version migration support (currently v8).
+- **AI:** Google Generative AI SDK (Gemini 2.5 Flash).
 - **Concurrency:** Kotlin Coroutines & Flow for reactive UI updates.
 
 ---

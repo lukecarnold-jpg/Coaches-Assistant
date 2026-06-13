@@ -75,8 +75,8 @@ fun GameScreen(
     }
 
     val startingLineupSelection = remember(selectedGame?.id, selectedGame?.currentPeriod) { mutableStateListOf<Long>() }
-    var playerOutId by remember(selectedGame?.id, selectedGame?.currentPeriod) { mutableStateOf<Long?>(null) }
-    var playerInId by remember(selectedGame?.id, selectedGame?.currentPeriod) { mutableStateOf<Long?>(null) }
+    val pendingOut = remember(selectedGame?.id, selectedGame?.currentPeriod) { mutableStateListOf<Long>() }
+    val pendingIn = remember(selectedGame?.id, selectedGame?.currentPeriod) { mutableStateListOf<Long>() }
 
     var editingEvent by remember { mutableStateOf<GameEventEntity?>(null) }
 
@@ -115,15 +115,25 @@ fun GameScreen(
                         onAdvancePeriod = onAdvancePeriod,
                         onEndGame = onEndGame,
                         onManageAttendance = { showAttendanceDialog = true },
-                        playerOutId = playerOutId,
-                        onPlayerOutClick = { playerOutId = it },
+                        pendingOut = pendingOut,
+                        onPlayerOutClick = { id ->
+                            if (pendingOut.contains(id)) pendingOut.remove(id) else pendingOut.add(id)
+                        },
                         benchStats = benchStats,
-                        playerInId = playerInId,
-                        onPlayerInClick = { playerInId = it },
+                        pendingIn = pendingIn,
+                        onPlayerInClick = { id ->
+                            if (pendingIn.contains(id)) pendingIn.remove(id) else pendingIn.add(id)
+                        },
                         onSubstitute = {
-                            onSubstitute(playerInId, playerOutId)
-                            playerInId = null
-                            playerOutId = null
+                            val inIds = pendingIn.toList()
+                            val outIds = pendingOut.toList()
+                            if (inIds.size == outIds.size && inIds.isNotEmpty()) {
+                                inIds.zip(outIds).forEach { (pIn, pOut) ->
+                                    onSubstitute(pIn, pOut)
+                                }
+                                pendingIn.clear()
+                                pendingOut.clear()
+                            }
                         }
                     )
                 } else {
@@ -235,15 +245,25 @@ fun GameScreen(
                     onAdvancePeriod = onAdvancePeriod,
                     onEndGame = onEndGame,
                     onManageAttendance = { showAttendanceDialog = true },
-                    playerOutId = playerOutId,
-                    onPlayerOutClick = { playerOutId = it },
+                    pendingOut = pendingOut,
+                    onPlayerOutClick = { id ->
+                        if (pendingOut.contains(id)) pendingOut.remove(id) else pendingOut.add(id)
+                    },
                     benchStats = benchStats,
-                    playerInId = playerInId,
-                    onPlayerInClick = { playerInId = it },
+                    pendingIn = pendingIn,
+                    onPlayerInClick = { id ->
+                        if (pendingIn.contains(id)) pendingIn.remove(id) else pendingIn.add(id)
+                    },
                 ) {
-                    onSubstitute(playerInId, playerOutId)
-                    playerInId = null
-                    playerOutId = null
+                    val inIds = pendingIn.toList()
+                    val outIds = pendingOut.toList()
+                    if (inIds.size == outIds.size && inIds.isNotEmpty()) {
+                        inIds.zip(outIds).forEach { (pIn, pOut) ->
+                            onSubstitute(pIn, pOut)
+                        }
+                        pendingIn.clear()
+                        pendingOut.clear()
+                    }
                 }
 
                 GameStatsPanel(
@@ -406,10 +426,10 @@ fun GameControlPanel(
     onAdvancePeriod: () -> Unit,
     onEndGame: () -> Unit,
     onManageAttendance: () -> Unit,
-    playerOutId: Long?,
+    pendingOut: List<Long>,
     onPlayerOutClick: (Long) -> Unit,
     benchStats: List<PlayerGameStat>,
-    playerInId: Long?,
+    pendingIn: List<Long>,
     onPlayerInClick: (Long) -> Unit,
     onSubstitute: () -> Unit,
 ) {
@@ -591,11 +611,18 @@ fun GameControlPanel(
 
             if (!selectedGame.isFinished) {
                 SectionCard(title = "Substitution") {
-                    Text("Choose one player to come out and one player to come in.")
+                    Text("Select players to come out and players to come in.")
+                    if (pendingIn.size != pendingOut.size) {
+                        Text(
+                            "Selection mismatch: ${pendingOut.size} out, ${pendingIn.size} in",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
                     Spacer(Modifier.height(8.dp))
 
                     Text(
-                        text = "Player out",
+                        text = "Players coming out (${pendingOut.size})",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -605,7 +632,7 @@ fun GameControlPanel(
                         onCourtStats.forEach { stat ->
                             SelectablePlayerRow(
                                 text = stat.player.displayLabel(),
-                                selected = playerOutId == stat.player.id
+                                selected = pendingOut.contains(stat.player.id)
                             ) {
                                 onPlayerOutClick(stat.player.id)
                             }
@@ -615,7 +642,7 @@ fun GameControlPanel(
                     Spacer(Modifier.height(12.dp))
 
                     Text(
-                        text = "Player in",
+                        text = "Players coming in (${pendingIn.size})",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -628,7 +655,7 @@ fun GameControlPanel(
                             benchStats.forEach { stat ->
                                 SelectablePlayerRow(
                                     text = stat.player.displayLabel(),
-                                    selected = playerInId == stat.player.id
+                                    selected = pendingIn.contains(stat.player.id)
                                 ) {
                                     onPlayerInClick(stat.player.id)
                                 }
@@ -640,9 +667,9 @@ fun GameControlPanel(
 
                     Button(
                         onClick = onSubstitute,
-                        enabled = (playerInId != null) && (playerOutId != null)
+                        enabled = (pendingIn.isNotEmpty()) && (pendingIn.size == pendingOut.size)
                     ) {
-                        Text("Record substitution")
+                        Text("Confirm Rotation (${pendingIn.size} Subs)")
                     }
                 }
             }
