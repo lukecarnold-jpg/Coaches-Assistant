@@ -31,7 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "basketball_rotation.db",
                 )
-                    .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
+                    .fallbackToDestructiveMigration()
                     .build()
                     .also { INSTANCE = it }
             }

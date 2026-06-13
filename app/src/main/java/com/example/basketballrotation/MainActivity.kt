@@ -147,11 +147,7 @@ private fun BasketballApp(
                     .fillMaxSize()
                     .padding(paddingValues),
             ) {
-                val tab = try {
-                    AppTab.valueOf(currentTab)
-                } catch (_: Exception) {
-                    AppTab.ROSTER
-                }
+                val tab = AppTab.entries.find { it.name == currentTab } ?: AppTab.ROSTER
                 when (tab) {
                     AppTab.ROSTER -> RosterScreen(
                         modifier = Modifier.fillMaxSize(),
