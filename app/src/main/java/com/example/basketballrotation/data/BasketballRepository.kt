@@ -406,7 +406,7 @@ class BasketballRepository(
 
             contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
                 writer.appendLine(
-                    "gameId,gameTitle,opponent,createdAt,teamScoreAtExport,gameNotes,eventId,eventTimestamp,eventGameTime,eventType,playerName,playerNumber,relatedPlayerName,relatedPlayerNumber,points,note"
+                    "gameId,gameTitle,opponent,createdAt,teamScoreAtExport,gameNotes,eventId,eventTimestamp,eventGameTime,eventType,playerName,playerNumber,relatedPlayerName,relatedPlayerNumber,points,note",
                 )
 
                 if (events.isEmpty()) {
