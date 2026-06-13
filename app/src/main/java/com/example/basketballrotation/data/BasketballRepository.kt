@@ -63,21 +63,23 @@ class BasketballRepository(
             val maxPeriods = if (game.useQuarters) 4 else 2
             
             if (game.currentPeriod < maxPeriods) {
+                // Record the end of the previous period
+                gameEventDao.insert(
+                    GameEventEntity(
+                        gameId = gameId,
+                        timestamp = System.currentTimeMillis(),
+                        type = EventType.PERIOD_CHANGE.name,
+                        note = "Finished Period ${game.currentPeriod}",
+                        gameTimeMillis = calculateCurrentGameTime(game),
+                    ),
+                )
+
                 gameDao.update(
                     game.copy(
                         currentPeriod = game.currentPeriod + 1,
                         runningTimeMillis = 0L,
                         timerLastStartedAt = null,
                         onCourtCsv = "", // Reset court to force new lineup
-                    ),
-                )
-                gameEventDao.insert(
-                    GameEventEntity(
-                        gameId = gameId,
-                        timestamp = System.currentTimeMillis(),
-                        type = EventType.PERIOD_CHANGE.name,
-                        note = "Started Period ${game.currentPeriod + 1}",
-                        gameTimeMillis = 0L,
                     ),
                 )
             }
@@ -110,6 +112,13 @@ class BasketballRepository(
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
             gameDao.update(game.copy(absentPlayerIdsCsv = idsToCsv(playerIds)))
+        }
+    }
+
+    suspend fun updateGameNotes(gameId: Long, notes: String) {
+        database.withTransaction {
+            val game = gameDao.getById(gameId) ?: return@withTransaction
+            gameDao.update(game.copy(notes = notes))
         }
     }
 
@@ -397,7 +406,7 @@ class BasketballRepository(
 
             contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
                 writer.appendLine(
-                    "gameId,gameTitle,opponent,createdAt,teamScoreAtExport,eventId,eventTimestamp,eventGameTime,eventType,playerName,playerNumber,relatedPlayerName,relatedPlayerNumber,points,note"
+                    "gameId,gameTitle,opponent,createdAt,teamScoreAtExport,gameNotes,eventId,eventTimestamp,eventGameTime,eventType,playerName,playerNumber,relatedPlayerName,relatedPlayerNumber,points,note"
                 )
 
                 if (events.isEmpty()) {
@@ -408,6 +417,8 @@ class BasketballRepository(
                             escapeCsv(game.opponent),
                             escapeCsv(formatDate(game.createdAt)),
                             game.teamScore.toString(),
+                            escapeCsv(game.notes),
+                            "",
                             "",
                             "",
                             "",
@@ -423,7 +434,7 @@ class BasketballRepository(
                     events.forEach { event ->
                         val player = event.playerId?.let(players::get)
                         val relatedPlayer = event.relatedPlayerId?.let(players::get)
-                        val note = when (EventType.fromRaw(event.type)) {
+                        val eventNote = when (EventType.fromRaw(event.type)) {
                             EventType.START_LINEUP -> lineupNoteToNames(event.note, players)
                             else -> event.note
                         }
@@ -435,6 +446,7 @@ class BasketballRepository(
                                 escapeCsv(game.opponent),
                                 escapeCsv(formatDate(game.createdAt)),
                                 game.teamScore.toString(),
+                                escapeCsv(game.notes),
                                 event.id.toString(),
                                 escapeCsv(formatDate(event.timestamp)),
                                 formatDuration(event.gameTimeMillis),
@@ -444,7 +456,7 @@ class BasketballRepository(
                                 escapeCsv(relatedPlayer?.name.orEmpty()),
                                 relatedPlayer?.jerseyNumber?.toString().orEmpty(),
                                 if ((event.points == 0) && (EventType.fromRaw(event.type) != EventType.FOUL)) "" else event.points.toString(),
-                                escapeCsv(note)
+                                escapeCsv(eventNote)
                             ).joinToString(",")
                         )
                     }

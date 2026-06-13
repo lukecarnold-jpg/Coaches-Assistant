@@ -30,6 +30,7 @@ import java.util.*
 fun GameScreen(
     modifier: Modifier = Modifier,
     isExpanded: Boolean,
+    isLandscape: Boolean,
     players: List<PlayerEntity>,
     games: List<GameEntity>,
     selectedGame: GameEntity?,
@@ -51,6 +52,7 @@ fun GameScreen(
     onAdvancePeriod: () -> Unit,
     onEndGame: () -> Unit,
     onUpdateAbsentPlayers: (List<Long>) -> Unit,
+    onUpdateNotes: (String) -> Unit,
     onUpdateEvent: (GameEventEntity) -> Unit,
     onDeleteEvent: (GameEventEntity) -> Unit,
 ) {
@@ -135,6 +137,13 @@ fun GameScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                if (selectedGame != null && isLandscape) {
+                    GameNotesPanel(
+                        notes = selectedGame.notes,
+                        onNotesChange = onUpdateNotes
+                    )
+                }
+
                 GameStatsPanel(
                     stats = stats,
                     events = events,
@@ -201,6 +210,13 @@ fun GameScreen(
             )
 
             if (selectedGame != null) {
+                if (isLandscape) {
+                    GameNotesPanel(
+                        notes = selectedGame.notes,
+                        onNotesChange = onUpdateNotes
+                    )
+                }
+
                 GameControlPanel(
                     selectedGame = selectedGame,
                     onToggleTimer = onToggleTimer,
@@ -774,7 +790,11 @@ fun GameStatsPanel(
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold
                                     )
-                                    Text("Points: ${stat.points}   Fouls: ${stat.fouls}   Votes: ${stat.mvpVotes}")
+                                    Text("Points: ${stat.points} | Fouls: ${stat.fouls} | Votes: ${stat.mvpVotes}")
+                                    Text(
+                                        "Total Time: ${formatDuration(stat.totalTimeMillis)}",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
                                 }
 
                                 if (stat.onCourt) {
@@ -1008,12 +1028,20 @@ fun PlayerActionCard(
                             }
                         }
                     }
-                    Text(
-                        text = "Shift: ${formatDuration(shiftDisplayTime)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row {
+                        Text(
+                            text = "Shift: ${formatDuration(shiftDisplayTime)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Total: ${formatDuration(stat.totalTimeMillis - stat.currentShiftTimeMillis + shiftDisplayTime)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
@@ -1141,4 +1169,22 @@ fun formatDuration(millis: Long): String {
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
     return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+}
+
+@Composable
+fun GameNotesPanel(
+    notes: String,
+    onNotesChange: (String) -> Unit
+) {
+    SectionCard(title = "Game Notes") {
+        OutlinedTextField(
+            value = notes,
+            onValueChange = onNotesChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 150.dp),
+            placeholder = { Text("Enter coaching notes here...") },
+            label = { Text("Notes") }
+        )
+    }
 }

@@ -30,6 +30,7 @@ data class PlayerGameStat(
     val mvpVotes: Int,
     val onCourt: Boolean,
     val currentShiftTimeMillis: Long,
+    val totalTimeMillis: Long,
 )
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -78,20 +79,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         combine(players, selectedGame, selectedGameEvents) { playerList, game, events ->
             val onCourt = game?.onCourtIds()?.toSet().orEmpty()
             val absent = game?.absentPlayerIds()?.toSet().orEmpty()
+            
+            val totalTimeByPlayer = mutableMapOf<Long, Long>()
+            val lastEnteredAt = mutableMapOf<Long, Long>()
             val pointsByPlayer = mutableMapOf<Long, Int>()
             val foulsByPlayer = mutableMapOf<Long, Int>()
-            val lastEnteredAt = mutableMapOf<Long, Long>()
 
-            // Sort events by time to track state chronologically
-            val sortedEvents = events.sortedBy { it.gameTimeMillis }
+            // Process events chronologically to calculate stats and times
+            val sortedEvents = events.sortedBy { it.timestamp }
 
             sortedEvents.forEach { event ->
                 when (EventType.fromRaw(event.type)) {
                     EventType.START_LINEUP -> {
-                        // All starting players entered at the game time of the event (usually 0)
-                        game?.onCourtIds()?.forEach { id ->
-                            lastEnteredAt[id] = event.gameTimeMillis
-                        }
+                        // note contains the player IDs
+                        event.note.split(',')
+                            .mapNotNull { it.trim().toLongOrNull() }
+                            .forEach { id ->
+                                lastEnteredAt[id] = event.gameTimeMillis
+                            }
                     }
 
                     EventType.SUBSTITUTION -> {
@@ -99,7 +104,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             lastEnteredAt[playerInId] = event.gameTimeMillis
                         }
                         event.relatedPlayerId?.let { playerOutId ->
-                            lastEnteredAt.remove(playerOutId)
+                            val entered = lastEnteredAt.remove(playerOutId)
+                            if (entered != null) {
+                                val duration = maxOf(0L, event.gameTimeMillis - entered)
+                                totalTimeByPlayer[playerOutId] = (totalTimeByPlayer[playerOutId] ?: 0L) + duration
+                            }
                         }
                     }
 
@@ -111,9 +120,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         foulsByPlayer[playerId] = (foulsByPlayer[playerId] ?: 0) + event.points
                     }
 
-                    EventType.MVP_VOTE -> {} // Votes are stored in gameEntity directly for simplicity
-                    EventType.PERIOD_CHANGE -> {}
-                    EventType.GAME_END -> {}
+                    EventType.PERIOD_CHANGE -> {
+                        // Close all active shifts using the event's gameTimeMillis (which is end of period)
+                        lastEnteredAt.forEach { (id, entered) ->
+                            val duration = maxOf(0L, event.gameTimeMillis - entered)
+                            totalTimeByPlayer[id] = (totalTimeByPlayer[id] ?: 0L) + duration
+                        }
+                        lastEnteredAt.clear()
+                    }
+
+                    EventType.GAME_END -> {
+                        lastEnteredAt.forEach { (id, entered) ->
+                            val duration = maxOf(0L, event.gameTimeMillis - entered)
+                            totalTimeByPlayer[id] = (totalTimeByPlayer[id] ?: 0L) + duration
+                        }
+                        lastEnteredAt.clear()
+                    }
+
+                    EventType.MVP_VOTE -> {}
                 }
             }
 
@@ -133,13 +157,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 emptyMap()
             }
 
-            // Fallback for players currently on court if no event found (shouldn't happen with proper event logging)
-            onCourt.forEach { id ->
-                if (!lastEnteredAt.containsKey(id)) {
-                    lastEnteredAt[id] = 0L
-                }
-            }
-
             playerList
                 .asSequence()
                 .filter { !absent.contains(it.id) }
@@ -147,14 +164,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     val isOnCourt = onCourt.contains(player.id)
                     val enteredAt = lastEnteredAt[player.id] ?: 0L
                     
-                    // We'll use game.runningTimeMillis as a baseline if timer is stopped, 
-                    // but the UI will need the "live" game time for the active ticker.
-                    // For now, let's store the raw 'enteredAt' or calculate duration based on recorded game time.
-                    val shiftTime = if (isOnCourt) {
-                        (game?.runningTimeMillis ?: 0L) - enteredAt
+                    val currentShift = if (isOnCourt) {
+                        maxOf(0L, (game?.runningTimeMillis ?: 0L) - enteredAt)
                     } else {
                         0L
                     }
+                    
+                    val totalTime = (totalTimeByPlayer[player.id] ?: 0L) + currentShift
 
                     PlayerGameStat(
                         player = player,
@@ -162,7 +178,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         fouls = foulsByPlayer[player.id] ?: 0,
                         mvpVotes = mvpVotesMap[player.id] ?: 0,
                         onCourt = isOnCourt,
-                        currentShiftTimeMillis = maxOf(0L, shiftTime),
+                        currentShiftTimeMillis = currentShift,
+                        totalTimeMillis = totalTime,
                     )
                 }
                 .toList()
@@ -277,6 +294,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.updateAbsentPlayers(gameId, playerIds)
             _messages.emit("Attendance updated.")
+        }
+    }
+
+    fun updateGameNotes(notes: String) {
+        val gameId = selectedGame.value?.id ?: return
+        viewModelScope.launch {
+            repository.updateGameNotes(gameId, notes)
         }
     }
 

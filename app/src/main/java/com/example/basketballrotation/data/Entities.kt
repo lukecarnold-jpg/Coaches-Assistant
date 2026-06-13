@@ -44,6 +44,8 @@ data class GameEntity(
     val periodDurationMillis: Long = 10 * 60 * 1000L, // Default 10 mins
     @ColumnInfo(defaultValue = "")
     val absentPlayerIdsCsv: String = "",
+    @ColumnInfo(defaultValue = "")
+    val notes: String = "",
 )
 
 @Entity(

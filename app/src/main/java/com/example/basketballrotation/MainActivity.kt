@@ -70,6 +70,7 @@ private fun BasketballApp(
 
     val configuration = LocalConfiguration.current
     val isExpanded = (configuration.screenWidthDp >= 600)
+    val isLandscape = (configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE)
 
     LaunchedEffect(Unit) {
         appViewModel.messages.collectLatest { message ->
@@ -148,7 +149,7 @@ private fun BasketballApp(
             ) {
                 val tab = try {
                     AppTab.valueOf(currentTab)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     AppTab.ROSTER
                 }
                 when (tab) {
@@ -166,6 +167,7 @@ private fun BasketballApp(
                     AppTab.GAME -> GameScreen(
                         modifier = Modifier.fillMaxSize(),
                         isExpanded = isExpanded,
+                        isLandscape = isLandscape,
                         players = players,
                         games = games,
                         selectedGame = selectedGame,
@@ -187,6 +189,7 @@ private fun BasketballApp(
                         onAdvancePeriod = appViewModel::advancePeriod,
                         onEndGame = appViewModel::endGame,
                         onUpdateAbsentPlayers = appViewModel::updateAbsentPlayers,
+                        onUpdateNotes = appViewModel::updateGameNotes,
                         onUpdateEvent = appViewModel::updateEvent,
                         onDeleteEvent = appViewModel::deleteEvent,
                     )
