@@ -15,7 +15,10 @@ A comprehensive Android application designed for team managers and coaches to st
     - **Batch Substitutions:** Preselect multiple players to come in and out before committing the rotation, allowing coaches to prepare during timeouts.
 - **Game History:** View and manage your list of games, with the ability to **Delete** (🗑️) older or concluded records.
 - **Flexible Game Structure:** Support for both **Halves** or **Quarters** with customizable period durations.
-- **Coaching Notes:** A persistent **Game Notes** section automatically appears in landscape orientation for recording strategies and observations.
+- **Coaching Notes:** 
+    - A dedicated coaching notes button appears in landscape orientation.
+    - Opens a full-screen dialog supporting both **Keyboard** and **Stylus/Pen** input.
+    - Notes are persisted locally and can be **Exported to .TXT** for sharing or archiving.
 - **Advanced Scoring:** 
     - Log 1, 2, or 3-point plays for individual players.
     - Manual score adjustments (including negative corrections) for both your team and the opponent.
@@ -41,12 +44,13 @@ A comprehensive Android application designed for team managers and coaches to st
 - **CSV Export/Import:** 
     - Export and **Import** the full Team Roster.
     - Export detailed Game Logs including every point, foul, substitution, MVP vote, and **Game Notes**.
-    - Files are saved to the device's public Downloads/Documents folder for easy sharing.
+- **TXT Export:** Export coaching notes as a clean text file for easy reading.
+- **File Management:** Files are saved to the device's public Downloads/Documents folder for easy sharing.
 
 ### 🎨 Modern UI/UX
 - **Adaptive Layout:** Responsive design that auto-adjusts for **Phones** and **Tablets**.
     - **Phones:** Bottom navigation for easy thumb access.
-    - **Landscape Mode:** Reveals additional coaching tools like the **Game Notes** panel.
+    - **Landscape Mode:** Reveals additional coaching tools like the **Coaching Notes** button.
     - **Tablets/Foldables:** Navigation rail and multi-column layouts to leverage larger screen real estate.
 - **Material 3 Design:** Clean, modern interface with intuitive navigation.
 - **Basketball Theme:** Custom orange-and-black basketball themed app icon and themed UI elements.

@@ -465,6 +465,20 @@ class BasketballRepository(
         }
     }
 
+    suspend fun exportGameNotesTxt(contentResolver: ContentResolver, gameId: Long, uri: Uri) {
+        withContext(Dispatchers.IO) {
+            val game = gameDao.getById(gameId) ?: error("Game not found")
+            contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
+                writer.write("Game: ${game.title}\n")
+                writer.write("Opponent: ${game.opponent}\n")
+                writer.write("Date: ${formatDate(game.createdAt)}\n")
+                writer.write("Score: Us ${game.teamScore} - ${game.opponentScore} ${game.opponent}\n")
+                writer.write("\n--- COACHING NOTES ---\n\n")
+                writer.write(game.notes)
+            } ?: error("Unable to open export file")
+        }
+    }
+
     private fun lineupNoteToNames(note: String, players: Map<Long, PlayerEntity>): String {
         val names = note.split(',')
             .asSequence()

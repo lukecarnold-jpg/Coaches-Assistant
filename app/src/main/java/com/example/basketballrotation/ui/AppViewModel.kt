@@ -447,7 +447,22 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _messages.tryEmit("Select a game first.")
             return
         }
+        exportGameCsv(gameId, uri)
+    }
 
+    fun exportGameNotesTxt(gameId: Long, uri: Uri) {
+        viewModelScope.launch {
+            runCatching {
+                repository.exportGameNotesTxt(getApplication<Application>().contentResolver, gameId, uri)
+            }.onSuccess {
+                _messages.emit("Coaching notes exported.")
+            }.onFailure {
+                _messages.emit(it.message ?: "Export failed.")
+            }
+        }
+    }
+
+    fun exportGameCsv(gameId: Long, uri: Uri) {
         viewModelScope.launch {
             runCatching {
                 repository.exportGameCsv(getApplication<Application>().contentResolver, gameId, uri)

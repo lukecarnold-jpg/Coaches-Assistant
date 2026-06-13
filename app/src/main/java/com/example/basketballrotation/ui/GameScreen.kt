@@ -47,12 +47,13 @@ fun GameScreen(
     onResetTimer: () -> Unit,
     onSetGameTime: (Long) -> Unit,
     onDeleteGame: (Long) -> Unit,
-    onExportGame: (Uri) -> Unit,
+    onExportGame: (Long, Uri) -> Unit,
     onExportPlayers: (Uri) -> Unit,
     onAdvancePeriod: () -> Unit,
     onEndGame: () -> Unit,
     onUpdateAbsentPlayers: (List<Long>) -> Unit,
     onUpdateNotes: (String) -> Unit,
+    onExportNotes: (Long, Uri) -> Unit,
     onUpdateEvent: (GameEventEntity) -> Unit,
     onDeleteEvent: (GameEventEntity) -> Unit,
 ) {
@@ -61,11 +62,29 @@ fun GameScreen(
     var useQuarters by rememberSaveable { mutableStateOf(value = false) }
     var periodMins by rememberSaveable { mutableStateOf("10") }
     var showAttendanceDialog by remember { mutableStateOf(false) }
+    var showNotesDialog by remember { mutableStateOf(false) }
+
+    var pendingExportGameId by remember { mutableStateOf<Long?>(null) }
+    var pendingExportNotesId by remember { mutableStateOf<Long?>(null) }
 
     val exportGameLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv"),
     ) { uri ->
-        uri?.let(onExportGame)
+        val gId = pendingExportGameId
+        if (uri != null && gId != null) {
+            onExportGame(gId, uri)
+        }
+        pendingExportGameId = null
+    }
+
+    val exportNotesLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/plain"),
+    ) { uri ->
+        val gId = pendingExportNotesId
+        if (uri != null && gId != null) {
+            onExportNotes(gId, uri)
+        }
+        pendingExportNotesId = null
     }
 
     val exportRosterLauncher = rememberLauncherForActivityResult(
@@ -104,7 +123,10 @@ fun GameScreen(
                         onSetGameTime = onSetGameTime,
                         onAddScore = onAddScore,
                         onCourtIds = onCourtIds,
-                        exportGameLauncher = exportGameLauncher,
+                        onExportGame = {
+                            pendingExportGameId = selectedGame.id
+                            exportGameLauncher.launch("game_${selectedGame.id}.csv")
+                        },
                         exportRosterLauncher = exportRosterLauncher,
                         players = players,
                         startingLineupSelection = startingLineupSelection,
@@ -149,8 +171,7 @@ fun GameScreen(
             ) {
                 if (selectedGame != null && isLandscape) {
                     GameNotesPanel(
-                        notes = selectedGame.notes,
-                        onNotesChange = onUpdateNotes
+                        onClick = { showNotesDialog = true }
                     )
                 }
 
@@ -176,6 +197,10 @@ fun GameScreen(
                     games = games,
                     onSelectGame = onSelectGame,
                     onDeleteGame = onDeleteGame,
+                    onExportGame = { gId ->
+                        pendingExportGameId = gId
+                        exportGameLauncher.launch("game_$gId.csv")
+                    },
                     selectedGameId = selectedGame?.id
                 )
             }
@@ -222,8 +247,7 @@ fun GameScreen(
             if (selectedGame != null) {
                 if (isLandscape) {
                     GameNotesPanel(
-                        notes = selectedGame.notes,
-                        onNotesChange = onUpdateNotes
+                        onClick = { showNotesDialog = true }
                     )
                 }
 
@@ -234,7 +258,10 @@ fun GameScreen(
                     onSetGameTime = onSetGameTime,
                     onAddScore = onAddScore,
                     onCourtIds = onCourtIds,
-                    exportGameLauncher = exportGameLauncher,
+                    onExportGame = {
+                        pendingExportGameId = selectedGame.id
+                        exportGameLauncher.launch("game_${selectedGame.id}.csv")
+                    },
                     exportRosterLauncher = exportRosterLauncher,
                     players = players,
                     startingLineupSelection = startingLineupSelection,
@@ -272,7 +299,11 @@ fun GameScreen(
                     playerById = playerById,
                     onEditEvent = { editingEvent = it },
                     onDeleteEvent = onDeleteEvent,
-                    onlyStats = true
+                    onlyStats = true,
+                    onExportGame = { gId ->
+                        pendingExportGameId = gId
+                        exportGameLauncher.launch("game_$gId.csv")
+                    }
                 )
             }
         }
@@ -296,6 +327,21 @@ fun GameScreen(
             onConfirm = { ids ->
                 onUpdateAbsentPlayers(ids)
                 showAttendanceDialog = false
+            }
+        )
+    }
+
+    if (showNotesDialog && selectedGame != null) {
+        CoachingNotesDialog(
+            notes = selectedGame.notes,
+            onDismiss = { showNotesDialog = false },
+            onSave = { newNotes ->
+                onUpdateNotes(newNotes)
+                showNotesDialog = false
+            },
+            onExport = {
+                pendingExportNotesId = selectedGame.id
+                exportNotesLauncher.launch("notes_${selectedGame.id}.txt")
             }
         )
     }
@@ -415,7 +461,7 @@ fun GameControlPanel(
     onSetGameTime: (Long) -> Unit,
     onAddScore: (Long?, Int) -> Unit,
     onCourtIds: Set<Long>,
-    exportGameLauncher: androidx.activity.result.ActivityResultLauncher<String>,
+    onExportGame: () -> Unit,
     exportRosterLauncher: androidx.activity.result.ActivityResultLauncher<String>,
     players: List<PlayerEntity>,
     startingLineupSelection: MutableList<Long>,
@@ -537,7 +583,7 @@ fun GameControlPanel(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedButton(
-                onClick = { exportGameLauncher.launch("game_${selectedGame.id}.csv") },
+                onClick = onExportGame,
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Export game CSV")
@@ -696,6 +742,7 @@ fun GameStatsPanel(
     games: List<GameEntity> = emptyList(),
     onSelectGame: (Long) -> Unit = {},
     onDeleteGame: (Long) -> Unit = {},
+    onExportGame: (Long) -> Unit = {},
     selectedGameId: Long? = null,
     onlyManagement: Boolean = false,
     onlyStats: Boolean = false,
@@ -780,6 +827,9 @@ fun GameStatsPanel(
                                 Column {
                                     TextButton(onClick = { onSelectGame(game.id) }) {
                                         Text(if (selected) "Selected" else "Select")
+                                    }
+                                    TextButton(onClick = { onExportGame(game.id) }) {
+                                        Text("Export")
                                     }
                                     TextButton(
                                         onClick = { onDeleteGame(game.id) },
@@ -1200,18 +1250,63 @@ fun formatDuration(millis: Long): String {
 
 @Composable
 fun GameNotesPanel(
-    notes: String,
-    onNotesChange: (String) -> Unit
+    onClick: () -> Unit
 ) {
-    SectionCard(title = "Game Notes") {
-        OutlinedTextField(
-            value = notes,
-            onValueChange = onNotesChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 150.dp),
-            placeholder = { Text("Enter coaching notes here...") },
-            label = { Text("Notes") }
-        )
+    SectionCard(title = "Coaching Notes") {
+        Button(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("📝 Open & Edit Notes")
+        }
     }
+}
+
+@Composable
+fun CoachingNotesDialog(
+    notes: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+    onExport: () -> Unit
+) {
+    var text by remember { mutableStateOf(notes) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Coaching Notes")
+                OutlinedButton(onClick = onExport) {
+                    Text("📤 Export TXT")
+                }
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 300.dp),
+                    placeholder = { Text("Write strategy or observations here...") },
+                    label = { Text("Notes (Keyboard/Pen support)") }
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onSave(text) }) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
