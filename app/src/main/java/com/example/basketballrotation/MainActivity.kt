@@ -28,7 +28,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.basketballrotation.ui.AppViewModel
 import com.example.basketballrotation.ui.GameScreen
@@ -68,8 +70,9 @@ private fun BasketballApp(
     var currentTab by rememberSaveable { mutableStateOf(AppTab.ROSTER.name) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val configuration = LocalConfiguration.current
-    val isExpanded = (configuration.screenWidthDp >= 600)
+    val density = LocalDensity.current
+    val containerWidthDp = with(density) { LocalWindowInfo.current.containerSize.width.toDp() }
+    val isExpanded = containerWidthDp >= 600.dp
 
     LaunchedEffect(Unit) {
         appViewModel.messages.collectLatest { message ->

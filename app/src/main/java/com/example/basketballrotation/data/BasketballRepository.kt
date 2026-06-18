@@ -381,19 +381,28 @@ class BasketballRepository(
         val result = mutableListOf<String>()
         var current = StringBuilder()
         var inQuotes = false
-        
-        for (char in line) {
-            when (char) {
-                '\"' -> inQuotes = !inQuotes
-                ',' -> if (!inQuotes) {
+
+        var index = 0
+        while (index < line.length) {
+            val char = line[index]
+            when {
+                (char == '"') && inQuotes && (index + 1 < line.length) && (line[index + 1] == '"') -> {
+                    current.append('"')
+                    index++ // Skip the escaped quote partner.
+                }
+
+                char == '"' -> inQuotes = !inQuotes
+
+                (char == ',') && !inQuotes -> {
                     result.add(current.toString())
                     current = StringBuilder()
-                } else {
-                    current.append(char)
                 }
+
                 else -> current.append(char)
             }
+            index++
         }
+
         result.add(current.toString())
         return result
     }
