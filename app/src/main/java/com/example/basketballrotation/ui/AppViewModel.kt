@@ -28,6 +28,7 @@ data class PlayerGameStat(
     val points: Int,
     val fouls: Int,
     val mvpVotes: Int,
+    val timesSubbedOff: Int,
     val onCourt: Boolean,
     val currentShiftTimeMillis: Long,
     val totalTimeMillis: Long,
@@ -84,9 +85,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             val lastEnteredAt = mutableMapOf<Long, Long>()
             val pointsByPlayer = mutableMapOf<Long, Int>()
             val foulsByPlayer = mutableMapOf<Long, Int>()
+            val timesSubbedOffByPlayer = mutableMapOf<Long, Int>()
 
             // Process events chronologically to calculate stats and times
-            val sortedEvents = events.sortedBy { it.timestamp }
+            val sortedEvents = events.sortedWith(compareBy<GameEventEntity>({ it.timestamp }, { it.id }))
 
             sortedEvents.forEach { event ->
                 when (EventType.fromRaw(event.type)) {
@@ -104,6 +106,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             lastEnteredAt[playerInId] = event.gameTimeMillis
                         }
                         event.relatedPlayerId?.let { playerOutId ->
+                            timesSubbedOffByPlayer[playerOutId] = (timesSubbedOffByPlayer[playerOutId] ?: 0) + 1
                             val entered = lastEnteredAt.remove(playerOutId)
                             if (entered != null) {
                                 val duration = maxOf(0L, event.gameTimeMillis - entered)
@@ -162,8 +165,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 .filter { !absent.contains(it.id) }
                 .map { player ->
                     val isOnCourt = onCourt.contains(player.id)
-                    val enteredAt = lastEnteredAt[player.id] ?: 0L
-                    
+                    val enteredAt = lastEnteredAt[player.id]
+                        ?: (game?.runningTimeMillis ?: 0L)
+
                     val currentShift = if (isOnCourt) {
                         maxOf(0L, (game?.runningTimeMillis ?: 0L) - enteredAt)
                     } else {
@@ -177,6 +181,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         points = pointsByPlayer[player.id] ?: 0,
                         fouls = foulsByPlayer[player.id] ?: 0,
                         mvpVotes = mvpVotesMap[player.id] ?: 0,
+                        timesSubbedOff = timesSubbedOffByPlayer[player.id] ?: 0,
                         onCourt = isOnCourt,
                         currentShiftTimeMillis = currentShift,
                         totalTimeMillis = totalTime,

@@ -864,7 +864,7 @@ fun GameStatsPanel(
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold
                                     )
-                                    Text("Points: ${stat.points} | Fouls: ${stat.fouls} | Votes: ${stat.mvpVotes}")
+                                    Text("Points: ${stat.points} | Fouls: ${stat.fouls} | Votes: ${stat.mvpVotes} | Subbed off: ${stat.timesSubbedOff}")
                                     Text(
                                         "Total Time: ${formatDuration(stat.totalTimeMillis)}",
                                         style = MaterialTheme.typography.bodySmall
@@ -1090,7 +1090,7 @@ fun PlayerActionCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Text("Points: ${stat.points}   Fouls: ${stat.fouls}")
+                    Text("Points: ${stat.points}   Fouls: ${stat.fouls}   Subbed off: ${stat.timesSubbedOff}")
                     if (enabled) {
                         Row {
                             TextButton(
