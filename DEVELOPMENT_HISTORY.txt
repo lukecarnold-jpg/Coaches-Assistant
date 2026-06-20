@@ -93,3 +93,10 @@
 - **Roster Import:** Added the ability to import player rosters from CSV files, streamlining team setup for new seasons.
 - **Data Retention Restored:** Re-implemented safe Room migrations (AutoMigration) and protected data from accidental deletion during app updates by disabling destructive upgrades.
 - **CSV Parser:** Developed a robust, quote-aware CSV parser to handle player names and data correctly during import.
+
+## Version 2.1 (Adaptive Training & Flexibility)
+- **Adaptive Training Layout:** Redesigned the Training screen for larger devices (tablets/foldables), utilizing a multi-column layout that shows selection tools and AI-generated results side-by-side.
+- **AI Model Optimization:** Updated the training assistant to leverage `gemini-2.5-flash` for high-speed, age-specific basketball drill generation.
+- **Jersey Number Flexibility:** Restored optional status for jersey numbers in the roster, allowing coaches to add players quickly without needing official numbers.
+- **Coming Soon Roadmap:** Integrated visual placeholders for future interactive training modules, video demonstrations, and progress tracking.
+- **Maintenance:** Performed a full project audit, refined internal documentation, and verified all adaptive layout components for stability.
