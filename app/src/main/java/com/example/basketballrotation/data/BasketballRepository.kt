@@ -127,11 +127,19 @@ class BasketballRepository(
             val oldEvent = gameEventDao.getByGame(event.gameId).find { it.id == event.id } ?: return@withTransaction
             gameEventDao.update(event)
             
-            // If it's a score event, adjust the game total
-            if (event.type == EventType.SCORE.name) {
-                val game = gameDao.getById(event.gameId) ?: return@withTransaction
-                val diff = event.points - oldEvent.points
-                gameDao.update(game.copy(teamScore = (game.teamScore + diff).coerceAtLeast(0)))
+            val game = gameDao.getById(event.gameId) ?: return@withTransaction
+            when (EventType.fromRaw(event.type)) {
+                EventType.SCORE -> {
+                    val diff = event.points - oldEvent.points
+                    gameDao.update(game.copy(teamScore = (game.teamScore + diff).coerceAtLeast(0)))
+                }
+
+                EventType.OPPONENT_SCORE -> {
+                    val diff = event.points - oldEvent.points
+                    gameDao.update(game.copy(opponentScore = (game.opponentScore + diff).coerceAtLeast(0)))
+                }
+
+                else -> Unit
             }
         }
     }
@@ -139,9 +147,17 @@ class BasketballRepository(
     suspend fun deleteEvent(event: GameEventEntity) {
         database.withTransaction {
             gameEventDao.deleteById(event.id)
-            if (event.type == EventType.SCORE.name) {
-                val game = gameDao.getById(event.gameId) ?: return@withTransaction
-                gameDao.update(game.copy(teamScore = (game.teamScore - event.points).coerceAtLeast(0)))
+            val game = gameDao.getById(event.gameId) ?: return@withTransaction
+            when (EventType.fromRaw(event.type)) {
+                EventType.SCORE -> {
+                    gameDao.update(game.copy(teamScore = (game.teamScore - event.points).coerceAtLeast(0)))
+                }
+
+                EventType.OPPONENT_SCORE -> {
+                    gameDao.update(game.copy(opponentScore = (game.opponentScore - event.points).coerceAtLeast(0)))
+                }
+
+                else -> Unit
             }
         }
     }
@@ -205,6 +221,15 @@ class BasketballRepository(
             if (playerId == null) {
                 // Adjusting opponent score
                 gameDao.update(game.copy(opponentScore = (game.opponentScore + points).coerceAtLeast(0)))
+                gameEventDao.insert(
+                    GameEventEntity(
+                        gameId = gameId,
+                        timestamp = System.currentTimeMillis(),
+                        type = EventType.OPPONENT_SCORE.name,
+                        points = points,
+                        gameTimeMillis = calculateCurrentGameTime(game),
+                    ),
+                )
             } else {
                 gameDao.update(game.copy(teamScore = (game.teamScore + points).coerceAtLeast(0)))
                 gameEventDao.insert(

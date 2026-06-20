@@ -9,6 +9,7 @@ enum class EventType {
     START_LINEUP,
     SUBSTITUTION,
     SCORE,
+    OPPONENT_SCORE,
     FOUL,
     MVP_VOTE,
     PERIOD_CHANGE,

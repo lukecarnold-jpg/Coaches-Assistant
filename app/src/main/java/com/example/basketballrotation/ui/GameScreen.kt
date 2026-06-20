@@ -417,7 +417,11 @@ fun EventEditDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Type: ${event.type}")
-                if ((event.type == EventType.SCORE.name) || (event.type == EventType.FOUL.name)) {
+                if (
+                    (event.type == EventType.SCORE.name) ||
+                    (event.type == EventType.OPPONENT_SCORE.name) ||
+                    (event.type == EventType.FOUL.name)
+                ) {
                     OutlinedTextField(
                         value = points,
                         onValueChange = { points = it },
@@ -1216,6 +1220,11 @@ fun eventDescription(
         EventType.SCORE -> {
             val playerName = event.playerId?.let(playersById::get)?.displayLabel().orEmpty()
             "$playerName +${event.points}"
+        }
+
+        EventType.OPPONENT_SCORE -> {
+            val prefix = if (event.points >= 0) "+" else ""
+            "Opponent $prefix${event.points}"
         }
 
         EventType.FOUL -> {

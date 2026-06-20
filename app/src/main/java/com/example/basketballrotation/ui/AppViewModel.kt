@@ -140,6 +140,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         lastEnteredAt.clear()
                     }
 
+                    EventType.OPPONENT_SCORE,
                     EventType.MVP_VOTE -> {}
                 }
             }
