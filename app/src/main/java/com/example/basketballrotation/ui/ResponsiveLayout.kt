@@ -5,7 +5,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -46,10 +47,13 @@ val LocalResponsiveLayout = compositionLocalOf { DefaultResponsiveLayout }
 
 @Composable
 fun rememberResponsiveLayout(): ResponsiveLayout {
-    val configuration = LocalConfiguration.current
-    return remember(configuration.screenWidthDp, configuration.screenHeightDp) {
-        val widthDp = configuration.screenWidthDp
-        val heightDp = configuration.screenHeightDp
+    val density = LocalDensity.current
+    val windowInfo = LocalWindowInfo.current
+    val containerSize = windowInfo.containerSize
+
+    return remember(containerSize, density) {
+        val widthDp = with(density) { containerSize.width.toDp().value.toInt() }
+        val heightDp = with(density) { containerSize.height.toDp().value.toInt() }
         val scale = when {
             widthDp < 360 -> 0.90f
             widthDp < 600 -> 1.00f

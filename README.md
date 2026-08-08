@@ -43,10 +43,10 @@ It is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powered t
 ## Tech Stack
 
 - Kotlin
-- Android Gradle Plugin 9.2.1
+- Android Gradle Plugin 9.3.1
 - Gradle 9.4.1 wrapper
 - Java 17 target
-- Jetpack Compose BOM `2026.06.00`
+- Jetpack Compose BOM `2026.06.01`
 - Lifecycle ViewModel
 - Room `2.8.4` + KSP
 - Google Generative AI client `0.9.0`
@@ -143,4 +143,3 @@ See `DEVELOPMENT_HISTORY.txt` for version-by-version details through `v2.1`, inc
 
 No license file is currently present in this repository.
 If you plan to distribute this project, add a `LICENSE` file and update this section.
-
