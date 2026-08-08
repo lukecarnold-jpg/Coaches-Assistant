@@ -44,6 +44,8 @@ fun RosterScreen(
     onExportPlayers: (Uri) -> Unit,
     onImportPlayers: (Uri) -> Unit,
 ) {
+    val layout = LocalResponsiveLayout.current
+
     var name by rememberSaveable { mutableStateOf("") }
     var jerseyNumber by rememberSaveable { mutableStateOf("") }
     var showError by rememberSaveable { mutableStateOf(value = false) }
@@ -67,8 +69,8 @@ fun RosterScreen(
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(layout.screenPadding),
+        verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
     ) {
         Text(
             text = "Team roster",
@@ -79,11 +81,11 @@ fun RosterScreen(
         if (isExpanded) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(layout.sectionGap),
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
                 ) {
                     RosterForm(
                         name = name,
@@ -117,7 +119,7 @@ fun RosterScreen(
 
                 Column(
                     modifier = Modifier.weight(1.5f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
                 ) {
                     RosterList(
                         players = players,
@@ -204,7 +206,9 @@ fun RosterForm(
     onExportPlayers: () -> Unit,
     onImportPlayers: () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val layout = LocalResponsiveLayout.current
+
+    Column(verticalArrangement = Arrangement.spacedBy(layout.sectionGap)) {
         OutlinedTextField(
             value = name,
             onValueChange = onNameChange,
@@ -230,7 +234,7 @@ fun RosterForm(
             ) {
                 Text(
                     text = "Player Name is required.",
-                    modifier = Modifier.padding(12.dp),
+                    modifier = Modifier.padding(layout.cardPadding),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -239,7 +243,7 @@ fun RosterForm(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
         ) {
             Button(
                 onClick = onAddPlayer,
@@ -251,7 +255,7 @@ fun RosterForm(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
         ) {
             OutlinedButton(
                 onClick = onExportPlayers,
@@ -288,13 +292,14 @@ fun RosterList(
     } else {
         players.forEach { player ->
             if (editingPlayer?.id == player.id) {
+                val layout = LocalResponsiveLayout.current
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                 ) {
                     Column(
-                        modifier = Modifier.padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.padding(layout.cardPadding),
+                        verticalArrangement = Arrangement.spacedBy(layout.smallGap)
                     ) {
                         OutlinedTextField(
                             value = editName,
@@ -310,7 +315,7 @@ fun RosterList(
                         )
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
                         ) {
                             Button(
                                 onClick = { onSaveUpdate(player) },
@@ -332,7 +337,7 @@ fun RosterList(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp),
+                            .padding(LocalResponsiveLayout.current.cardPadding),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {

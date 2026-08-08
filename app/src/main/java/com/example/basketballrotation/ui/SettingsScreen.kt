@@ -25,11 +25,12 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     onClearAllData: () -> Unit,
 ) {
+    val layout = LocalResponsiveLayout.current
     var showConfirm by remember { mutableStateOf(value = false) }
 
     Column(
-        modifier = modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier.padding(layout.screenPadding),
+        verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
     ) {
         Text(
             text = "Settings",
@@ -39,7 +40,7 @@ fun SettingsScreen(
 
         SectionCard(title = "Data management") {
             Text("Clear all local data including players, games, and events. This action cannot be undone.")
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(layout.smallGap))
             Button(
                 onClick = { showConfirm = true },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),

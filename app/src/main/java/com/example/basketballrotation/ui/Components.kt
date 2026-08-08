@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -23,13 +25,15 @@ fun SectionCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val layout = LocalResponsiveLayout.current
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.padding(layout.cardPadding),
+            verticalArrangement = Arrangement.spacedBy(layout.smallGap),
         ) {
             Text(
                 text = title,
@@ -56,7 +60,13 @@ fun SmallActionButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    androidx.compose.material3.OutlinedButton(onClick = onClick, modifier = modifier) {
+    val layout = LocalResponsiveLayout.current
+
+    androidx.compose.material3.OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.heightIn(min = layout.controlHeight),
+        contentPadding = PaddingValues(horizontal = layout.smallGap, vertical = layout.tinyGap),
+    ) {
         Text(label)
     }
 }
@@ -67,6 +77,7 @@ fun SelectablePlayerRow(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
+    val layout = LocalResponsiveLayout.current
     val background =
         if (selected) MaterialTheme.colorScheme.primaryContainer
         else MaterialTheme.colorScheme.surface
@@ -75,13 +86,13 @@ fun SelectablePlayerRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(layout.cardCornerRadius),
         color = background,
         tonalElevation = if (selected) 2.dp else 0.dp,
     ) {
         Text(
             text = text,
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(layout.cardPadding),
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
         )
     }
@@ -89,13 +100,14 @@ fun SelectablePlayerRow(
 
 @Composable
 fun StatusBadge(text: String, modifier: Modifier = Modifier) {
+    val layout = LocalResponsiveLayout.current
     Box(
         modifier = modifier
             .background(
                 color = MaterialTheme.colorScheme.primaryContainer,
                 shape = RoundedCornerShape(999.dp)
             )
-            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .padding(horizontal = layout.smallGap + 2.dp, vertical = layout.tinyGap + 2.dp)
     ) {
         Text(
             text = text,

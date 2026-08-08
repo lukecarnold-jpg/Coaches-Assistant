@@ -28,14 +28,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.basketballrotation.ui.AppViewModel
 import com.example.basketballrotation.ui.GameScreen
 import com.example.basketballrotation.ui.RosterScreen
+import com.example.basketballrotation.ui.LocalResponsiveLayout
 import com.example.basketballrotation.ui.SettingsScreen
+import com.example.basketballrotation.ui.ResponsiveLayoutProvider
 import com.example.basketballrotation.ui.TrainingScreen
 import kotlinx.coroutines.flow.collectLatest
 
@@ -44,7 +43,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                BasketballApp()
+                ResponsiveLayoutProvider {
+                    BasketballApp()
+                }
             }
         }
     }
@@ -70,9 +71,8 @@ private fun BasketballApp(
     var currentTab by rememberSaveable { mutableStateOf(AppTab.ROSTER.name) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val density = LocalDensity.current
-    val containerWidthDp = with(density) { LocalWindowInfo.current.containerSize.width.toDp() }
-    val isExpanded = containerWidthDp >= 600.dp
+    val responsiveLayout = LocalResponsiveLayout.current
+    val isExpanded = responsiveLayout.widthDp >= 600
 
     LaunchedEffect(Unit) {
         appViewModel.messages.collectLatest { message ->

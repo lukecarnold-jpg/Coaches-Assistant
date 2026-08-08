@@ -56,6 +56,8 @@ fun GameScreen(
     onUpdateEvent: (GameEventEntity) -> Unit,
     onDeleteEvent: (GameEventEntity) -> Unit,
 ) {
+    val layout = LocalResponsiveLayout.current
+
     var gameTitle by rememberSaveable { mutableStateOf("") }
     var opponent by rememberSaveable { mutableStateOf("") }
     var useQuarters by rememberSaveable { mutableStateOf(value = false) }
@@ -105,14 +107,14 @@ fun GameScreen(
 
     if (isExpanded) {
         Row(
-            modifier = modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = modifier.padding(layout.screenPadding),
+            horizontalArrangement = Arrangement.spacedBy(layout.sectionGap)
         ) {
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(layout.sectionGap)
             ) {
                 if (selectedGame != null) {
                     GameControlPanel(
@@ -166,7 +168,7 @@ fun GameScreen(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(layout.sectionGap)
             ) {
                 if (selectedGame != null) {
                     GameNotesPanel(
@@ -208,8 +210,8 @@ fun GameScreen(
         Column(
             modifier = modifier
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(layout.screenPadding),
+            verticalArrangement = Arrangement.spacedBy(layout.sectionGap)
         ) {
             Text(
                 text = "Game tracker",
@@ -352,6 +354,7 @@ fun AttendanceDialog(
     onConfirm: (List<Long>) -> Unit
 ) {
     val currentAbsent = remember { mutableStateListOf<Long>().apply { addAll(absentPlayerIds) } }
+    val layout = LocalResponsiveLayout.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -361,7 +364,7 @@ fun AttendanceDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(layout.smallGap)
             ) {
                 Text("Select players who are ABSENT for this game.")
                 players.forEach { player ->
@@ -373,7 +376,7 @@ fun AttendanceDialog(
                                 if (isAbsent) currentAbsent.remove(player.id)
                                 else currentAbsent.add(player.id)
                             }
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = layout.tinyGap),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Checkbox(
@@ -383,7 +386,7 @@ fun AttendanceDialog(
                                 else currentAbsent.remove(player.id)
                             }
                         )
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(layout.smallGap))
                         Text(player.displayLabel())
                     }
                 }
@@ -410,12 +413,13 @@ fun EventEditDialog(
 ) {
     var points by remember { mutableStateOf(event.points.toString()) }
     var note by remember { mutableStateOf(event.note) }
+    val layout = LocalResponsiveLayout.current
     
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Edit Event") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 Text("Type: ${event.type}")
                 if (
                     (event.type == EventType.SCORE.name) ||
@@ -480,6 +484,8 @@ fun GameControlPanel(
     onPlayerInClick: (Long) -> Unit,
     onSubstitute: () -> Unit,
 ) {
+    val layout = LocalResponsiveLayout.current
+
     SectionCard(title = "Game clock & score") {
         val periodName = if (selectedGame.useQuarters) "Q${selectedGame.currentPeriod}" else "H${selectedGame.currentPeriod}"
         Text(
@@ -498,7 +504,7 @@ fun GameControlPanel(
         if (!selectedGame.isFinished) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
             ) {
                 val maxPeriods = if (selectedGame.useQuarters) 4 else 2
                 if (selectedGame.currentPeriod < maxPeriods) {
@@ -528,14 +534,14 @@ fun GameControlPanel(
             ) {
                 Text(
                     "GAME FINISHED",
-                    modifier = Modifier.padding(8.dp).align(Alignment.CenterHorizontally),
+                    modifier = Modifier.padding(layout.smallGap).align(Alignment.CenterHorizontally),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
             }
         }
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = layout.sectionGap / 2))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -577,11 +583,11 @@ fun GameControlPanel(
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(layout.smallGap))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
         ) {
             OutlinedButton(
                 onClick = onExportGame,
@@ -605,7 +611,7 @@ fun GameControlPanel(
         if (onCourtIds.size < 5) {
             SectionCard(title = "Set starting lineup") {
                 Text("Select exactly 5 players.")
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(layout.smallGap))
 
                 players.forEach { player ->
                     val checked = startingLineupSelection.contains(player.id)
@@ -613,7 +619,7 @@ fun GameControlPanel(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = layout.tinyGap),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Checkbox(
@@ -631,7 +637,7 @@ fun GameControlPanel(
                     }
                 }
 
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(layout.smallGap))
 
                 Button(
                     onClick = { onSetLineup(startingLineupSelection.toList()) },
@@ -642,7 +648,7 @@ fun GameControlPanel(
             }
         } else {
             SectionCard(title = "Players on court") {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                     onCourtStats.forEach { stat ->
                         PlayerActionCard(
                             stat = stat,
@@ -666,16 +672,16 @@ fun GameControlPanel(
                             style = MaterialTheme.typography.labelSmall
                         )
                     }
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(layout.smallGap))
 
                     Text(
                         text = "Players coming out (${pendingOut.size})",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(layout.tinyGap))
 
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
                         onCourtStats.forEach { stat ->
                             SelectablePlayerRow(
                                 text = stat.player.displayLabel(),
@@ -686,19 +692,19 @@ fun GameControlPanel(
                         }
                     }
 
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(layout.sectionGap))
 
                     Text(
                         text = "Players coming in (${pendingIn.size})",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(layout.tinyGap))
 
                     if (benchStats.isEmpty()) {
                         EmptyMessage("No bench players available.")
                     } else {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
                             benchStats.forEach { stat ->
                                 SelectablePlayerRow(
                                     text = stat.player.displayLabel(),
@@ -710,7 +716,7 @@ fun GameControlPanel(
                         }
                     }
 
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(layout.smallGap))
 
                     Button(
                         onClick = onSubstitute,
@@ -748,6 +754,8 @@ fun GameStatsPanel(
     onlyManagement: Boolean = false,
     onlyStats: Boolean = false,
 ) {
+    val layout = LocalResponsiveLayout.current
+
     if (!onlyStats) {
         SectionCard(title = "Create a game") {
             OutlinedTextField(
@@ -757,7 +765,7 @@ fun GameStatsPanel(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(layout.smallGap))
 
             OutlinedTextField(
                 value = opponent,
@@ -766,7 +774,7 @@ fun GameStatsPanel(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(layout.smallGap))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = useQuarters, onCheckedChange = onUseQuartersChange)
@@ -780,7 +788,7 @@ fun GameStatsPanel(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(layout.smallGap))
 
             Button(onClick = onCreateGame) {
                 Text("Create game")
@@ -791,7 +799,7 @@ fun GameStatsPanel(
             if (games.isEmpty()) {
                 EmptyMessage("No games yet.")
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                     games.forEach { game ->
                         val selected = selectedGameId == game.id
 
@@ -809,11 +817,11 @@ fun GameStatsPanel(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(12.dp),
+                                    .padding(layout.cardPadding),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap)) {
                                     Text(
                                         text = game.title,
                                         style = MaterialTheme.typography.titleMedium,
@@ -852,17 +860,17 @@ fun GameStatsPanel(
             if (stats.isEmpty()) {
                 EmptyMessage("No stats yet.")
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                     stats.forEach { stat ->
                         OutlinedCard(modifier = Modifier.fillMaxWidth()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(12.dp),
+                                    .padding(layout.cardPadding),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap)) {
                                     Text(
                                         text = stat.player.displayLabel(),
                                         style = MaterialTheme.typography.titleMedium,
@@ -895,19 +903,19 @@ fun GameStatsPanel(
             if (events.isEmpty()) {
                 EmptyMessage("No events yet.")
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                     events.forEach { event ->
                         OutlinedCard(modifier = Modifier.fillMaxWidth()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(12.dp),
+                                    .padding(layout.cardPadding),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(
                                     modifier = Modifier.weight(1f),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    verticalArrangement = Arrangement.spacedBy(layout.tinyGap)
                                 ) {
                                     Text(
                                         text = eventDescription(event, playerById),
@@ -944,6 +952,8 @@ fun GameClock(
     onResetTimer: () -> Unit,
     onSetGameTime: (Long) -> Unit,
 ) {
+    val layout = LocalResponsiveLayout.current
+
     val runningTimeMillis = game.runningTimeMillis
     val timerLastStartedAt = game.timerLastStartedAt
     val duration = game.periodDurationMillis
@@ -1005,7 +1015,7 @@ fun GameClock(
                             },
                             contentDescription = null
                         )
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(layout.smallGap))
                         Text(if (timerLastStartedAt != null) "Stop" else "Start")
                     }
                 }
@@ -1019,9 +1029,9 @@ fun GameClock(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = layout.smallGap),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
             ) {
                 OutlinedTextField(
                     value = minutesText,
@@ -1059,6 +1069,8 @@ fun PlayerActionCard(
     gameTimerLastStartedAt: Long?,
     enabled: Boolean = true,
 ) {
+    val layout = LocalResponsiveLayout.current
+
     var shiftDisplayTime by remember(stat.currentShiftTimeMillis, gameTimerLastStartedAt) {
         mutableLongStateOf(stat.currentShiftTimeMillis)
     }
@@ -1080,15 +1092,15 @@ fun PlayerActionCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(layout.cardPadding),
+            verticalArrangement = Arrangement.spacedBy(layout.smallGap)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap)) {
                     Text(
                         text = stat.player.displayLabel(),
                         style = MaterialTheme.typography.titleMedium,
@@ -1100,7 +1112,7 @@ fun PlayerActionCard(
                             TextButton(
                                 onClick = { onAddScore(stat.player.id, -1) },
                                 contentPadding = PaddingValues(0.dp),
-                                modifier = Modifier.height(24.dp)
+                                modifier = Modifier.height(layout.compactControlHeight)
                             ) {
                                 Text("-1 pt", style = MaterialTheme.typography.bodySmall)
                             }
@@ -1113,7 +1125,7 @@ fun PlayerActionCard(
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(layout.smallGap))
                         Text(
                             text = "Total: ${formatDuration(stat.totalTimeMillis - stat.currentShiftTimeMillis + shiftDisplayTime)}",
                             style = MaterialTheme.typography.bodySmall,
@@ -1128,8 +1140,8 @@ fun PlayerActionCard(
                     if (enabled) {
                         TextButton(
                             onClick = { onAddMvpVote(stat.player.id) },
-                            contentPadding = PaddingValues(horizontal = 8.dp),
-                            modifier = Modifier.height(32.dp),
+                            contentPadding = PaddingValues(horizontal = layout.smallGap),
+                            modifier = Modifier.height(layout.controlHeight),
                             colors = ButtonDefaults.textButtonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
                         ) {
                             Text("MVP Vote (${stat.mvpVotes})", style = MaterialTheme.typography.labelSmall)
@@ -1141,7 +1153,7 @@ fun PlayerActionCard(
             if (enabled) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
                 ) {
                     SmallActionButton(label = "+1", modifier = Modifier.weight(1f)) {
                         onAddScore(stat.player.id, 1)
@@ -1156,7 +1168,7 @@ fun PlayerActionCard(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -1167,26 +1179,26 @@ fun PlayerActionCard(
                     )
 
                     OutlinedCard(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(layout.cardCornerRadius),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(
                                 onClick = { onAddFoul(stat.player.id, -1) },
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(layout.iconButtonSize)
                             ) {
                                 Text("-", fontWeight = FontWeight.Bold)
                             }
                             Text(
                                 text = stat.fouls.toString(),
-                                modifier = Modifier.padding(horizontal = 8.dp),
+                                modifier = Modifier.padding(horizontal = layout.smallGap),
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Bold
                             )
                             IconButton(
                                 onClick = { onAddFoul(stat.player.id, 1) },
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(layout.iconButtonSize)
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = "Add foul", modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Add, contentDescription = "Add foul", modifier = Modifier.size(layout.inlineIconSize))
                             }
                         }
                     }
@@ -1276,6 +1288,7 @@ fun CoachingNotesDialog(
     onExport: () -> Unit
 ) {
     var text by remember { mutableStateOf(notes) }
+    val layout = LocalResponsiveLayout.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1292,13 +1305,13 @@ fun CoachingNotesDialog(
             }
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 300.dp),
+                        .heightIn(min = layout.notesMinHeight),
                     placeholder = { Text("Write strategy or observations here...") },
                     label = { Text("Notes (Keyboard/Pen support)") }
                 )

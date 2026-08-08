@@ -20,6 +20,7 @@ fun TrainingScreen(
     isExpanded: Boolean,
     trainingViewModel: TrainingViewModel = viewModel(),
 ) {
+    val layout = LocalResponsiveLayout.current
     val uiState by trainingViewModel.uiState.collectAsState()
     val ageGroups = listOf(
         "Mini Ball (Ages 5-6)",
@@ -35,9 +36,9 @@ fun TrainingScreen(
     var selectedAgeGroup by rememberSaveable { mutableStateOf(ageGroups.first()) }
 
     if (isExpanded) {
-        Column(modifier = modifier.padding(16.dp)) {
+        Column(modifier = modifier.padding(layout.screenPadding)) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = layout.sectionGap),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -49,11 +50,11 @@ fun TrainingScreen(
 
                 Surface(
                     color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(layout.cardCornerRadius),
                 ) {
                     Text(
                         "COMING SOON",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(horizontal = layout.smallGap, vertical = layout.tinyGap),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -62,13 +63,13 @@ fun TrainingScreen(
             }
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(layout.sectionGap),
             ) {
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
                 ) {
                     SectionCard(title = "Coming Soon") {
                         Text(
@@ -95,7 +96,7 @@ fun TrainingScreen(
                     modifier = Modifier
                         .weight(1.5f)
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
                 ) {
                     TrainingResultsPanel(uiState = uiState)
                 }
@@ -105,8 +106,8 @@ fun TrainingScreen(
         Column(
             modifier = modifier
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(layout.screenPadding),
+            verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -121,11 +122,11 @@ fun TrainingScreen(
                 
                 Surface(
                     color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(layout.cardCornerRadius),
                 ) {
                     Text(
                         "COMING SOON",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(horizontal = layout.smallGap, vertical = layout.tinyGap),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -169,6 +170,8 @@ fun TrainingSelectionPanel(
     onGenerateClick: () -> Unit,
     isLoading: Boolean,
 ) {
+    val layout = LocalResponsiveLayout.current
+
     SectionCard(title = "Select age group") {
         ExposedDropdownMenuBox(
             expanded = expanded,
@@ -201,7 +204,7 @@ fun TrainingSelectionPanel(
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(layout.smallGap))
 
         Button(
             onClick = onGenerateClick,
@@ -242,7 +245,7 @@ fun TrainingResultsPanel(uiState: TrainingUiState) {
             ) {
                 Text(
                     text = uiState.message,
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(LocalResponsiveLayout.current.cardPadding),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -252,10 +255,12 @@ fun TrainingResultsPanel(uiState: TrainingUiState) {
 
 @Composable
 fun DrillCard(drill: BasketballDrill) {
+    val layout = LocalResponsiveLayout.current
+
     OutlinedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(layout.cardPadding),
+            verticalArrangement = Arrangement.spacedBy(layout.smallGap),
         ) {
             Text(
                 text = drill.title,
@@ -274,7 +279,7 @@ fun DrillCard(drill: BasketballDrill) {
                 style = MaterialTheme.typography.bodyMedium,
             )
             
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = layout.tinyGap))
             
             Text(
                 text = "Teaching Points",
