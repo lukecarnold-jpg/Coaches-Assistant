@@ -1,102 +1,97 @@
 # Basketball Rotation & Stats Tracker - Development History
 
+This history captures the key milestones in the app's evolution, from the initial game tracker through the current roster-and-game-management workflow.
+
 ## Version 1.0 (Initial Release)
-- Basic player roster management (Name, Optional Jersey Number).
-- Game creation and selection.
-- Starting lineup selection (5 players).
-- Real-time substitution tracking.
-- Basic scoring (+1, +2, +3) and foul tracking.
-- Simple game clock (Start/Stop).
-- CSV export for roster and individual games.
-- Persistent storage using Room Database.
+- Basic player roster management (name and optional jersey number)
+- Game creation and selection
+- Starting lineup selection (5 players)
+- Real-time substitution tracking
+- Basic scoring (+1, +2, +3) and foul tracking
+- Simple game clock (start/stop)
+- CSV export for rosters and games
+- Persistent storage using Room
 
 ## Version 1.1 (Scoring & UI Enhancements)
-- Added manual score adjustments for the home team (including -1 pt corrections).
-- Added Opponent score tracking with manual +1/-1 controls.
-- Fixed layout issues where long player names would overflow.
-- Enhanced the Game Clock with a Reset button (🔄).
-- Enabled manual time editing for the game clock to sync with official timers.
+- Added manual team score adjustments, including corrections
+- Added opponent score tracking with manual controls
+- Fixed overflow issues for long player names
+- Enhanced the game clock with a reset action
+- Enabled manual time adjustment to sync with official timers
 
 ## Version 1.2 (MVP & Branding)
-- Implemented an MVP Voting system:
-    - Added "MVP Vote" buttons to active player action cards.
-    - Added vote tallying in the Game Stats section.
-    - Votes are persisted in the database and included in CSV exports.
-- Updated the App Launcher Icon:
-    - Designed a custom orange basketball with black vector lines.
-    - Updated adaptive icons and legacy bitmap resources.
-- Database Migration: Incremented schema to Version 2 to support MVP data and opponent scores.
+- Implemented MVP voting
+  - MVP vote buttons on active player action cards
+  - Vote tallying in game stats
+  - Votes persisted and included in CSV exports
+- Updated the app launcher icon with a custom orange basketball design
+- Incremented the database schema to version 2 for MVP and opponent score data
 
 ## Version 1.3 (Validation & Management)
-- **Jersey Number Requirement:**
-    - Changed Jersey Number from an optional to a mandatory field.
-    - Implemented UI validation with a red error alert box when adding players with missing info.
-    - Simplified sorting logic in the database (now sorting directly by integer jersey number).
-- **Game Management:**
-    - Added "Delete Game" functionality to the tracker list.
-    - Implemented cascading deletes for game events to keep the database clean.
-- **Stability:**
-    - Incremented Database schema to Version 3 to handle non-nullable jersey column.
-    - Fixed "Unnecessary safe call" and other minor Kotlin compiler warnings.
-    - Verified full project build and finalized README.md documentation.
+- Jersey number validation and stricter roster input handling
+- Added delete-game support with cascading cleanup for related events
+- Increased DB schema version to support non-null jersey data
+- Fixed warnings and finalized the README documentation
 
 ## Version 1.4 (Structure & Corrections)
-- **Flexible Periods:** Added support for Quarters or Halves with customizable durations.
-- **Countdown Clock:** Replaced the count-up timer with a standard basketball countdown.
-- **Dynamic Lineups:** Allowed starting lineups to be redefined at the start of each period.
-- **Event Auditing:**
-    - Implemented "Edit" and "Delete" actions for all logged game events.
-    - Automatic game score recalculation when score events are edited or removed.
-- **Game Finalization:** Added "End Game" functionality to lock games and save final states.
-- **Database Migration:** Incremented schema to Version 5 for period-based tracking and game status.
-- **UI/UX:** Added period labels (Q1, H1, etc.) and enhanced the game clock visibility.
+- Added flexible periods (quarters or halves) with configurable durations
+- Replaced the count-up timer with a standard countdown clock
+- Allowed starting lineups to be redefined at each period transition
+- Added edit/delete actions for recorded game events
+- Automatic score recalculation when events are edited or removed
+- Added end-game locking and final-state saving
+- Increased the schema version for game-status and period tracking
 
 ## Version 1.5 (Data Retention & Maintenance)
-- **Schema Exporting:** Enabled Room schema exporting for safer version migrations.
-- **Auto Backup:** Configured `backup_rules` and `data_extraction_rules` to ensure roster and game data survive app updates and cloud restores.
-- **Downgrade Safety:** Restricted destructive migration to downgrades only, protecting production data during standard upgrades.
-- **Refactoring:** Completed a full project review to fix minor warnings, exhaustive when-branches, and trailing comma consistency.
-- **UI Synchronization:** Fixed a bug where editing a player would occasionally show stale data in the edit form.
+- Enabled Room schema export for safer migrations
+- Added backup rules and extraction rules for persistence across app updates
+- Restricted destructive migration to downgrades only
+- Completed a project-wide review for warnings and consistency fixes
+- Fixed stale edit-form data after player updates
 
 ## Version 1.6 (Adaptive Tablet Layout)
-- **Window Size Classes:** Integrated Material 3 Window Size Classes to detect device form factors.
-- **NavigationRail:** Added a side navigation rail for expanded screens (tablets/foldables/landscape).
-- **Multi-column Roster:** Updated the Roster screen to show the input form and list side-by-side on larger screens.
-- **Split-screen Game Tracker:** Redesigned the Game screen to display game controls and stats simultaneously in two columns when expanded.
-- **Component Refactoring:** Extracted several UI components (RosterForm, RosterList, GameControlPanel, GameStatsPanel) to improve maintainability and enable reuse across adaptive layouts.
+- Integrated Material 3 window size detection
+- Added a navigation rail for larger devices
+- Refined roster layout to support side-by-side editing and lists on expanded screens
+- Redesigned the game screen for split-panel layouts on tablets and foldables
+- Extracted reusable UI components for better maintainability
 
 ## Version 1.7 (Stability & Tablet Fix)
-- **Theme Migration:** Migrated the app theme from `MaterialComponents` to `Material3` to resolve a crash on launch occurring on some tablet devices when using `ComponentActivity`.
-- **Layout Stability:** Added `Modifier.weight(1f)` to the main `Scaffold` within the tablet `Row` to ensure correct measurement and prevent potential measurement-related crashes.
-- **Window Size Detection:** Replaced the experimental `WindowSizeClass` API with `LocalConfiguration.current.screenWidthDp` for determining adaptive layouts, improving compatibility and initialization speed.
-- **UI Consistency:** Standardized the initialization of edit forms and ensured exhaustive event handling across all device form factors.
+- Migrated the app theme from MaterialComponents to Material3
+- Fixed measurement stability in tablet layouts
+- Switched to `LocalConfiguration.current.screenWidthDp` for adaptive layout detection
+- Standardized edit-form initialization and event handling
 
 ## Version 1.8 (AI Training Assistant & Maintenance)
-- **Training Section:** Added a new top-level section for coach training and player development.
-- **AI Drill Generation:** Integrated Google Gemini AI to generate age-appropriate basketball drills.
-- **Dynamic Age Selection:** Implemented a dropdown menu with support for Mini Ball (5-6) through Under 18 age groups.
-- **Secure API Management:** Moved Gemini API key handling to `local.properties` and `BuildConfig` for improved security and project portability.
-- **Coming Soon Notice:** Added visual indicators for upcoming training features to keep users informed of future updates.
-- **Project Modernization:**
-    - Target SDK updated to 37.
-    - Switched hardcoded dependencies to Version Catalog (`libs.versions.toml`).
-    - Updated AI and Compose libraries to latest stable versions.
-    - Performed comprehensive code review and refactoring for better performance and maintenance.
+- Added a dedicated training section for development and coaching support
+- Integrated Gemini AI drill generation for age-specific basketball activities
+- Added age-group dropdown selection from Mini Ball to Under 18
+- Moved the API key to `local.properties` + `BuildConfig` for safer project portability
+- Added “coming soon” placeholders and modernized dependencies
+- Updated the project to target SDK 37 and moved dependency management to a version catalog
 
 ## Version 1.9 (Attendance & Game Logic)
-- **End Game Enhancements:** Updated the "End Game" button to automatically clear the "On Court" status of all players, ensuring post-game stats are cleanly separated from active rotation tracking.
-- **Absent Player Tracking:** Added a new "Manage Attendance" feature for each game. Coaches can now flag players as "Absent" for specific games.
-- **Attendance Filtering:** Absent players are automatically excluded from the court/bench lists and stats views for that specific game, keeping the interface focused on available players.
-- **Database Schema Update:** Incremented schema to Version 6 to support per-game attendance records.
+- Added automatic on-court cleanup when a game ends
+- Implemented per-game attendance tracking for absent players
+- Filtered absent players out of live roster or stat views for the selected game
+- Increased the database schema to version 6 to support attendance data
 
 ## Version 2.0 (Data Management & Import)
-- **Roster Import:** Added the ability to import player rosters from CSV files, streamlining team setup for new seasons.
-- **Data Retention Restored:** Re-implemented safe Room migrations (AutoMigration) and protected data from accidental deletion during app updates by disabling destructive upgrades.
-- **CSV Parser:** Developed a robust, quote-aware CSV parser to handle player names and data correctly during import.
+- Added roster CSV import support
+- Restored safer Room migration behavior and protected data from accidental destructive upgrades
+- Built a robust, quote-aware CSV parser
 
 ## Version 2.1 (Adaptive Training & Flexibility)
-- **Adaptive Training Layout:** Redesigned the Training screen for larger devices (tablets/foldables), utilizing a multi-column layout that shows selection tools and AI-generated results side-by-side.
-- **AI Model Optimization:** Updated the training assistant to leverage `gemini-2.5-flash` for high-speed, age-specific basketball drill generation.
-- **Jersey Number Flexibility:** Restored optional status for jersey numbers in the roster, allowing coaches to add players quickly without needing official numbers.
-- **Coming Soon Roadmap:** Integrated visual placeholders for future interactive training modules, video demonstrations, and progress tracking.
-- **Maintenance:** Performed a full project audit, refined internal documentation, and verified all adaptive layout components for stability.
+- Redesigned the training screen for larger devices with multi-column layouts
+- Switched the AI model to `gemini-2.5-flash`
+- Restored optional jersey numbers in the roster workflow
+- Added placeholders for upcoming training modules and tracking features
+- Completed a project-wide audit and refined internal docs
+
+## Current repository review
+- Verified the project still builds successfully with the existing Gradle test task.
+- Confirmed the app remains a single-module Android project using Compose, Room, and optional Gemini-backed training features.
+- Current Room schema version is 8, with migration support for version-to-version updates.
+- The training assistant is optional and depends on `GEMINI_API_KEY` from `local.properties`.
+- The app is still local-first and does not include a backend, cloud sync, or user authentication layer.
+- Testing is improved but still limited to focused checks; broader game-flow automation remains a future improvement area.

@@ -683,9 +683,11 @@ fun GameControlPanel(
 
                     Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
                         onCourtStats.forEach { stat ->
+                            val outIndex = pendingOut.indexOf(stat.player.id)
                             SelectablePlayerRow(
                                 text = stat.player.displayLabel(),
-                                selected = pendingOut.contains(stat.player.id)
+                                selected = outIndex >= 0,
+                                badgeNumber = if (outIndex >= 0) outIndex + 1 else null
                             ) {
                                 onPlayerOutClick(stat.player.id)
                             }
@@ -706,9 +708,11 @@ fun GameControlPanel(
                     } else {
                         Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
                             benchStats.forEach { stat ->
+                                val inIndex = pendingIn.indexOf(stat.player.id)
                                 SelectablePlayerRow(
                                     text = stat.player.displayLabel(),
-                                    selected = pendingIn.contains(stat.player.id)
+                                    selected = inIndex >= 0,
+                                    badgeNumber = if (inIndex >= 0) inIndex + 1 else null
                                 ) {
                                     onPlayerInClick(stat.player.id)
                                 }

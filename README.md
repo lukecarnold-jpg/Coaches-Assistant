@@ -1,145 +1,146 @@
 # Basketball Rotation
 
-Basketball Rotation is an Android app for coaches to manage roster rotation, live game events, and post-game exports.
+Basketball Rotation is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data.
 
-It is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powered training assistant.
+The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powered training assistant. It is designed for local, in-season use and keeps the workflow lightweight: roster setup, live substitutions, score tracking, attendance, and exportable game records.
 
-## Project Status
+## Project status
 
 - Single-module Android app (`:app`)
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 8)
 - AI drills: Google Generative AI (`gemini-2.5-flash`) using `GEMINI_API_KEY` from `local.properties`
+- Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`)
 
-## Core Features
+## Core features
 
-- Team roster management
-  - Add, edit, remove players
+- Roster management
+  - Add, edit, and remove players
   - Optional jersey numbers
-  - CSV export and CSV import
+  - CSV import and CSV export
 - Game management
-  - Create/select/delete games
-  - Flexible periods (quarters or halves) with configurable duration
-  - Starting lineup selection (5 players)
-  - Substitutions (multi-sub support)
-  - Live countdown clock with start/stop/reset and manual time set
-  - Team and opponent score adjustments
+  - Create, select, and delete games
+  - Flexible periods (quarters or halves) with configurable durations
+  - Starting lineup selection
+  - Live substitutions and multi-sub workflows
+  - Countdown timer with start, stop, reset, and manual adjustment
+  - Team and opponent score tracking
   - Foul logging and MVP vote tracking
-  - Attendance management (mark players absent per game)
-  - Coaching notes per game with TXT export
-  - Edit/delete recorded events
-  - End game workflow
+  - Per-game attendance management
+  - Coaching notes with TXT export
+  - Event editing and deletion
+  - End-game workflow
 - Exports
   - Roster CSV
-  - Game events CSV
+  - Game event CSV
   - Coaching notes TXT
-- Adaptive layout
-  - Bottom navigation for compact widths
-  - Navigation rail and split panels for larger screens
+- Adaptive layouts
+  - Compact layout with bottom navigation
+  - Expanded screens with navigation rail and split panels
 - Training tab
   - Age-group drill generation via Gemini
-  - “Coming Soon” placeholders for future training modules
+  - Coming-soon placeholders for future training modules
 
-## Tech Stack
+## Tech stack
 
 - Kotlin
 - Android Gradle Plugin 9.3.1
-- Gradle 9.4.1 wrapper
-- Java 17 target
+- Gradle wrapper 9.4.1
+- Java 17
 - Jetpack Compose BOM `2026.06.01`
-- Lifecycle ViewModel
+- ViewModel / lifecycle patterns
 - Room `2.8.4` + KSP
 - Google Generative AI client `0.9.0`
 
 ## Requirements
 
-From the current Gradle config:
+From the current Gradle configuration:
 
 - `compileSdk = 37`
 - `targetSdk = 37`
 - `minSdk = 26`
 - JDK 17
-- Android Studio with SDK 37 installed
+- Android Studio with Android SDK 37 installed
 
 ## Setup
 
-1. Clone/open the project in Android Studio.
+1. Clone or open the project in Android Studio.
 2. Ensure JDK 17 is configured for Gradle.
-3. Add your optional Gemini key to `local.properties` (project root):
+3. Add your optional Gemini key to `local.properties` at the project root:
 
 ```properties
 GEMINI_API_KEY=your_key_here
 ```
 
-If you do not set `GEMINI_API_KEY`, the app still builds, but AI drill generation in the Training tab will show an error message.
+If `GEMINI_API_KEY` is not set, the app still builds, but the Training tab will show an error when generating AI drills.
 
-## Run Locally
+## Running locally
 
-Use the Gradle wrapper from the project root:
-
-```powershell
-.\gradlew.bat test
-.\gradlew.bat assembleDebug
-```
-
-Install/debug via Android Studio, or:
+Use the Gradle wrapper from the repo root:
 
 ```powershell
-.\gradlew.bat installDebug
+./gradlew.bat test
+./gradlew.bat assembleDebug
 ```
 
-## Verified Check
+To deploy directly to a connected device/emulator:
 
-The local unit test task has been executed successfully in this workspace:
+```powershell
+./gradlew.bat installDebug
+```
 
-- `./gradlew.bat --no-daemon test` -> **BUILD SUCCESSFUL**
+## Verified status
 
-Current automated tests now include focused unit checks for event parsing and event-description formatting, but overall behavioral coverage is still limited.
+The current project state was validated in this workspace with:
 
-## High-Level Architecture
+- `./gradlew.bat --no-daemon test` -> `BUILD SUCCESSFUL`
 
-- Entry and navigation
+The existing test coverage includes focused unit checks for parsing and event formatting, but the app still has limited end-to-end behavioral coverage compared with a full production QA suite.
+
+## High-level project structure
+
+- App entry
   - `app/src/main/java/com/example/basketballrotation/MainActivity.kt`
 - UI screens
   - `app/src/main/java/com/example/basketballrotation/ui/RosterScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/GameScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/SettingsScreen.kt`
-  - Shared UI components: `app/src/main/java/com/example/basketballrotation/ui/Components.kt`
-- State / view models
+  - Shared components: `app/src/main/java/com/example/basketballrotation/ui/Components.kt`
+- State and logic
   - `app/src/main/java/com/example/basketballrotation/ui/AppViewModel.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingViewModel.kt`
 - Data layer
   - Entities: `app/src/main/java/com/example/basketballrotation/data/Entities.kt`
   - DAOs: `app/src/main/java/com/example/basketballrotation/data/Dao.kt`
   - Repository: `app/src/main/java/com/example/basketballrotation/data/BasketballRepository.kt`
-  - Room DB: `app/src/main/java/com/example/basketballrotation/data/AppDatabase.kt`
-  - Exported schemas: `app/schemas/com.example.basketballrotation.data.AppDatabase/`
+  - Database: `app/src/main/java/com/example/basketballrotation/data/AppDatabase.kt`
+  - Room schema exports: `app/schemas/com.example.basketballrotation.data.AppDatabase/`
 
-## Data Model Summary
+## Data model summary
 
-- `players`: roster entries (`name`, optional `jerseyNumber`)
-- `games`: game metadata + state (score, timer, period config, attendance CSV, notes)
-- `game_events`: timeline entries (lineup, subs, team score, opponent score, fouls, MVP votes, period change, game end)
+- `players`: roster entries (`id`, `name`, optional `jerseyNumber`)
+- `games`: game metadata and state (score, timer, period configuration, absence list, notes)
+- `game_events`: event timeline entries (lineup, substitutions, team score, opponent score, fouls, MVP votes, period changes, game end)
 
-## CSV/TXT Notes
+## CSV and TXT notes
 
-- Roster CSV columns:
+- Roster CSV columns include:
   - `id,name,jerseyNumber`
-- Game CSV columns include game metadata and event detail:
+- Game export data includes metadata and event detail such as:
   - `gameId,gameTitle,opponent,createdAt,teamScoreAtExport,gameNotes,...`
-- Notes export is plain text and includes game header + notes body.
+- Coaching notes export is plain text and includes a header plus the game notes body.
 
-## Known Risks / Review Notes
+## Known notes and risks
 
-- Destructive migration is still enabled for downgrades in `app/src/main/java/com/example/basketballrotation/data/AppDatabase.kt`; this is intentional safety behavior but will clear local data if the app is downgraded.
-- Test coverage remains partial; critical game-flow logic (timer behavior, substitution rules, scoring edits across full flows, import parser edge cases) needs deeper unit/instrumentation coverage.
+- Destructive migration is intentionally enabled for downgrades in `AppDatabase.kt`; this protects the normal upgrade workflow but will clear local data if the app is downgraded.
+- Automated coverage is still limited for broader game-flow logic, timer edge cases, and parser validation.
+- The project is local-first and does not currently include a backend, cross-device sync, or account-based auth system.
 
-## Roadmap (from project history)
+## Roadmap and history
 
-See `DEVELOPMENT_HISTORY.txt` for version-by-version details through `v2.1`, including adaptive layouts, attendance support, roster import, and AI training enhancements.
+See `DEVELOPMENT_HISTORY.txt` for the version-by-version background leading up to the current project state.
 
 ## License
 
-No license file is currently present in this repository.
-If you plan to distribute this project, add a `LICENSE` file and update this section.
+There is currently no license file in this repository. If you plan to distribute or publish the app, add a `LICENSE` file and update this section appropriately.

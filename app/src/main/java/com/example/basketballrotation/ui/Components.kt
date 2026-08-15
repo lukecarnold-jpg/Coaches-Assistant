@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -75,6 +78,7 @@ fun SmallActionButton(
 fun SelectablePlayerRow(
     text: String,
     selected: Boolean,
+    badgeNumber: Int? = null,
     onClick: () -> Unit,
 ) {
     val layout = LocalResponsiveLayout.current
@@ -90,11 +94,34 @@ fun SelectablePlayerRow(
         color = background,
         tonalElevation = if (selected) 2.dp else 0.dp,
     ) {
-        Text(
-            text = text,
+        Row(
             modifier = Modifier.padding(layout.cardPadding),
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-        )
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        ) {
+            if (badgeNumber != null) {
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(999.dp)
+                        )
+                        .padding(horizontal = 7.dp, vertical = 1.dp),
+                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                ) {
+                    Text(
+                        text = badgeNumber.toString(),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                }
+                Spacer(Modifier.width(layout.tinyGap))
+            }
+            Text(
+                text = text,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            )
+        }
     }
 }
 
