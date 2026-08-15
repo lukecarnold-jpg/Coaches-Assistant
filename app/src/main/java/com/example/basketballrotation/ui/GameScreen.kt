@@ -3,7 +3,6 @@ package com.example.basketballrotation.ui
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -65,28 +64,8 @@ fun GameScreen(
     var showAttendanceDialog by remember { mutableStateOf(false) }
     var showNotesDialog by remember { mutableStateOf(false) }
 
-    var pendingExportGameId by remember { mutableStateOf<Long?>(null) }
-    var pendingExportNotesId by remember { mutableStateOf<Long?>(null) }
-
-    val exportGameLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("text/csv"),
-    ) { uri ->
-        val gId = pendingExportGameId
-        if (uri != null && gId != null) {
-            onExportGame(gId, uri)
-        }
-        pendingExportGameId = null
-    }
-
-    val exportNotesLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("text/plain"),
-    ) { uri ->
-        val gId = pendingExportNotesId
-        if (uri != null && gId != null) {
-            onExportNotes(gId, uri)
-        }
-        pendingExportNotesId = null
-    }
+    val exportGame = rememberIdFileExportLauncher(mimeType = "text/csv", onExport = onExportGame)
+    val exportNotes = rememberIdFileExportLauncher(mimeType = "text/plain", onExport = onExportNotes)
 
     val exportRosterLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv"),
@@ -126,8 +105,7 @@ fun GameScreen(
                         onAddScore = onAddScore,
                         onCourtIds = onCourtIds,
                         onExportGame = {
-                            pendingExportGameId = selectedGame.id
-                            exportGameLauncher.launch("game_${selectedGame.id}.csv")
+                            exportGame(selectedGame.id, "game_${selectedGame.id}.csv")
                         },
                         exportRosterLauncher = exportRosterLauncher,
                         players = players,
@@ -200,8 +178,7 @@ fun GameScreen(
                     onSelectGame = onSelectGame,
                     onDeleteGame = onDeleteGame,
                     onExportGame = { gId ->
-                        pendingExportGameId = gId
-                        exportGameLauncher.launch("game_$gId.csv")
+                        exportGame(gId, "game_$gId.csv")
                     },
                     selectedGameId = selectedGame?.id
                 )
@@ -239,7 +216,7 @@ fun GameScreen(
                     gameTitle = ""
                     opponent = ""
                 },
-                games = games,
+                games = activeGames,
                 onSelectGame = onSelectGame,
                 onDeleteGame = onDeleteGame,
                 selectedGameId = selectedGame?.id,
@@ -259,8 +236,7 @@ fun GameScreen(
                     onAddScore = onAddScore,
                     onCourtIds = onCourtIds,
                     onExportGame = {
-                        pendingExportGameId = selectedGame.id
-                        exportGameLauncher.launch("game_${selectedGame.id}.csv")
+                        exportGame(selectedGame.id, "game_${selectedGame.id}.csv")
                     },
                     exportRosterLauncher = exportRosterLauncher,
                     players = players,
@@ -301,8 +277,7 @@ fun GameScreen(
                     onDeleteEvent = onDeleteEvent,
                     onlyStats = true,
                     onExportGame = { gId ->
-                        pendingExportGameId = gId
-                        exportGameLauncher.launch("game_$gId.csv")
+                        exportGame(gId, "game_$gId.csv")
                     }
                 )
             }
@@ -340,8 +315,7 @@ fun GameScreen(
                 showNotesDialog = false
             },
             onExport = {
-                pendingExportNotesId = selectedGame.id
-                exportNotesLauncher.launch("notes_${selectedGame.id}.txt")
+                exportNotes(selectedGame.id, "notes_${selectedGame.id}.txt")
             }
         )
     }
@@ -808,52 +782,34 @@ fun GameStatsPanel(
                     games.forEach { game ->
                         val selected = selectedGameId == game.id
 
-                        OutlinedCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            border = BorderStroke(
-                                width = if (selected) 2.dp else 1.dp,
-                                color = if (selected) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.outline
+                        GameListCard(
+                            highlighted = selected,
+                            info = {
+                                Text(
+                                    text = game.title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                if (game.opponent.isNotBlank()) {
+                                    Text("Opponent: ${game.opponent}")
                                 }
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(layout.cardPadding),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap)) {
-                                    Text(
-                                        text = game.title,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    if (game.opponent.isNotBlank()) {
-                                        Text("Opponent: ${game.opponent}")
-                                    }
-                                    Text("Score: ${game.teamScore}")
+                                Text("Score: ${game.teamScore}")
+                            },
+                            actions = {
+                                TextButton(onClick = { onSelectGame(game.id) }) {
+                                    Text(if (selected) "Selected" else "Select")
                                 }
-
-                                Column {
-                                    TextButton(onClick = { onSelectGame(game.id) }) {
-                                        Text(if (selected) "Selected" else "Select")
-                                    }
-                                    TextButton(onClick = { onExportGame(game.id) }) {
-                                        Text("Export")
-                                    }
-                                    TextButton(
-                                        onClick = { onDeleteGame(game.id) },
-                                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                                    ) {
-                                        Text("Delete")
-                                    }
+                                TextButton(onClick = { onExportGame(game.id) }) {
+                                    Text("Export")
                                 }
-                            }
-                        }
+                                TextButton(
+                                    onClick = { onDeleteGame(game.id) },
+                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                ) {
+                                    Text("Delete")
+                                }
+                            },
+                        )
                     }
                 }
             }

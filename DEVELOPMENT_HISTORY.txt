@@ -94,6 +94,12 @@ This history captures the key milestones in the app's evolution, from the initia
 - Finished games now move out of the active "Games" list on the Game tab as soon as "End Game" is used, keeping that list focused on in-progress games
 - Added a `finishedAt` timestamp to the `games` table, set when a game ends, and increased the database schema to version 9
 
+## Version 2.3 (Bug Fix & Shared UI Helpers)
+- Fixed a regression where the compact/phone layout's "Games" list still showed finished games after ending them, while the tablet layout correctly filtered them out (both now share the same `activeGames` filter)
+- Extracted `rememberIdFileExportLauncher` in a new `FileExport.kt` to remove five duplicated CSV/TXT export-launcher blocks spread across GameScreen.kt and GameHistoryScreen.kt
+- Extracted a shared `GameListCard` component so the active-games list and Game History screen render game cards the same way instead of maintaining two near-identical layouts
+- Verified with a targeted code review of the recent commits; build and lint remain clean with no new warnings
+
 ## Current repository review
 - Verified the project still builds successfully with the existing Gradle test task.
 - Confirmed the app remains a single-module Android project using Compose, Room, and optional Gemini-backed training features.

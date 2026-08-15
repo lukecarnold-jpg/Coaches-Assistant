@@ -112,7 +112,8 @@ The existing test coverage includes focused unit checks for parsing and event fo
   - `app/src/main/java/com/example/basketballrotation/ui/GameHistoryScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/SettingsScreen.kt`
-  - Shared components: `app/src/main/java/com/example/basketballrotation/ui/Components.kt`
+  - Shared components: `app/src/main/java/com/example/basketballrotation/ui/Components.kt` (includes `GameListCard`, used by both the Game and Game History screens)
+  - Shared file-export launcher: `app/src/main/java/com/example/basketballrotation/ui/FileExport.kt`
 - State and logic
   - `app/src/main/java/com/example/basketballrotation/ui/AppViewModel.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingViewModel.kt`

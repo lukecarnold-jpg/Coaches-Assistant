@@ -1,10 +1,12 @@
 package com.example.basketballrotation.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -16,8 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -96,7 +100,7 @@ fun SelectablePlayerRow(
     ) {
         Row(
             modifier = Modifier.padding(layout.cardPadding),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (badgeNumber != null) {
                 Box(
@@ -106,7 +110,7 @@ fun SelectablePlayerRow(
                             shape = RoundedCornerShape(999.dp)
                         )
                         .padding(horizontal = 7.dp, vertical = 1.dp),
-                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = badgeNumber.toString(),
@@ -121,6 +125,39 @@ fun SelectablePlayerRow(
                 text = text,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             )
+        }
+    }
+}
+
+@Composable
+fun GameListCard(
+    modifier: Modifier = Modifier,
+    highlighted: Boolean = false,
+    info: @Composable ColumnScope.() -> Unit,
+    actions: @Composable ColumnScope.() -> Unit,
+) {
+    val layout = LocalResponsiveLayout.current
+
+    OutlinedCard(
+        modifier = modifier.fillMaxWidth(),
+        border = BorderStroke(
+            width = if (highlighted) 2.dp else 1.dp,
+            color = if (highlighted) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outline
+            },
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(layout.cardPadding),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap), content = info)
+            Column(content = actions)
         }
     }
 }
