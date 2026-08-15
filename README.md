@@ -24,6 +24,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
   - Starting lineup selection
   - Live substitutions and multi-sub workflows, with numbered badges showing which bench player is paired with which outgoing court player
   - Countdown timer with start, stop, reset, and manual adjustment
+  - Per-player on-court shift timer that starts from 0 the moment a player is subbed on and freezes when they're subbed off, tracked against the game clock rather than wall-clock time
   - Team and opponent score tracking
   - Foul logging and MVP vote tracking
   - Per-game attendance management

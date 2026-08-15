@@ -31,6 +31,7 @@ data class PlayerGameStat(
     val timesSubbedOff: Int,
     val onCourt: Boolean,
     val currentShiftTimeMillis: Long,
+    val shiftStartGameTimeMillis: Long?,
     val totalTimeMillis: Long,
 )
 
@@ -185,6 +186,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         timesSubbedOff = timesSubbedOffByPlayer[player.id] ?: 0,
                         onCourt = isOnCourt,
                         currentShiftTimeMillis = currentShift,
+                        shiftStartGameTimeMillis = if (isOnCourt) enteredAt else null,
                         totalTimeMillis = totalTime,
                     )
                 }

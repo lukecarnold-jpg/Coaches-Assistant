@@ -100,6 +100,11 @@ This history captures the key milestones in the app's evolution, from the initia
 - Extracted a shared `GameListCard` component so the active-games list and Game History screen render game cards the same way instead of maintaining two near-identical layouts
 - Verified with a targeted code review of the recent commits; build and lint remain clean with no new warnings
 
+## Version 2.4 (On-Court Shift Timer Fix)
+- Fixed the per-player "Shift" timer on the on-court player cards, which previously ticked up from time-since-the-game-clock-was-last-started instead of resetting to 0 on sub-in, so a player subbed on mid-period could show a shift time far larger than their actual time on court
+- Added `shiftStartGameTimeMillis` to `PlayerGameStat` so the UI tracks each player's shift against the exact game-clock moment they entered, matching how the main game clock computes its own live time
+- Sub-off freezing behavior was already correct and is unchanged; the fix is isolated to the sub-on live-ticking calculation
+
 ## Current repository review
 - Verified the project still builds successfully with the existing Gradle test task.
 - Confirmed the app remains a single-module Android project using Compose, Room, and optional Gemini-backed training features.

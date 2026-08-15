@@ -631,6 +631,7 @@ fun GameControlPanel(
                             onAddFoul = onAddFoul,
                             onAddMvpVote = onAddMvpVote,
                             gameTimerLastStartedAt = selectedGame.timerLastStartedAt,
+                            gameRunningTimeMillis = selectedGame.runningTimeMillis,
                             enabled = !selectedGame.isFinished
                         )
                     }
@@ -1028,24 +1029,27 @@ fun PlayerActionCard(
     onAddFoul: (Long, Int) -> Unit,
     onAddMvpVote: (Long) -> Unit,
     gameTimerLastStartedAt: Long?,
+    gameRunningTimeMillis: Long,
     enabled: Boolean = true,
 ) {
     val layout = LocalResponsiveLayout.current
 
-    var shiftDisplayTime by remember(stat.currentShiftTimeMillis, gameTimerLastStartedAt) {
+    var shiftDisplayTime by remember(stat.shiftStartGameTimeMillis, gameRunningTimeMillis, gameTimerLastStartedAt) {
         mutableLongStateOf(stat.currentShiftTimeMillis)
     }
 
-    LaunchedEffect(gameTimerLastStartedAt) {
-        if (gameTimerLastStartedAt != null) {
+    LaunchedEffect(stat.shiftStartGameTimeMillis, gameRunningTimeMillis, gameTimerLastStartedAt) {
+        val shiftStart = stat.shiftStartGameTimeMillis
+        if (shiftStart == null) {
+            shiftDisplayTime = 0L
+        } else if (gameTimerLastStartedAt != null) {
             while (true) {
-                // currentShiftTimeMillis was calculated as (game.runningTimeMillis - enteredAt)
-                // We add the same "live" offset to the shift time
-                shiftDisplayTime = stat.currentShiftTimeMillis + (System.currentTimeMillis() - gameTimerLastStartedAt)
+                val currentGameTimeMillis = gameRunningTimeMillis + (System.currentTimeMillis() - gameTimerLastStartedAt)
+                shiftDisplayTime = maxOf(0L, currentGameTimeMillis - shiftStart)
                 delay(100)
             }
         } else {
-            shiftDisplayTime = stat.currentShiftTimeMillis
+            shiftDisplayTime = maxOf(0L, gameRunningTimeMillis - shiftStart)
         }
     }
 
