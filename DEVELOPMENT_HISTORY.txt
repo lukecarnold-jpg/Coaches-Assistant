@@ -88,10 +88,16 @@ This history captures the key milestones in the app's evolution, from the initia
 - Added placeholders for upcoming training modules and tracking features
 - Completed a project-wide audit and refined internal docs
 
+## Version 2.2 (Substitution Clarity & Game History)
+- Added numbered badges to the substitution picker so each bench selection visibly pairs with its matching outgoing court selection (previously the pairing was tracked only by tap order, with no on-screen indication)
+- Added a dedicated Game History tab listing all finished games (newest first), each with a win/loss/tie badge, final score, end date, and View/Export/Delete actions
+- Finished games now move out of the active "Games" list on the Game tab as soon as "End Game" is used, keeping that list focused on in-progress games
+- Added a `finishedAt` timestamp to the `games` table, set when a game ends, and increased the database schema to version 9
+
 ## Current repository review
 - Verified the project still builds successfully with the existing Gradle test task.
 - Confirmed the app remains a single-module Android project using Compose, Room, and optional Gemini-backed training features.
-- Current Room schema version is 8, with migration support for version-to-version updates.
+- Current Room schema version is 9, with migration support for version-to-version updates.
 - The training assistant is optional and depends on `GEMINI_API_KEY` from `local.properties`.
 - The app is still local-first and does not include a backend, cloud sync, or user authentication layer.
 - Testing is improved but still limited to focused checks; broader game-flow automation remains a future improvement area.

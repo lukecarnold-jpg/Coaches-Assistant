@@ -89,9 +89,11 @@ class BasketballRepository(
     suspend fun endGame(gameId: Long) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
+            val endedAt = System.currentTimeMillis()
             gameDao.update(
                 game.copy(
                     isFinished = true,
+                    finishedAt = endedAt,
                     timerLastStartedAt = null,
                     onCourtCsv = "", // Reset player on court status
                 ),
@@ -99,7 +101,7 @@ class BasketballRepository(
             gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
-                    timestamp = System.currentTimeMillis(),
+                    timestamp = endedAt,
                     type = EventType.GAME_END.name,
                     note = "Game Ended",
                     gameTimeMillis = calculateCurrentGameTime(game),

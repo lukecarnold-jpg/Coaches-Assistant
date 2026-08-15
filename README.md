@@ -8,7 +8,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
 
 - Single-module Android app (`:app`)
 - UI: Jetpack Compose + Material 3
-- Persistence: Room database (schema version 8)
+- Persistence: Room database (schema version 9)
 - AI drills: Google Generative AI (`gemini-2.5-flash`) using `GEMINI_API_KEY` from `local.properties`
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`)
 
@@ -22,7 +22,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
   - Create, select, and delete games
   - Flexible periods (quarters or halves) with configurable durations
   - Starting lineup selection
-  - Live substitutions and multi-sub workflows
+  - Live substitutions and multi-sub workflows, with numbered badges showing which bench player is paired with which outgoing court player
   - Countdown timer with start, stop, reset, and manual adjustment
   - Team and opponent score tracking
   - Foul logging and MVP vote tracking
@@ -30,6 +30,11 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
   - Coaching notes with TXT export
   - Event editing and deletion
   - End-game workflow
+- Game history
+  - Dedicated History tab listing all finished games, newest first
+  - Win/loss/tie badge, final score, and end date/time per game
+  - View (jumps to the read-only game on the Game tab), export, and delete actions
+  - Finished games are removed from the active "Games" list on the Game tab once ended
 - Exports
   - Roster CSV
   - Game event CSV
@@ -104,6 +109,7 @@ The existing test coverage includes focused unit checks for parsing and event fo
 - UI screens
   - `app/src/main/java/com/example/basketballrotation/ui/RosterScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/GameScreen.kt`
+  - `app/src/main/java/com/example/basketballrotation/ui/GameHistoryScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/SettingsScreen.kt`
   - Shared components: `app/src/main/java/com/example/basketballrotation/ui/Components.kt`
@@ -120,7 +126,7 @@ The existing test coverage includes focused unit checks for parsing and event fo
 ## Data model summary
 
 - `players`: roster entries (`id`, `name`, optional `jerseyNumber`)
-- `games`: game metadata and state (score, timer, period configuration, absence list, notes)
+- `games`: game metadata and state (score, timer, period configuration, absence list, notes, `isFinished` flag and `finishedAt` timestamp)
 - `game_events`: event timeline entries (lineup, substitutions, team score, opponent score, fouls, MVP votes, period changes, game end)
 
 ## CSV and TXT notes

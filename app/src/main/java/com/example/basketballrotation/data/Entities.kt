@@ -40,6 +40,7 @@ data class GameEntity(
     val runningTimeMillis: Long = 0, // Elapsed time in current period
     val timerLastStartedAt: Long? = null,
     val isFinished: Boolean = false,
+    val finishedAt: Long? = null,
     val useQuarters: Boolean = false,
     val currentPeriod: Int = 1,
     val periodDurationMillis: Long = 10 * 60 * 1000L, // Default 10 mins

@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.basketballrotation.ui.AppViewModel
+import com.example.basketballrotation.ui.GameHistoryScreen
 import com.example.basketballrotation.ui.GameScreen
 import com.example.basketballrotation.ui.RosterScreen
 import com.example.basketballrotation.ui.LocalResponsiveLayout
@@ -55,6 +56,7 @@ enum class AppTab {
     ROSTER,
     GAME,
     TRAINING,
+    HISTORY,
     SETTINGS
 }
 
@@ -102,6 +104,12 @@ private fun BasketballApp(
                     label = { Text("Training") },
                 )
                 NavigationRailItem(
+                    selected = (currentTab == AppTab.HISTORY.name),
+                    onClick = { currentTab = AppTab.HISTORY.name },
+                    icon = { Text("🕘") },
+                    label = { Text("History") },
+                )
+                NavigationRailItem(
                     selected = (currentTab == AppTab.SETTINGS.name),
                     onClick = { currentTab = AppTab.SETTINGS.name },
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
@@ -133,6 +141,12 @@ private fun BasketballApp(
                             onClick = { currentTab = AppTab.TRAINING.name },
                             icon = { Text("🏋️") },
                             label = { Text("Training") },
+                        )
+                        NavigationBarItem(
+                            selected = (currentTab == AppTab.HISTORY.name),
+                            onClick = { currentTab = AppTab.HISTORY.name },
+                            icon = { Text("🕘") },
+                            label = { Text("History") },
                         )
                         NavigationBarItem(
                             selected = (currentTab == AppTab.SETTINGS.name),
@@ -195,6 +209,18 @@ private fun BasketballApp(
                     AppTab.TRAINING -> TrainingScreen(
                         modifier = Modifier.fillMaxSize(),
                         isExpanded = isExpanded,
+                    )
+
+                    AppTab.HISTORY -> GameHistoryScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        isExpanded = isExpanded,
+                        games = games,
+                        onViewGame = { gameId ->
+                            appViewModel.selectGame(gameId)
+                            currentTab = AppTab.GAME.name
+                        },
+                        onDeleteGame = appViewModel::deleteGame,
+                        onExportGame = appViewModel::exportGameCsv,
                     )
 
                     AppTab.SETTINGS -> SettingsScreen(

@@ -104,6 +104,7 @@ fun GameScreen(
     val benchStats = stats.filter { !it.onCourt }
     val onCourtIds = selectedGame?.onCourtIds()?.toSet().orEmpty()
     val playerById = players.associateBy { it.id }
+    val activeGames = games.filter { !it.isFinished }
 
     if (isExpanded) {
         Row(
@@ -195,7 +196,7 @@ fun GameScreen(
                         gameTitle = ""
                         opponent = ""
                     },
-                    games = games,
+                    games = activeGames,
                     onSelectGame = onSelectGame,
                     onDeleteGame = onDeleteGame,
                     onExportGame = { gId ->
