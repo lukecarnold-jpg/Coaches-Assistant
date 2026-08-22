@@ -19,9 +19,9 @@ class GameEventDescriptionTest {
             gameTimeMillis = 0,
         )
 
-        val text = eventDescription(event, emptyMap())
+        val text = eventDescription(event, emptyMap(), "Tigers")
 
-        assertEquals("Opponent -1", text)
+        assertEquals("Tigers -1", text)
     }
 
     @Test
@@ -42,4 +42,3 @@ class GameEventDescriptionTest {
         assertEquals("#11 Alex +3", text)
     }
 }
-

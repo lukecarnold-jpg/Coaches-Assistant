@@ -213,7 +213,6 @@ private fun BasketballApp(
 
                     AppTab.HISTORY -> GameHistoryScreen(
                         modifier = Modifier.fillMaxSize(),
-                        isExpanded = isExpanded,
                         games = games,
                         onViewGame = { gameId ->
                             appViewModel.selectGame(gameId)

@@ -20,7 +20,6 @@ import com.example.basketballrotation.data.GameEntity
 @Composable
 fun GameHistoryScreen(
     modifier: Modifier = Modifier,
-    isExpanded: Boolean,
     games: List<GameEntity>,
     onViewGame: (Long) -> Unit,
     onDeleteGame: (Long) -> Unit,

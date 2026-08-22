@@ -159,6 +159,7 @@ fun GameScreen(
                     stats = stats,
                     events = events,
                     playerById = playerById,
+                    opponent = selectedGame?.opponent.orEmpty(),
                     onEditEvent = { editingEvent = it },
                     onDeleteEvent = onDeleteEvent,
                     gameTitle = gameTitle,
@@ -201,6 +202,7 @@ fun GameScreen(
                 stats = emptyList(), // Hidden in this mode or moved
                 events = emptyList(),
                 playerById = emptyMap(),
+                opponent = selectedGame?.opponent.orEmpty(),
                 onEditEvent = {},
                 onDeleteEvent = {},
                 gameTitle = gameTitle,
@@ -715,6 +717,7 @@ fun GameStatsPanel(
     stats: List<PlayerGameStat> = emptyList(),
     events: List<GameEventEntity> = emptyList(),
     playerById: Map<Long, PlayerEntity> = emptyMap(),
+    opponent: String = "",
     onEditEvent: (GameEventEntity) -> Unit = {},
     onDeleteEvent: (GameEventEntity) -> Unit = {},
     gameTitle: String = "",
@@ -880,7 +883,7 @@ fun GameStatsPanel(
                                     verticalArrangement = Arrangement.spacedBy(layout.tinyGap)
                                 ) {
                                     Text(
-                                        text = eventDescription(event, playerById),
+                                        text = eventDescription(event, playerById, opponent),
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Medium
                                     )
@@ -1176,6 +1179,7 @@ fun PlayerActionCard(
 fun eventDescription(
     event: GameEventEntity,
     playersById: Map<Long, PlayerEntity>,
+    opponentName: String = "",
 ): String {
     return when (EventType.fromRaw(event.type)) {
         EventType.START_LINEUP -> {
@@ -1201,7 +1205,8 @@ fun eventDescription(
 
         EventType.OPPONENT_SCORE -> {
             val prefix = if (event.points >= 0) "+" else ""
-            "Opponent $prefix${event.points}"
+            val label = opponentName.ifBlank { "Opponent" }
+            "$label $prefix${event.points}"
         }
 
         EventType.FOUL -> {
