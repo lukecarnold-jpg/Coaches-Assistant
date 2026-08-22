@@ -159,7 +159,7 @@ fun GameScreen(
                     stats = stats,
                     events = events,
                     playerById = playerById,
-                    opponent = selectedGame?.opponent.orEmpty(),
+                    opponentName = selectedGame?.opponent.orEmpty(),
                     onEditEvent = { editingEvent = it },
                     onDeleteEvent = onDeleteEvent,
                     gameTitle = gameTitle,
@@ -202,7 +202,7 @@ fun GameScreen(
                 stats = emptyList(), // Hidden in this mode or moved
                 events = emptyList(),
                 playerById = emptyMap(),
-                opponent = selectedGame?.opponent.orEmpty(),
+                opponentName = selectedGame?.opponent.orEmpty(),
                 onEditEvent = {},
                 onDeleteEvent = {},
                 gameTitle = gameTitle,
@@ -717,7 +717,7 @@ fun GameStatsPanel(
     stats: List<PlayerGameStat> = emptyList(),
     events: List<GameEventEntity> = emptyList(),
     playerById: Map<Long, PlayerEntity> = emptyMap(),
-    opponent: String = "",
+    opponentName: String = "",
     onEditEvent: (GameEventEntity) -> Unit = {},
     onDeleteEvent: (GameEventEntity) -> Unit = {},
     gameTitle: String = "",
@@ -883,7 +883,7 @@ fun GameStatsPanel(
                                     verticalArrangement = Arrangement.spacedBy(layout.tinyGap)
                                 ) {
                                     Text(
-                                        text = eventDescription(event, playerById, opponent),
+                                        text = eventDescription(event, playerById, opponentName),
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Medium
                                     )
