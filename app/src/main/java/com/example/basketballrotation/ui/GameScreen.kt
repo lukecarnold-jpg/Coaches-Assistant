@@ -828,35 +828,35 @@ fun GameStatsPanel(
                 Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                     stats.forEach { stat ->
                         OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                            Row(
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(layout.cardPadding),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalArrangement = Arrangement.spacedBy(layout.tinyGap)
                             ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    StatusBadge(if (stat.onCourt) "ON COURT" else "BENCH")
                                     Text(
-                                        text = stat.player.displayLabel(),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    Text("Points: ${stat.points} | Fouls: ${stat.fouls} | Votes: ${stat.mvpVotes} | Subbed off: ${stat.timesSubbedOff}")
-                                    Text(
-                                        "Total Time: ${formatDuration(stat.totalTimeMillis)}",
-                                        style = MaterialTheme.typography.bodySmall
+                                        text = formatDuration(
+                                            if (stat.onCourt) stat.currentShiftTimeMillis else stat.currentBenchTimeMillis
+                                        ),
+                                        style = MaterialTheme.typography.labelSmall
                                     )
                                 }
-
-                                if (stat.onCourt) {
-                                    Column(horizontalAlignment = Alignment.End) {
-                                        StatusBadge("ON COURT")
-                                        Text(
-                                            text = formatDuration(stat.currentShiftTimeMillis),
-                                            style = MaterialTheme.typography.labelSmall
-                                        )
-                                    }
-                                }
+                                Text(
+                                    text = stat.player.displayLabel(),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text("Points: ${stat.points} | Fouls: ${stat.fouls} | Votes: ${stat.mvpVotes} | Subbed off: ${stat.timesSubbedOff}")
+                                Text(
+                                    "Total Time: ${formatDuration(stat.totalTimeMillis)}",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
                             }
                         }
                     }

@@ -31,6 +31,7 @@ data class PlayerGameStat(
     val timesSubbedOff: Int,
     val onCourt: Boolean,
     val currentShiftTimeMillis: Long,
+    val currentBenchTimeMillis: Long,
     val shiftStartGameTimeMillis: Long?,
     val totalTimeMillis: Long,
 )
@@ -84,6 +85,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             
             val totalTimeByPlayer = mutableMapOf<Long, Long>()
             val lastEnteredAt = mutableMapOf<Long, Long>()
+            val lastBenchedAt = mutableMapOf<Long, Long>()
             val pointsByPlayer = mutableMapOf<Long, Int>()
             val foulsByPlayer = mutableMapOf<Long, Int>()
             val timesSubbedOffByPlayer = mutableMapOf<Long, Int>()
@@ -99,12 +101,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             .mapNotNull { it.trim().toLongOrNull() }
                             .forEach { id ->
                                 lastEnteredAt[id] = event.gameTimeMillis
+                                lastBenchedAt.remove(id)
                             }
                     }
 
                     EventType.SUBSTITUTION -> {
                         event.playerId?.let { playerInId ->
                             lastEnteredAt[playerInId] = event.gameTimeMillis
+                            lastBenchedAt.remove(playerInId)
                         }
                         event.relatedPlayerId?.let { playerOutId ->
                             timesSubbedOffByPlayer[playerOutId] = (timesSubbedOffByPlayer[playerOutId] ?: 0) + 1
@@ -113,6 +117,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                 val duration = maxOf(0L, event.gameTimeMillis - entered)
                                 totalTimeByPlayer[playerOutId] = (totalTimeByPlayer[playerOutId] ?: 0L) + duration
                             }
+                            lastBenchedAt[playerOutId] = event.gameTimeMillis
                         }
                     }
 
@@ -175,7 +180,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     } else {
                         0L
                     }
-                    
+
+                    val benchedAt = lastBenchedAt[player.id] ?: 0L
+                    val currentBench = if (isOnCourt) {
+                        0L
+                    } else {
+                        maxOf(0L, (game?.runningTimeMillis ?: 0L) - benchedAt)
+                    }
+
                     val totalTime = (totalTimeByPlayer[player.id] ?: 0L) + currentShift
 
                     PlayerGameStat(
@@ -186,6 +198,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         timesSubbedOff = timesSubbedOffByPlayer[player.id] ?: 0,
                         onCourt = isOnCourt,
                         currentShiftTimeMillis = currentShift,
+                        currentBenchTimeMillis = currentBench,
                         shiftStartGameTimeMillis = if (isOnCourt) enteredAt else null,
                         totalTimeMillis = totalTime,
                     )
