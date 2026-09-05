@@ -275,6 +275,7 @@ fun GameScreen(
                     stats = stats,
                     events = events,
                     playerById = playerById,
+                    opponentName = selectedGame.opponent,
                     onEditEvent = { editingEvent = it },
                     onDeleteEvent = onDeleteEvent,
                     onlyStats = true,
