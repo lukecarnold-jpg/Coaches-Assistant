@@ -37,6 +37,7 @@ import com.example.basketballrotation.ui.LocalResponsiveLayout
 import com.example.basketballrotation.ui.SettingsScreen
 import com.example.basketballrotation.ui.ResponsiveLayoutProvider
 import com.example.basketballrotation.ui.TrainingScreen
+import com.example.basketballrotation.ui.TrainingViewModel
 import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : ComponentActivity() {
@@ -63,12 +64,14 @@ enum class AppTab {
 @Composable
 private fun BasketballApp(
     appViewModel: AppViewModel = viewModel(),
+    trainingViewModel: TrainingViewModel = viewModel(),
 ) {
     val players by appViewModel.players.collectAsState()
     val games by appViewModel.games.collectAsState()
     val selectedGame by appViewModel.selectedGame.collectAsState()
     val events by appViewModel.selectedGameEvents.collectAsState()
     val stats by appViewModel.selectedGameStats.collectAsState()
+    val geminiApiKey by trainingViewModel.savedApiKey.collectAsState()
 
     var currentTab by rememberSaveable { mutableStateOf(AppTab.ROSTER.name) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -209,6 +212,7 @@ private fun BasketballApp(
                     AppTab.TRAINING -> TrainingScreen(
                         modifier = Modifier.fillMaxSize(),
                         isExpanded = isExpanded,
+                        trainingViewModel = trainingViewModel,
                     )
 
                     AppTab.HISTORY -> GameHistoryScreen(
@@ -225,6 +229,10 @@ private fun BasketballApp(
                     AppTab.SETTINGS -> SettingsScreen(
                         modifier = Modifier.fillMaxSize(),
                         onClearAllData = appViewModel::clearAllData,
+                        geminiApiKey = geminiApiKey,
+                        hasBuiltInApiKey = trainingViewModel.hasBuiltInApiKey,
+                        onSaveGeminiApiKey = trainingViewModel::updateApiKey,
+                        onClearGeminiApiKey = trainingViewModel::clearApiKey,
                     )
                 }
             }

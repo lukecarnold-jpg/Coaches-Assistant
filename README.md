@@ -9,7 +9,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
 - Single-module Android app (`:app`)
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 9)
-- AI drills: Google Generative AI (`gemini-2.5-flash`) using `GEMINI_API_KEY` from `local.properties`
+- AI drills: Google Generative AI (`gemini-2.5-flash`), using a key entered on the Settings tab or, if none is saved, `GEMINI_API_KEY` from `local.properties`
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`)
 
 ## Core features
@@ -47,6 +47,9 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
 - Training tab
   - Age-group drill generation via Gemini
   - Coming-soon placeholders for future training modules
+- Settings tab
+  - Add, update, or remove a Gemini API key directly in the app, stored locally on-device and used ahead of any build-time `GEMINI_API_KEY`
+  - Clear all local data (players, games, events)
 
 ## Tech stack
 
@@ -73,13 +76,15 @@ From the current Gradle configuration:
 
 1. Clone or open the project in Android Studio.
 2. Ensure JDK 17 is configured for Gradle.
-3. Add your optional Gemini key to `local.properties` at the project root:
+3. Add your optional Gemini key, either:
+   - In-app: open the Settings tab and paste the key into "AI training assistant" (no rebuild required, and this takes priority over the build-time key), or
+   - At build time, in `local.properties` at the project root:
 
 ```properties
 GEMINI_API_KEY=your_key_here
 ```
 
-If `GEMINI_API_KEY` is not set, the app still builds, but the Training tab will show an error when generating AI drills.
+If no key is set either way, the app still builds, but the Training tab will show an error when generating AI drills.
 
 ## Running locally
 

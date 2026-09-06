@@ -115,12 +115,18 @@ This history captures the key milestones in the app's evolution, from the initia
 - Every player card now leads with a status badge (ON COURT or BENCH) and a matching elapsed time at the top of the card, ahead of the player's name and other stats
 - Added bench-time tracking: a `currentBenchTimeMillis` field on `PlayerGameStat`, computed the same way as the existing on-court shift timer but measuring time since a player's last sub-off (or since game start, for a player who hasn't been on court yet)
 
+## Version 2.7 (In-App Gemini API Key)
+- Added an "AI training assistant" section to the Settings tab so a Gemini API key can be entered, viewed (with a show/hide toggle), and removed directly in the app, with no rebuild required
+- `TrainingViewModel` now persists the key in a dedicated `SharedPreferences` file and prefers it over the build-time `GEMINI_API_KEY` from `local.properties`, which remains as a fallback for developers who prefer to configure it at build time
+- Converted `TrainingViewModel` to an `AndroidViewModel` (needed for `SharedPreferences` access) and hoisted a single shared instance in `MainActivity` so the Training and Settings tabs read and write the same key state
+- The `GenerativeModel` client is now built fresh per drill-generation request using the currently effective key, instead of being cached for the lifetime of the ViewModel, so a key saved in Settings takes effect immediately
+
 ## Current repository review
 - Verified the project builds cleanly: Kotlin compilation of the main, unit test, and instrumented test source sets produces zero compiler warnings.
 - Ran a full Android Lint pass with no baseline or suppressions in place; the only finding was an informational note that a newer Android Gradle Plugin version is available (no resource, manifest, accessibility, or correctness issues).
-- All 5 unit tests pass, including coverage for opponent-score event labeling.
-- Confirmed the app remains a single-module Android project using Compose, Room, and optional Gemini-backed training features.
-- Current Room schema version is 9, with migration support for version-to-version updates; the bench-time and opponent-name fixes above are UI/computed-field changes only and did not require a schema bump.
-- The training assistant is optional and depends on `GEMINI_API_KEY` from `local.properties`.
+- All 5 unit tests pass.
+- Confirmed the app remains a single-module Android project using Compose, Room, and an optional Gemini-backed training features.
+- Current Room schema version is 9, with migration support for version-to-version updates; the bench-time, opponent-name, and API key changes above are UI/preferences-layer changes only and did not require a schema bump.
+- The training assistant is optional and now reads its Gemini key from either an in-app Settings entry or `GEMINI_API_KEY` in `local.properties`.
 - The app is still local-first and does not include a backend, cloud sync, or user authentication layer.
 - Testing is improved but still limited to focused checks; broader game-flow automation remains a future improvement area.
