@@ -25,7 +25,8 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
   - Live substitutions and multi-sub workflows, with numbered badges showing which bench player is paired with which outgoing court player
   - Countdown timer with start, stop, reset, and manual adjustment
   - Per-player on-court shift timer that starts from 0 the moment a player is subbed on and freezes when they're subbed off, tracked against the game clock rather than wall-clock time
-  - Team and opponent score tracking
+  - Game stats cards lead with an ON COURT/BENCH status badge and a live time (current shift length while on court, elapsed bench time since their last sub-off while benched)
+  - Team and opponent score tracking, with opponent-score events in the event log labeled with the actual opponent team name (falling back to "Opponent" only when no name was entered)
   - Foul logging and MVP vote tracking
   - Per-game attendance management
   - Coaching notes with TXT export
@@ -51,9 +52,9 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
 
 - Kotlin
 - Android Gradle Plugin 9.3.1
-- Gradle wrapper 9.4.1
+- Gradle wrapper 9.7.1
 - Java 17
-- Jetpack Compose BOM `2026.06.01`
+- Jetpack Compose BOM `2026.08.00`
 - ViewModel / lifecycle patterns
 - Room `2.8.4` + KSP
 - Google Generative AI client `0.9.0`
@@ -99,7 +100,9 @@ To deploy directly to a connected device/emulator:
 
 The current project state was validated in this workspace with:
 
-- `./gradlew.bat --no-daemon test` -> `BUILD SUCCESSFUL`
+- Clean Kotlin compilation of the main, unit test, and instrumented test source sets, with zero compiler warnings
+- `./gradlew.bat lintDebug` -> `BUILD SUCCESSFUL`, with a single informational finding (a newer Android Gradle Plugin patch/minor version is available)
+- `./gradlew.bat testDebugUnitTest` -> `BUILD SUCCESSFUL`, 5/5 unit tests passing
 
 The existing test coverage includes focused unit checks for parsing and event formatting, but the app still has limited end-to-end behavioral coverage compared with a full production QA suite.
 

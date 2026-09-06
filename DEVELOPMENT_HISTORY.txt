@@ -105,10 +105,22 @@ This history captures the key milestones in the app's evolution, from the initia
 - Added `shiftStartGameTimeMillis` to `PlayerGameStat` so the UI tracks each player's shift against the exact game-clock moment they entered, matching how the main game clock computes its own live time
 - Sub-off freezing behavior was already correct and is unchanged; the fix is isolated to the sub-on live-ticking calculation
 
+## Version 2.5 (Opponent Score Event Labeling)
+- Fixed the "Recent events" log showing the literal word "Opponent" for opponent-score events instead of the team name entered when the game was created
+- The fix required two passes: the first threaded the game's opponent name into the event-description function and two of its three call sites; the second caught a third `GameStatsPanel` call site (the wide/expanded split-panel layout) that still wasn't passing the opponent name through, so it kept showing the fallback label
+- The opponent name is resolved from the selected game at render time, so the corrected label applies retroactively to existing games' event history, not just newly recorded events
+
+## Version 2.6 (Bench Status & Time Display)
+- The read-only "Game stats" section previously showed an ON COURT badge and shift time only for players currently on court, positioned to the side of the card; bench players had no status indicator at all
+- Every player card now leads with a status badge (ON COURT or BENCH) and a matching elapsed time at the top of the card, ahead of the player's name and other stats
+- Added bench-time tracking: a `currentBenchTimeMillis` field on `PlayerGameStat`, computed the same way as the existing on-court shift timer but measuring time since a player's last sub-off (or since game start, for a player who hasn't been on court yet)
+
 ## Current repository review
-- Verified the project still builds successfully with the existing Gradle test task.
+- Verified the project builds cleanly: Kotlin compilation of the main, unit test, and instrumented test source sets produces zero compiler warnings.
+- Ran a full Android Lint pass with no baseline or suppressions in place; the only finding was an informational note that a newer Android Gradle Plugin version is available (no resource, manifest, accessibility, or correctness issues).
+- All 5 unit tests pass, including coverage for opponent-score event labeling.
 - Confirmed the app remains a single-module Android project using Compose, Room, and optional Gemini-backed training features.
-- Current Room schema version is 9, with migration support for version-to-version updates.
+- Current Room schema version is 9, with migration support for version-to-version updates; the bench-time and opponent-name fixes above are UI/computed-field changes only and did not require a schema bump.
 - The training assistant is optional and depends on `GEMINI_API_KEY` from `local.properties`.
 - The app is still local-first and does not include a backend, cloud sync, or user authentication layer.
 - Testing is improved but still limited to focused checks; broader game-flow automation remains a future improvement area.
