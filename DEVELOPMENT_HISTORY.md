@@ -67,7 +67,7 @@ This history captures the key milestones in the app's evolution, from the initia
 - Integrated Gemini AI drill generation for age-specific basketball activities
 - Added age-group dropdown selection from Mini Ball to Under 18
 - Moved the API key to `local.properties` + `BuildConfig` for safer project portability
-- Added “coming soon” placeholders and modernized dependencies
+- Added "coming soon" placeholders and modernized dependencies
 - Updated the project to target SDK 37 and moved dependency management to a version catalog
 
 ## Version 1.9 (Attendance & Game Logic)
@@ -121,12 +121,24 @@ This history captures the key milestones in the app's evolution, from the initia
 - Converted `TrainingViewModel` to an `AndroidViewModel` (needed for `SharedPreferences` access) and hoisted a single shared instance in `MainActivity` so the Training and Settings tabs read and write the same key state
 - The `GenerativeModel` client is now built fresh per drill-generation request using the currently effective key, instead of being cached for the lifetime of the ViewModel, so a key saved in Settings takes effect immediately
 
+## Version 2.8 (Security, Testability & Maintainability Pass)
+- Moved Gemini API key storage from plain `SharedPreferences` to `EncryptedSharedPreferences` (AES-256, backed by the Android Keystore via `MasterKey`), with a one-time silent migration that copies any key from the old plaintext file and wipes it
+- Added a shared `MvpVotes` helper (`data/MvpVotes.kt`) to remove duplicated, exception-swallowing MVP-vote JSON parsing that had been copy-pasted separately into `AppViewModel` and `BasketballRepository`; new votes are written as real JSON while the old hand-rolled format is still read for existing saved games
+- Extracted the player shift/bench/points calculator out of `AppViewModel`'s `combine {}` block into a standalone, pure `calculatePlayerGameStats()` function and added unit tests covering substitutions, period-end shift closing, bench time, absent-player filtering, and MVP votes — previously the least-tested, highest-risk logic in the app
+- Deduplicated the `MainActivity` navigation rail / bottom bar tab definitions (five near-identical blocks each) into a single `navTabSpecs` list both bars loop over
+- Split the 1,302-line `GameScreen.kt` into `GameScreen.kt`, `GameControlPanel.kt`, `GameStatsPanel.kt`, `PlayerActionCard.kt`, `GameDialogs.kt`, `GameNotesPanel.kt`, and `GameFormatting.kt`
+- Added a GitHub Actions workflow (`.github/workflows/android-ci.yml`) that runs unit tests and lint on every push/PR to `master`
+- Enabled R8 minification and resource shrinking for release builds
+- Fixed the on-court/bench status badge on player action cards, which derived its state from shift time and timer status instead of the authoritative `onCourt` flag, so a just-added starter showed BENCH until the game clock had been started at least once
+- Verified end-to-end on a real emulator: signed and installed the release (minified) build, exercised the roster → game → starting lineup → substitution flow, and confirmed the encrypted API key survives a full process kill and relaunch
+
 ## Current repository review
-- Verified the project builds cleanly: Kotlin compilation of the main, unit test, and instrumented test source sets produces zero compiler warnings.
-- Ran a full Android Lint pass with no baseline or suppressions in place; the only finding was an informational note that a newer Android Gradle Plugin version is available (no resource, manifest, accessibility, or correctness issues).
-- All 5 unit tests pass.
-- Confirmed the app remains a single-module Android project using Compose, Room, and an optional Gemini-backed training features.
-- Current Room schema version is 9, with migration support for version-to-version updates; the bench-time, opponent-name, and API key changes above are UI/preferences-layer changes only and did not require a schema bump.
-- The training assistant is optional and now reads its Gemini key from either an in-app Settings entry or `GEMINI_API_KEY` in `local.properties`.
+- The project builds cleanly with zero compiler warnings across the main, unit test, and instrumented test source sets.
+- `./gradlew lintDebug` -> `BUILD SUCCESSFUL`, with no new findings introduced by the Version 2.8 changes.
+- All unit tests pass, including new coverage for `calculatePlayerGameStats` and `MvpVotes`.
+- `./gradlew assembleRelease` -> `BUILD SUCCESSFUL` with R8 minification and resource shrinking enabled.
+- Confirmed the app remains a single-module Android project using Compose, Room, and an optional Gemini-backed training feature.
+- Current Room schema version is 9; the changes in this pass are UI/ViewModel/preferences-layer only and did not require a schema bump.
+- The training assistant is optional and reads its Gemini key from either an in-app Settings entry (now encrypted at rest) or `GEMINI_API_KEY` in `local.properties`.
 - The app is still local-first and does not include a backend, cloud sync, or user authentication layer.
-- Testing is improved but still limited to focused checks; broader game-flow automation remains a future improvement area.
+- Testing now covers the core stat-calculation logic directly; repository-level Room integration tests (e.g. exercising `BasketballRepository`'s transactions against a real database) remain a future improvement area.

@@ -10,7 +10,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 9)
 - AI drills: Google Generative AI (`gemini-2.5-flash`), using a key entered on the Settings tab or, if none is saved, `GEMINI_API_KEY` from `local.properties`
-- Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`)
+- Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests and lint on every push/PR to `master`
 
 ## Core features
 
@@ -48,7 +48,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
   - Age-group drill generation via Gemini
   - Coming-soon placeholders for future training modules
 - Settings tab
-  - Add, update, or remove a Gemini API key directly in the app, stored locally on-device and used ahead of any build-time `GEMINI_API_KEY`
+  - Add, update, or remove a Gemini API key directly in the app, encrypted at rest on-device (`EncryptedSharedPreferences`) and used ahead of any build-time `GEMINI_API_KEY`
   - Clear all local data (players, games, events)
 
 ## Tech stack
@@ -61,6 +61,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
 - ViewModel / lifecycle patterns
 - Room `2.8.4` + KSP
 - Google Generative AI client `0.9.0`
+- AndroidX Security Crypto `1.1.0-alpha06` (`EncryptedSharedPreferences`)
 
 ## Requirements
 
@@ -101,15 +102,19 @@ To deploy directly to a connected device/emulator:
 ./gradlew.bat installDebug
 ```
 
+Release builds have R8 minification and resource shrinking enabled (`./gradlew.bat assembleRelease`). No release signing config is checked in, so the output APK is unsigned; sign it with your own keystore (or a debug keystore, for local testing) before installing it on a device.
+
 ## Verified status
 
 The current project state was validated in this workspace with:
 
 - Clean Kotlin compilation of the main, unit test, and instrumented test source sets, with zero compiler warnings
 - `./gradlew.bat lintDebug` -> `BUILD SUCCESSFUL`, with a single informational finding (a newer Android Gradle Plugin patch/minor version is available)
-- `./gradlew.bat testDebugUnitTest` -> `BUILD SUCCESSFUL`, 5/5 unit tests passing
+- `./gradlew.bat testDebugUnitTest` -> `BUILD SUCCESSFUL`, all unit tests passing, including coverage for the player shift/bench/points calculator and MVP-vote serialization
+- `./gradlew.bat assembleRelease` -> `BUILD SUCCESSFUL` with R8 minification and resource shrinking enabled
+- A signed release build was installed and driven end-to-end on an emulator (roster setup, game creation, starting lineup, live substitution, and API key save/persist-through-restart/remove), with no crashes or logged exceptions
 
-The existing test coverage includes focused unit checks for parsing and event formatting, but the app still has limited end-to-end behavioral coverage compared with a full production QA suite.
+The existing test coverage includes the core game-stat calculation logic, CSV/event parsing, and MVP-vote serialization, but repository-level Room integration tests (exercising `BasketballRepository`'s transactions against a real database) are still a gap compared with a full production QA suite.
 
 ## High-level project structure
 
@@ -117,20 +122,27 @@ The existing test coverage includes focused unit checks for parsing and event fo
   - `app/src/main/java/com/example/basketballrotation/MainActivity.kt`
 - UI screens
   - `app/src/main/java/com/example/basketballrotation/ui/RosterScreen.kt`
-  - `app/src/main/java/com/example/basketballrotation/ui/GameScreen.kt`
+  - `app/src/main/java/com/example/basketballrotation/ui/GameScreen.kt` — top-level Game tab layout; delegates to:
+    - `GameControlPanel.kt` (clock/score controls, lineup, substitution)
+    - `GameStatsPanel.kt` (game creation/list, stats, event log)
+    - `PlayerActionCard.kt` (per-player on-court action card)
+    - `GameDialogs.kt` (attendance and event-edit dialogs)
+    - `GameNotesPanel.kt` (coaching notes panel and dialog)
+    - `GameFormatting.kt` (event description and time formatting helpers)
   - `app/src/main/java/com/example/basketballrotation/ui/GameHistoryScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/SettingsScreen.kt`
   - Shared components: `app/src/main/java/com/example/basketballrotation/ui/Components.kt` (includes `GameListCard`, used by both the Game and Game History screens)
   - Shared file-export launcher: `app/src/main/java/com/example/basketballrotation/ui/FileExport.kt`
 - State and logic
-  - `app/src/main/java/com/example/basketballrotation/ui/AppViewModel.kt`
+  - `app/src/main/java/com/example/basketballrotation/ui/AppViewModel.kt` (also hosts the pure `calculatePlayerGameStats` function)
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingViewModel.kt`
 - Data layer
   - Entities: `app/src/main/java/com/example/basketballrotation/data/Entities.kt`
   - DAOs: `app/src/main/java/com/example/basketballrotation/data/Dao.kt`
   - Repository: `app/src/main/java/com/example/basketballrotation/data/BasketballRepository.kt`
   - Database: `app/src/main/java/com/example/basketballrotation/data/AppDatabase.kt`
+  - MVP-vote serialization: `app/src/main/java/com/example/basketballrotation/data/MvpVotes.kt`
   - Room schema exports: `app/schemas/com.example.basketballrotation.data.AppDatabase/`
 
 ## Data model summary
@@ -150,12 +162,12 @@ The existing test coverage includes focused unit checks for parsing and event fo
 ## Known notes and risks
 
 - Destructive migration is intentionally enabled for downgrades in `AppDatabase.kt`; this protects the normal upgrade workflow but will clear local data if the app is downgraded.
-- Automated coverage is still limited for broader game-flow logic, timer edge cases, and parser validation.
+- Repository-level Room integration tests (exercising `BasketballRepository`'s transactions against a real database) are not yet in place; game-flow logic itself is covered by unit tests against the pure `calculatePlayerGameStats` function.
 - The project is local-first and does not currently include a backend, cross-device sync, or account-based auth system.
 
 ## Roadmap and history
 
-See `DEVELOPMENT_HISTORY.txt` for the version-by-version background leading up to the current project state.
+See `DEVELOPMENT_HISTORY.md` for the version-by-version background leading up to the current project state.
 
 ## License
 
