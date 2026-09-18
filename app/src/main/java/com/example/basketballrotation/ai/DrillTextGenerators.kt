@@ -17,11 +17,13 @@ interface DrillTextGenerator {
     suspend fun generateText(prompt: String, apiKey: String): String
 }
 
-fun textGeneratorFor(provider: AiProvider): DrillTextGenerator = when (provider) {
-    AiProvider.GEMINI -> GeminiTextGenerator()
-    AiProvider.ANTHROPIC -> AnthropicTextGenerator()
-    AiProvider.OPENAI -> OpenAiTextGenerator()
-}
+fun textGeneratorFor(provider: AiProvider, customEndpoint: CustomEndpointConfig = CustomEndpointConfig()): DrillTextGenerator =
+    when (provider) {
+        AiProvider.GEMINI -> GeminiTextGenerator()
+        AiProvider.ANTHROPIC -> AnthropicTextGenerator()
+        AiProvider.OPENAI -> OpenAiTextGenerator()
+        AiProvider.OTHER -> CustomTextGenerator(customEndpoint)
+    }
 
 private val httpClient = OkHttpClient.Builder()
     .connectTimeout(30, TimeUnit.SECONDS)
@@ -67,9 +69,39 @@ class AnthropicTextGenerator : DrillTextGenerator {
 }
 
 class OpenAiTextGenerator : DrillTextGenerator {
-    override suspend fun generateText(prompt: String, apiKey: String): String = withContext(Dispatchers.IO) {
+    override suspend fun generateText(prompt: String, apiKey: String): String =
+        openAiCompatibleRequest(
+            url = "https://api.openai.com/v1/chat/completions",
+            apiKey = apiKey,
+            model = "gpt-5.5",
+            prompt = prompt,
+        )
+}
+
+/**
+ * For [AiProvider.OTHER]: any provider whose chat endpoint follows the same request/response
+ * shape as OpenAI's `/v1/chat/completions` — which covers most third-party and self-hosted
+ * options (OpenRouter, Groq, Mistral, Azure OpenAI, Ollama, vLLM, etc.).
+ */
+class CustomTextGenerator(private val config: CustomEndpointConfig) : DrillTextGenerator {
+    override suspend fun generateText(prompt: String, apiKey: String): String {
+        if (config.endpointUrl.isBlank() || config.model.isBlank()) {
+            throw IOException("Set an endpoint URL and model name for the Other provider in Settings.")
+        }
+        return openAiCompatibleRequest(
+            url = config.endpointUrl,
+            apiKey = apiKey,
+            model = config.model,
+            prompt = prompt,
+        )
+    }
+}
+
+/** Shared request/response shape for any OpenAI-compatible chat-completions endpoint. */
+private suspend fun openAiCompatibleRequest(url: String, apiKey: String, model: String, prompt: String): String =
+    withContext(Dispatchers.IO) {
         val body = JSONObject().apply {
-            put("model", "gpt-5.5")
+            put("model", model)
             put(
                 "messages",
                 JSONArray().put(
@@ -82,7 +114,7 @@ class OpenAiTextGenerator : DrillTextGenerator {
         }
 
         val request = Request.Builder()
-            .url("https://api.openai.com/v1/chat/completions")
+            .url(url)
             .addHeader("Authorization", "Bearer $apiKey")
             .post(body.toString().toRequestBody(jsonMediaType))
             .build()
@@ -95,7 +127,6 @@ class OpenAiTextGenerator : DrillTextGenerator {
                 .orEmpty()
         }
     }
-}
 
 private fun executeForText(request: Request, extract: (JSONObject) -> String): String {
     httpClient.newCall(request).execute().use { response ->

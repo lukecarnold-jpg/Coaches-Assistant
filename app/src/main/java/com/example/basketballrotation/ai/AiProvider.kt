@@ -23,4 +23,11 @@ enum class AiProvider(val storageKey: String, val displayName: String, val getKe
         displayName = "OpenAI ChatGPT",
         getKeyHint = "Get a key from the OpenAI Platform.",
     ),
+    OTHER(
+        storageKey = "other_api_key",
+        displayName = "Other (OpenAI-compatible)",
+        getKeyHint = "Works with any provider that speaks the OpenAI chat-completions API " +
+            "(e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted server such as Ollama). " +
+            "Also set its endpoint URL and model name below.",
+    ),
 }

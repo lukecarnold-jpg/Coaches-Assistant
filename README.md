@@ -2,14 +2,14 @@
 
 Basketball Rotation is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data.
 
-The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered training assistant (Google Gemini, Anthropic Claude, or OpenAI ChatGPT — your choice). It is designed for local, in-season use and keeps the workflow lightweight: roster setup, live substitutions, score tracking, attendance, and exportable game records.
+The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered training assistant (Google Gemini, Anthropic Claude, OpenAI ChatGPT, or any other OpenAI-compatible provider — your choice). It is designed for local, in-season use and keeps the workflow lightweight: roster setup, live substitutions, score tracking, attendance, and exportable game records.
 
 ## Project status
 
 - Single-module Android app (`:app`)
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 9)
-- AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash`), Anthropic Claude (`claude-sonnet-5`), or OpenAI ChatGPT (`gpt-5.5`) — and supplies that provider's API key (Gemini also falls back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
+- AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash`), Anthropic Claude (`claude-sonnet-5`), OpenAI ChatGPT (`gpt-5.5`), or "Other" (any OpenAI-compatible endpoint the user configures, e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server) — and supplies that provider's API key (Gemini also falls back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests and lint on every push/PR to `master`
 
 ## Core features
@@ -45,12 +45,13 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Compact layout with bottom navigation
   - Expanded screens with navigation rail and split panels
 - Training tab
-  - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, or OpenAI ChatGPT
+  - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, OpenAI ChatGPT, or a custom OpenAI-compatible endpoint
   - Coming-soon placeholders for future training modules
 - Settings tab
   - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device (`EncryptedSharedPreferences`)
   - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
-  - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic and OpenAI have no build-time fallback
+  - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic, OpenAI, and the "Other" provider have no build-time fallback
+  - "Other" also requires an endpoint URL and model name, since it can point at any OpenAI-compatible service
   - Clear all local data (players, games, events)
 
 ## Tech stack
@@ -94,6 +95,8 @@ If no key is set for the selected provider, the app still builds, but the Traini
 
 The app requires each user's own API key per provider (entered in Settings) rather than a "log in with your Gemini/Claude/ChatGPT account" option. This is deliberate: as of the time this was implemented, Google and Anthropic have both made it a Terms of Service violation for a third-party app to use a consumer subscription's login (Gemini Advanced/Ultra, Claude Pro/Max) instead of billed API access, with real account suspensions enforced — including paying subscribers. OpenAI's "Sign in with ChatGPT" is scoped to its own Codex tooling, not general third-party apps. API keys are the only supported, ToS-compliant path for a third-party app like this one.
 
+The fourth "Other" provider extends this to any additional service by having the user supply their own endpoint URL, model name, and API key, rather than the app adding a named integration for every possible provider. It's scoped specifically to services that speak the OpenAI chat-completions request/response shape (the de facto standard most third-party and self-hosted providers use), not an arbitrary-schema client.
+
 ## Running locally
 
 Use the Gradle wrapper from the repo root:
@@ -120,6 +123,7 @@ The current project state was validated in this workspace with:
 - `./gradlew.bat testDebugUnitTest` -> `BUILD SUCCESSFUL`, all unit tests passing, including coverage for the player shift/bench/points calculator and MVP-vote serialization
 - `./gradlew.bat assembleRelease` -> `BUILD SUCCESSFUL` with R8 minification and resource shrinking enabled
 - A signed release build was installed and driven end-to-end on an emulator (roster setup, game creation, starting lineup, live substitution, and API key save/persist-through-restart/remove), with no crashes or logged exceptions
+- The multi-provider Settings UI was device-tested for all four providers, including a real network round-trip for the "Other" provider against a live OpenAI-compatible endpoint (the request correctly reached the server and the app surfaced the server's real error response for an invalid key)
 
 The existing test coverage includes the core game-stat calculation logic, CSV/event parsing, and MVP-vote serialization, but repository-level Room integration tests (exercising `BasketballRepository`'s transactions against a real database) are still a gap compared with a full production QA suite.
 
@@ -145,10 +149,11 @@ The existing test coverage includes the core game-stat calculation logic, CSV/ev
   - `app/src/main/java/com/example/basketballrotation/ui/AppViewModel.kt` (also hosts the pure `calculatePlayerGameStats` function)
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingViewModel.kt`
 - AI provider layer (`app/src/main/java/com/example/basketballrotation/ai/`)
-  - `AiProvider.kt` — the Gemini/Anthropic/OpenAI enum, each provider's preferences key and display strings
+  - `AiProvider.kt` — the Gemini/Anthropic/OpenAI/Other enum, each provider's preferences key and display strings
+  - `CustomEndpointConfig.kt` — user-supplied endpoint URL and model name for the "Other" provider
   - `BasketballDrill.kt` — the parsed-drill domain model
   - `DrillParsing.kt` — pure prompt-building and response-parsing functions (unit tested)
-  - `DrillTextGenerators.kt` — one `DrillTextGenerator` implementation per provider (Gemini via its SDK, Anthropic/OpenAI via direct REST calls)
+  - `DrillTextGenerators.kt` — one `DrillTextGenerator` implementation per provider (Gemini via its SDK; Anthropic, OpenAI, and Other via direct REST calls, with Other and OpenAI sharing an `openAiCompatibleRequest` helper)
 - Data layer
   - Entities: `app/src/main/java/com/example/basketballrotation/data/Entities.kt`
   - DAOs: `app/src/main/java/com/example/basketballrotation/data/Dao.kt`

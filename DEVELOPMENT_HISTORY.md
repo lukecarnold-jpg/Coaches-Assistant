@@ -147,12 +147,20 @@ This history captures the key milestones in the app's evolution, from the initia
 - The Gemini-only legacy plaintext-key migration continues to work unchanged, since it maps into the same `AiProvider.GEMINI` storage slot
 - Smoke-tested on a device: verified the provider chips (using a `FlowRow` so the third chip wraps instead of getting squeezed into a single row), independent per-provider key save/switch/remove, and provider-aware error messaging on the Training tab
 
+## Version 2.11 ("Other" Provider for Any OpenAI-Compatible Endpoint)
+- Added a fourth AI provider option, "Other (OpenAI-compatible)", so users aren't limited to the three named providers — it lets them point the app at any service that speaks the OpenAI chat-completions request/response shape (OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server), rather than the app needing a bespoke integration per provider
+- Added `CustomEndpointConfig` (endpoint URL + model name) alongside the existing per-provider API key storage; `AiProvider.OTHER` reuses the same encrypted-preferences pattern as the other three
+- `OpenAiTextGenerator` and the new `CustomTextGenerator` now share an `openAiCompatibleRequest` helper, since "Other" is deliberately just a user-configurable version of the same request shape OpenAI's API already uses
+- The Settings screen shows two extra fields (endpoint URL, model name) only when "Other" is selected, and `generateDrills()` validates both are set before attempting a request, with a provider-specific error message if not
+- **Found and fixed a real bug during device testing**: `SettingsScreen`'s outer `Column` had never had a `verticalScroll` modifier. It happened to fit on screen before, but the two new "Other" fields pushed the Save button, "Data management" (including "Clear all data"), and "Exports" completely off-screen with no way to reach them on a phone-sized viewport. Added `.verticalScroll(rememberScrollState())` to fix it.
+- Verified end-to-end on a device: filled in a real third-party endpoint (OpenRouter) with a placeholder key, saved it, confirmed it persisted through a full process kill/relaunch, then tapped "Generate AI Drills" — the request actually reached the live OpenRouter API over the network, which rejected the placeholder key, and the app correctly displayed the server's real error message ("Missing Authentication header"), confirming the whole request/response pipeline works, not just the UI
+
 ## Current repository review
 - The project builds cleanly with zero compiler warnings across the main, unit test, and instrumented test source sets.
 - `./gradlew lintDebug` -> `BUILD SUCCESSFUL`, with no new findings.
 - All unit tests pass, including coverage for `calculatePlayerGameStats`, `MvpVotes`, and `DrillParsing`.
 - `./gradlew assembleRelease` -> `BUILD SUCCESSFUL` with R8 minification and resource shrinking enabled, including the newly-added OkHttp dependency.
-- Confirmed the app remains a single-module Android project using Compose, Room, and an optional multi-provider (Gemini/Claude/ChatGPT) training feature.
+- Confirmed the app remains a single-module Android project using Compose, Room, and an optional multi-provider (Gemini/Claude/ChatGPT/Other) training feature.
 - Current Room schema version is 9; the changes in this pass are UI/ViewModel/preferences-layer only and did not require a schema bump.
 - The training assistant is optional and reads its per-provider key from an in-app Settings entry (encrypted at rest); Gemini additionally falls back to `GEMINI_API_KEY` in `local.properties` if no in-app key is saved.
 - The app is still local-first and does not include a backend, cloud sync, or user authentication layer.

@@ -11,6 +11,7 @@ import androidx.security.crypto.MasterKey
 import com.example.basketballrotation.BuildConfig
 import com.example.basketballrotation.ai.AiProvider
 import com.example.basketballrotation.ai.BasketballDrill
+import com.example.basketballrotation.ai.CustomEndpointConfig
 import com.example.basketballrotation.ai.buildDrillPrompt
 import com.example.basketballrotation.ai.parseDrills
 import com.example.basketballrotation.ai.textGeneratorFor
@@ -45,6 +46,9 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
     private val _selectedProvider = MutableStateFlow(loadSelectedProvider())
     val selectedProvider = _selectedProvider.asStateFlow()
 
+    private val _customEndpoint = MutableStateFlow(loadCustomEndpoint())
+    val customEndpoint = _customEndpoint.asStateFlow()
+
     private val _uiState = MutableStateFlow<TrainingUiState>(TrainingUiState.Idle)
     val uiState = _uiState.asStateFlow()
 
@@ -56,9 +60,23 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         return AiProvider.entries.firstOrNull { it.name == raw } ?: AiProvider.GEMINI
     }
 
+    private fun loadCustomEndpoint(): CustomEndpointConfig = CustomEndpointConfig(
+        endpointUrl = prefs.getString(KEY_CUSTOM_ENDPOINT_URL, null).orEmpty(),
+        model = prefs.getString(KEY_CUSTOM_MODEL, null).orEmpty(),
+    )
+
     fun selectProvider(provider: AiProvider) {
         prefs.edit { putString(KEY_SELECTED_PROVIDER, provider.name) }
         _selectedProvider.value = provider
+    }
+
+    fun updateCustomEndpoint(config: CustomEndpointConfig) {
+        val trimmed = CustomEndpointConfig(config.endpointUrl.trim(), config.model.trim())
+        prefs.edit {
+            putString(KEY_CUSTOM_ENDPOINT_URL, trimmed.endpointUrl)
+            putString(KEY_CUSTOM_MODEL, trimmed.model)
+        }
+        _customEndpoint.value = trimmed
     }
 
     fun updateApiKey(provider: AiProvider, key: String) {
@@ -90,11 +108,18 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
             )
             return
         }
+        val customEndpoint = _customEndpoint.value
+        if (provider == AiProvider.OTHER && (customEndpoint.endpointUrl.isBlank() || customEndpoint.model.isBlank())) {
+            _uiState.value = TrainingUiState.Error(
+                "Add an endpoint URL and model name for the Other provider in Settings.",
+            )
+            return
+        }
 
         viewModelScope.launch {
             _uiState.value = TrainingUiState.Loading
             try {
-                val text = textGeneratorFor(provider).generateText(buildDrillPrompt(ageGroup), apiKey)
+                val text = textGeneratorFor(provider, customEndpoint).generateText(buildDrillPrompt(ageGroup), apiKey)
                 val drills = parseDrills(text)
                 _uiState.value = if (drills.isEmpty()) {
                     TrainingUiState.Error("Failed to parse drills. Try again.")
@@ -121,6 +146,8 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         const val PREFS_NAME = "training_prefs_secure"
         const val LEGACY_GEMINI_KEY = "gemini_api_key"
         const val KEY_SELECTED_PROVIDER = "selected_ai_provider"
+        const val KEY_CUSTOM_ENDPOINT_URL = "custom_endpoint_url"
+        const val KEY_CUSTOM_MODEL = "custom_model"
 
         fun createEncryptedPrefs(application: Application): SharedPreferences {
             val masterKey = MasterKey.Builder(application)

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -32,6 +34,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.basketballrotation.ai.AiProvider
+import com.example.basketballrotation.ai.CustomEndpointConfig
 
 @Composable
 fun SettingsScreen(
@@ -40,18 +43,25 @@ fun SettingsScreen(
     apiKeys: Map<AiProvider, String> = emptyMap(),
     selectedProvider: AiProvider = AiProvider.GEMINI,
     hasBuiltInApiKey: Boolean = false,
+    customEndpoint: CustomEndpointConfig = CustomEndpointConfig(),
     onSelectProvider: (AiProvider) -> Unit = {},
     onSaveApiKey: (AiProvider, String) -> Unit = { _, _ -> },
     onClearApiKey: (AiProvider) -> Unit = {},
+    onSaveCustomEndpoint: (CustomEndpointConfig) -> Unit = {},
 ) {
     val layout = LocalResponsiveLayout.current
     var showConfirm by remember { mutableStateOf(value = false) }
     val savedKey = apiKeys[selectedProvider].orEmpty()
     var apiKeyInput by remember(selectedProvider, savedKey) { mutableStateOf(savedKey) }
     var apiKeyVisible by remember { mutableStateOf(value = false) }
+    var endpointUrlInput by remember(customEndpoint.endpointUrl) { mutableStateOf(customEndpoint.endpointUrl) }
+    var modelInput by remember(customEndpoint.model) { mutableStateOf(customEndpoint.model) }
+    val isOther = selectedProvider == AiProvider.OTHER
 
     Column(
-        modifier = modifier.padding(layout.screenPadding),
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(layout.screenPadding),
         verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
     ) {
         Text(
@@ -89,6 +99,27 @@ fun SettingsScreen(
                 }
             )
             Spacer(Modifier.height(layout.smallGap))
+
+            if (isOther) {
+                OutlinedTextField(
+                    value = endpointUrlInput,
+                    onValueChange = { endpointUrlInput = it },
+                    label = { Text("Endpoint URL") },
+                    placeholder = { Text("https://.../v1/chat/completions") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(layout.smallGap))
+                OutlinedTextField(
+                    value = modelInput,
+                    onValueChange = { modelInput = it },
+                    label = { Text("Model name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(layout.smallGap))
+            }
+
             OutlinedTextField(
                 value = apiKeyInput,
                 onValueChange = { apiKeyInput = it },
@@ -107,9 +138,16 @@ fun SettingsScreen(
             )
             Spacer(Modifier.height(layout.smallGap))
             Row(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+                val endpointChanged = isOther &&
+                    ((endpointUrlInput.trim() != customEndpoint.endpointUrl) || (modelInput.trim() != customEndpoint.model))
                 Button(
-                    onClick = { onSaveApiKey(selectedProvider, apiKeyInput.trim()) },
-                    enabled = apiKeyInput.trim() != savedKey,
+                    onClick = {
+                        onSaveApiKey(selectedProvider, apiKeyInput.trim())
+                        if (isOther) {
+                            onSaveCustomEndpoint(CustomEndpointConfig(endpointUrlInput.trim(), modelInput.trim()))
+                        }
+                    },
+                    enabled = (apiKeyInput.trim() != savedKey) || endpointChanged,
                 ) {
                     Text("Save")
                 }

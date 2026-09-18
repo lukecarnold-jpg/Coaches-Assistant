@@ -87,6 +87,7 @@ private fun BasketballApp(
     val stats by appViewModel.selectedGameStats.collectAsState()
     val apiKeys by trainingViewModel.apiKeys.collectAsState()
     val selectedAiProvider by trainingViewModel.selectedProvider.collectAsState()
+    val customAiEndpoint by trainingViewModel.customEndpoint.collectAsState()
 
     var currentTab by rememberSaveable { mutableStateOf(AppTab.ROSTER.name) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -203,9 +204,11 @@ private fun BasketballApp(
                         apiKeys = apiKeys,
                         selectedProvider = selectedAiProvider,
                         hasBuiltInApiKey = trainingViewModel.hasBuiltInApiKey,
+                        customEndpoint = customAiEndpoint,
                         onSelectProvider = trainingViewModel::selectProvider,
                         onSaveApiKey = trainingViewModel::updateApiKey,
                         onClearApiKey = trainingViewModel::clearApiKey,
+                        onSaveCustomEndpoint = trainingViewModel::updateCustomEndpoint,
                     )
                 }
             }
