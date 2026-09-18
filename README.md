@@ -2,14 +2,14 @@
 
 Basketball Rotation is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data.
 
-The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powered training assistant. It is designed for local, in-season use and keeps the workflow lightweight: roster setup, live substitutions, score tracking, attendance, and exportable game records.
+The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered training assistant (Google Gemini, Anthropic Claude, or OpenAI ChatGPT — your choice). It is designed for local, in-season use and keeps the workflow lightweight: roster setup, live substitutions, score tracking, attendance, and exportable game records.
 
 ## Project status
 
 - Single-module Android app (`:app`)
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 9)
-- AI drills: Google Generative AI (`gemini-3.8-flash`), using a key entered on the Settings tab or, if none is saved, `GEMINI_API_KEY` from `local.properties`
+- AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash`), Anthropic Claude (`claude-sonnet-5`), or OpenAI ChatGPT (`gpt-5.5`) — and supplies that provider's API key (Gemini also falls back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests and lint on every push/PR to `master`
 
 ## Core features
