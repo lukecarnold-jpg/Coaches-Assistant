@@ -2,9 +2,12 @@ package com.example.basketballrotation.ui
 
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.example.basketballrotation.BuildConfig
 import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +28,14 @@ sealed class TrainingUiState {
 }
 
 class TrainingViewModel(application: Application) : AndroidViewModel(application) {
-    private val prefs = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    // The API key is a secret, so it is stored in an encrypted preferences file rather than
+    // plain SharedPreferences. Older installs may still have the key in the legacy plaintext
+    // file; migrateLegacyApiKey() moves it over once and wipes the plaintext copy.
+    private val prefs: SharedPreferences = createEncryptedPrefs(application)
+
+    init {
+        migrateLegacyApiKey(application)
+    }
 
     // A key saved in Settings takes priority; otherwise falls back to local.properties via BuildConfig.
     val hasBuiltInApiKey: Boolean = BuildConfig.GEMINI_API_KEY.isNotBlank()
@@ -114,7 +124,32 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
     }
 
     private companion object {
-        const val PREFS_NAME = "training_prefs"
+        const val LEGACY_PREFS_NAME = "training_prefs"
+        const val PREFS_NAME = "training_prefs_secure"
         const val KEY_API_KEY = "gemini_api_key"
+
+        fun createEncryptedPrefs(application: Application): SharedPreferences {
+            val masterKey = MasterKey.Builder(application)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+            return EncryptedSharedPreferences.create(
+                application,
+                PREFS_NAME,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+            )
+        }
+    }
+
+    private fun migrateLegacyApiKey(application: Application) {
+        val legacyPrefs = application.getSharedPreferences(LEGACY_PREFS_NAME, Context.MODE_PRIVATE)
+        val legacyKey = legacyPrefs.getString(KEY_API_KEY, null)
+        if (!legacyKey.isNullOrBlank() && prefs.getString(KEY_API_KEY, null).isNullOrBlank()) {
+            prefs.edit { putString(KEY_API_KEY, legacyKey) }
+        }
+        if (legacyPrefs.contains(KEY_API_KEY)) {
+            legacyPrefs.edit { clear() }
+        }
     }
 }

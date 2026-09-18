@@ -9,6 +9,7 @@ import com.example.basketballrotation.data.BasketballRepository
 import com.example.basketballrotation.data.EventType
 import com.example.basketballrotation.data.GameEntity
 import com.example.basketballrotation.data.GameEventEntity
+import com.example.basketballrotation.data.MvpVotes
 import com.example.basketballrotation.data.PlayerEntity
 import com.example.basketballrotation.data.absentPlayerIds
 import com.example.basketballrotation.data.onCourtIds
@@ -80,130 +81,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     val selectedGameStats =
         combine(players, selectedGame, selectedGameEvents) { playerList, game, events ->
-            val onCourt = game?.onCourtIds()?.toSet().orEmpty()
-            val absent = game?.absentPlayerIds()?.toSet().orEmpty()
-            
-            val totalTimeByPlayer = mutableMapOf<Long, Long>()
-            val lastEnteredAt = mutableMapOf<Long, Long>()
-            val lastBenchedAt = mutableMapOf<Long, Long>()
-            val pointsByPlayer = mutableMapOf<Long, Int>()
-            val foulsByPlayer = mutableMapOf<Long, Int>()
-            val timesSubbedOffByPlayer = mutableMapOf<Long, Int>()
-
-            // Process events chronologically to calculate stats and times
-            val sortedEvents = events.sortedWith(compareBy<GameEventEntity>({ it.timestamp }, { it.id }))
-
-            sortedEvents.forEach { event ->
-                when (EventType.fromRaw(event.type)) {
-                    EventType.START_LINEUP -> {
-                        // note contains the player IDs
-                        event.note.split(',')
-                            .mapNotNull { it.trim().toLongOrNull() }
-                            .forEach { id ->
-                                lastEnteredAt[id] = event.gameTimeMillis
-                                lastBenchedAt.remove(id)
-                            }
-                    }
-
-                    EventType.SUBSTITUTION -> {
-                        event.playerId?.let { playerInId ->
-                            lastEnteredAt[playerInId] = event.gameTimeMillis
-                            lastBenchedAt.remove(playerInId)
-                        }
-                        event.relatedPlayerId?.let { playerOutId ->
-                            timesSubbedOffByPlayer[playerOutId] = (timesSubbedOffByPlayer[playerOutId] ?: 0) + 1
-                            val entered = lastEnteredAt.remove(playerOutId)
-                            if (entered != null) {
-                                val duration = maxOf(0L, event.gameTimeMillis - entered)
-                                totalTimeByPlayer[playerOutId] = (totalTimeByPlayer[playerOutId] ?: 0L) + duration
-                            }
-                            lastBenchedAt[playerOutId] = event.gameTimeMillis
-                        }
-                    }
-
-                    EventType.SCORE -> event.playerId?.let { playerId ->
-                        pointsByPlayer[playerId] = (pointsByPlayer[playerId] ?: 0) + event.points
-                    }
-
-                    EventType.FOUL -> event.playerId?.let { playerId ->
-                        foulsByPlayer[playerId] = (foulsByPlayer[playerId] ?: 0) + event.points
-                    }
-
-                    EventType.PERIOD_CHANGE -> {
-                        // Close all active shifts using the event's gameTimeMillis (which is end of period)
-                        lastEnteredAt.forEach { (id, entered) ->
-                            val duration = maxOf(0L, event.gameTimeMillis - entered)
-                            totalTimeByPlayer[id] = (totalTimeByPlayer[id] ?: 0L) + duration
-                        }
-                        lastEnteredAt.clear()
-                    }
-
-                    EventType.GAME_END -> {
-                        lastEnteredAt.forEach { (id, entered) ->
-                            val duration = maxOf(0L, event.gameTimeMillis - entered)
-                            totalTimeByPlayer[id] = (totalTimeByPlayer[id] ?: 0L) + duration
-                        }
-                        lastEnteredAt.clear()
-                    }
-
-                    EventType.OPPONENT_SCORE,
-                    EventType.MVP_VOTE -> {}
-                }
-            }
-
-            val mvpVotesMap = try {
-                val map = mutableMapOf<Long, Int>()
-                val json = game?.mvpVotesJson?.removeSurrounding("{", "}") ?: ""
-                if (json.isNotEmpty()) {
-                    json.split(",").forEach { pair ->
-                        val parts = pair.split(":")
-                        if (parts.size == 2) {
-                            map[parts[0].trim().toLong()] = parts[1].trim().toInt()
-                        }
-                    }
-                }
-                map
-            } catch (_: Exception) {
-                emptyMap()
-            }
-
-            playerList
-                .asSequence()
-                .filter { !absent.contains(it.id) }
-                .map { player ->
-                    val isOnCourt = onCourt.contains(player.id)
-                    val enteredAt = lastEnteredAt[player.id]
-                        ?: (game?.runningTimeMillis ?: 0L)
-
-                    val currentShift = if (isOnCourt) {
-                        maxOf(0L, (game?.runningTimeMillis ?: 0L) - enteredAt)
-                    } else {
-                        0L
-                    }
-
-                    val benchedAt = lastBenchedAt[player.id] ?: 0L
-                    val currentBench = if (isOnCourt) {
-                        0L
-                    } else {
-                        maxOf(0L, (game?.runningTimeMillis ?: 0L) - benchedAt)
-                    }
-
-                    val totalTime = (totalTimeByPlayer[player.id] ?: 0L) + currentShift
-
-                    PlayerGameStat(
-                        player = player,
-                        points = pointsByPlayer[player.id] ?: 0,
-                        fouls = foulsByPlayer[player.id] ?: 0,
-                        mvpVotes = mvpVotesMap[player.id] ?: 0,
-                        timesSubbedOff = timesSubbedOffByPlayer[player.id] ?: 0,
-                        onCourt = isOnCourt,
-                        currentShiftTimeMillis = currentShift,
-                        currentBenchTimeMillis = currentBench,
-                        shiftStartGameTimeMillis = if (isOnCourt) enteredAt else null,
-                        totalTimeMillis = totalTime,
-                    )
-                }
-                .toList()
+            calculatePlayerGameStats(playerList, game, events)
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
@@ -485,4 +363,127 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+}
+
+/**
+ * Replays [events] in chronological order to derive each roster player's current on-court/bench
+ * status, shift and bench durations, and per-game totals as of [game]'s current running time.
+ *
+ * A pure function (no Android/coroutine dependencies) so it can be unit tested directly.
+ */
+fun calculatePlayerGameStats(
+    playerList: List<PlayerEntity>,
+    game: GameEntity?,
+    events: List<GameEventEntity>,
+): List<PlayerGameStat> {
+    val onCourt = game?.onCourtIds()?.toSet().orEmpty()
+    val absent = game?.absentPlayerIds()?.toSet().orEmpty()
+
+    val totalTimeByPlayer = mutableMapOf<Long, Long>()
+    val lastEnteredAt = mutableMapOf<Long, Long>()
+    val lastBenchedAt = mutableMapOf<Long, Long>()
+    val pointsByPlayer = mutableMapOf<Long, Int>()
+    val foulsByPlayer = mutableMapOf<Long, Int>()
+    val timesSubbedOffByPlayer = mutableMapOf<Long, Int>()
+
+    // Process events chronologically to calculate stats and times
+    val sortedEvents = events.sortedWith(compareBy<GameEventEntity>({ it.timestamp }, { it.id }))
+
+    sortedEvents.forEach { event ->
+        when (EventType.fromRaw(event.type)) {
+            EventType.START_LINEUP -> {
+                // note contains the player IDs
+                event.note.split(',')
+                    .mapNotNull { it.trim().toLongOrNull() }
+                    .forEach { id ->
+                        lastEnteredAt[id] = event.gameTimeMillis
+                        lastBenchedAt.remove(id)
+                    }
+            }
+
+            EventType.SUBSTITUTION -> {
+                event.playerId?.let { playerInId ->
+                    lastEnteredAt[playerInId] = event.gameTimeMillis
+                    lastBenchedAt.remove(playerInId)
+                }
+                event.relatedPlayerId?.let { playerOutId ->
+                    timesSubbedOffByPlayer[playerOutId] = (timesSubbedOffByPlayer[playerOutId] ?: 0) + 1
+                    val entered = lastEnteredAt.remove(playerOutId)
+                    if (entered != null) {
+                        val duration = maxOf(0L, event.gameTimeMillis - entered)
+                        totalTimeByPlayer[playerOutId] = (totalTimeByPlayer[playerOutId] ?: 0L) + duration
+                    }
+                    lastBenchedAt[playerOutId] = event.gameTimeMillis
+                }
+            }
+
+            EventType.SCORE -> event.playerId?.let { playerId ->
+                pointsByPlayer[playerId] = (pointsByPlayer[playerId] ?: 0) + event.points
+            }
+
+            EventType.FOUL -> event.playerId?.let { playerId ->
+                foulsByPlayer[playerId] = (foulsByPlayer[playerId] ?: 0) + event.points
+            }
+
+            EventType.PERIOD_CHANGE -> {
+                // Close all active shifts using the event's gameTimeMillis (which is end of period)
+                lastEnteredAt.forEach { (id, entered) ->
+                    val duration = maxOf(0L, event.gameTimeMillis - entered)
+                    totalTimeByPlayer[id] = (totalTimeByPlayer[id] ?: 0L) + duration
+                }
+                lastEnteredAt.clear()
+            }
+
+            EventType.GAME_END -> {
+                lastEnteredAt.forEach { (id, entered) ->
+                    val duration = maxOf(0L, event.gameTimeMillis - entered)
+                    totalTimeByPlayer[id] = (totalTimeByPlayer[id] ?: 0L) + duration
+                }
+                lastEnteredAt.clear()
+            }
+
+            EventType.OPPONENT_SCORE,
+            EventType.MVP_VOTE -> {}
+        }
+    }
+
+    val mvpVotesMap = MvpVotes.parse(game?.mvpVotesJson.orEmpty())
+
+    return playerList
+        .asSequence()
+        .filter { !absent.contains(it.id) }
+        .map { player ->
+            val isOnCourt = onCourt.contains(player.id)
+            val enteredAt = lastEnteredAt[player.id]
+                ?: (game?.runningTimeMillis ?: 0L)
+
+            val currentShift = if (isOnCourt) {
+                maxOf(0L, (game?.runningTimeMillis ?: 0L) - enteredAt)
+            } else {
+                0L
+            }
+
+            val benchedAt = lastBenchedAt[player.id] ?: 0L
+            val currentBench = if (isOnCourt) {
+                0L
+            } else {
+                maxOf(0L, (game?.runningTimeMillis ?: 0L) - benchedAt)
+            }
+
+            val totalTime = (totalTimeByPlayer[player.id] ?: 0L) + currentShift
+
+            PlayerGameStat(
+                player = player,
+                points = pointsByPlayer[player.id] ?: 0,
+                fouls = foulsByPlayer[player.id] ?: 0,
+                mvpVotes = mvpVotesMap[player.id] ?: 0,
+                timesSubbedOff = timesSubbedOffByPlayer[player.id] ?: 0,
+                onCourt = isOnCourt,
+                currentShiftTimeMillis = currentShift,
+                currentBenchTimeMillis = currentBench,
+                shiftStartGameTimeMillis = if (isOnCourt) enteredAt else null,
+                totalTimeMillis = totalTime,
+            )
+        }
+        .toList()
 }

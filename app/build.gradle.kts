@@ -29,7 +29,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -88,7 +89,13 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    implementation(libs.androidx.security.crypto)
+
     testImplementation(libs.junit)
+    // Real org.json implementation for JVM unit tests: the android.jar used to compile/run
+    // `test` sources only stubs org.json (as it does the rest of the Android SDK), so
+    // MvpVotesTest needs a working implementation on the unit test classpath.
+    testImplementation(libs.json)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

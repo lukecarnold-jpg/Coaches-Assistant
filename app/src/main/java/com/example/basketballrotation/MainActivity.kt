@@ -61,6 +61,20 @@ enum class AppTab {
     SETTINGS
 }
 
+private data class NavTabSpec(
+    val tab: AppTab,
+    val label: String,
+    val icon: @Composable () -> Unit,
+)
+
+private val navTabSpecs = listOf(
+    NavTabSpec(AppTab.ROSTER, "Roster") { Text("👥") },
+    NavTabSpec(AppTab.GAME, "Game") { Text("🏀") },
+    NavTabSpec(AppTab.TRAINING, "Training") { Text("🏋️") },
+    NavTabSpec(AppTab.HISTORY, "History") { Text("🕘") },
+    NavTabSpec(AppTab.SETTINGS, "Settings") { Icon(Icons.Default.Settings, contentDescription = null) },
+)
+
 @Composable
 private fun BasketballApp(
     appViewModel: AppViewModel = viewModel(),
@@ -88,36 +102,14 @@ private fun BasketballApp(
     Row(modifier = Modifier.fillMaxSize()) {
         if (isExpanded) {
             NavigationRail {
-                NavigationRailItem(
-                    selected = (currentTab == AppTab.ROSTER.name),
-                    onClick = { currentTab = AppTab.ROSTER.name },
-                    icon = { Text("👥") },
-                    label = { Text("Roster") },
-                )
-                NavigationRailItem(
-                    selected = (currentTab == AppTab.GAME.name),
-                    onClick = { currentTab = AppTab.GAME.name },
-                    icon = { Text("🏀") },
-                    label = { Text("Game") },
-                )
-                NavigationRailItem(
-                    selected = (currentTab == AppTab.TRAINING.name),
-                    onClick = { currentTab = AppTab.TRAINING.name },
-                    icon = { Text("🏋️") },
-                    label = { Text("Training") },
-                )
-                NavigationRailItem(
-                    selected = (currentTab == AppTab.HISTORY.name),
-                    onClick = { currentTab = AppTab.HISTORY.name },
-                    icon = { Text("🕘") },
-                    label = { Text("History") },
-                )
-                NavigationRailItem(
-                    selected = (currentTab == AppTab.SETTINGS.name),
-                    onClick = { currentTab = AppTab.SETTINGS.name },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text("Settings") },
-                )
+                navTabSpecs.forEach { spec ->
+                    NavigationRailItem(
+                        selected = (currentTab == spec.tab.name),
+                        onClick = { currentTab = spec.tab.name },
+                        icon = spec.icon,
+                        label = { Text(spec.label) },
+                    )
+                }
             }
         }
 
@@ -127,36 +119,14 @@ private fun BasketballApp(
             bottomBar = {
                 if (!isExpanded) {
                     NavigationBar {
-                        NavigationBarItem(
-                            selected = (currentTab == AppTab.ROSTER.name),
-                            onClick = { currentTab = AppTab.ROSTER.name },
-                            icon = { Text("👥") },
-                            label = { Text("Roster") },
-                        )
-                        NavigationBarItem(
-                            selected = (currentTab == AppTab.GAME.name),
-                            onClick = { currentTab = AppTab.GAME.name },
-                            icon = { Text("🏀") },
-                            label = { Text("Game") },
-                        )
-                        NavigationBarItem(
-                            selected = (currentTab == AppTab.TRAINING.name),
-                            onClick = { currentTab = AppTab.TRAINING.name },
-                            icon = { Text("🏋️") },
-                            label = { Text("Training") },
-                        )
-                        NavigationBarItem(
-                            selected = (currentTab == AppTab.HISTORY.name),
-                            onClick = { currentTab = AppTab.HISTORY.name },
-                            icon = { Text("🕘") },
-                            label = { Text("History") },
-                        )
-                        NavigationBarItem(
-                            selected = (currentTab == AppTab.SETTINGS.name),
-                            onClick = { currentTab = AppTab.SETTINGS.name },
-                            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                            label = { Text("Settings") },
-                        )
+                        navTabSpecs.forEach { spec ->
+                            NavigationBarItem(
+                                selected = (currentTab == spec.tab.name),
+                                onClick = { currentTab = spec.tab.name },
+                                icon = spec.icon,
+                                label = { Text(spec.label) },
+                            )
+                        }
                     }
                 }
             },

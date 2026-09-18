@@ -310,26 +310,10 @@ class BasketballRepository(
     suspend fun addMvpVote(gameId: Long, playerId: Long) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
-            val currentVotes = try {
-                val map = mutableMapOf<Long, Int>()
-                val json = game.mvpVotesJson.removeSurrounding("{", "}")
-                if (json.isNotEmpty()) {
-                    json.split(",").forEach { pair ->
-                        val parts = pair.split(":")
-                        if (parts.size == 2) {
-                            map[parts[0].trim().toLong()] = parts[1].trim().toInt()
-                        }
-                    }
-                }
-                map
-            } catch (_: Exception) {
-                mutableMapOf()
-            }
-
+            val currentVotes = MvpVotes.parse(game.mvpVotesJson).toMutableMap()
             currentVotes[playerId] = (currentVotes[playerId] ?: 0) + 1
-            
-            val newJson = "{" + currentVotes.entries.joinToString(",") { "${it.key}:${it.value}" } + "}"
-            gameDao.update(game.copy(mvpVotesJson = newJson))
+
+            gameDao.update(game.copy(mvpVotesJson = MvpVotes.serialize(currentVotes)))
 
             gameEventDao.insert(
                 GameEventEntity(
