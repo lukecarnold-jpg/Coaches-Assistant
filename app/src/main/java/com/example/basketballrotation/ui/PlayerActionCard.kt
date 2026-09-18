@@ -91,7 +91,7 @@ fun PlayerActionCard(
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    StatusBadge(if (stat.currentShiftTimeMillis > 0 || gameTimerLastStartedAt != null) "ON COURT" else "BENCH")
+                    StatusBadge(if (stat.onCourt) "ON COURT" else "BENCH")
                     Spacer(Modifier.height(4.dp))
                     if (enabled) {
                         TextButton(
