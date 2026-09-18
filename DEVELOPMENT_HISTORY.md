@@ -138,13 +138,22 @@ This history captures the key milestones in the app's evolution, from the initia
 - `gemini-3.8-flash` is the current stable flagship Flash-tier model with no shutdown date announced, per Google's official models and deprecations documentation (checked September 2026)
 - Deliberately pinned to the specific stable version rather than the `gemini-flash-latest` alias, which Google's own release notes recommend against for production use since it can silently repoint to a newer (and at the time of checking, preview-status) model without a code change
 
+## Version 2.10 (Multi-Provider AI: Gemini, Claude, and ChatGPT)
+- Investigated letting users "log into" their Gemini/Claude/ChatGPT account instead of an API key; found that Google and Anthropic have both made it a Terms of Service violation (with real account suspensions, including paying subscribers) to use a consumer subscription's login in a third-party app, and OpenAI's equivalent is scoped to its own Codex tooling only — so this was not built
+- Instead extended the existing "bring your own API key" pattern to all three providers: added a provider picker (Google Gemini, Anthropic Claude, OpenAI ChatGPT) to the Settings tab, each with its own encrypted API key storage, save/remove actions, and get-a-key hint text
+- Added a new `ai` package: `AiProvider` (the provider enum), `BasketballDrill` (moved out of `TrainingViewModel`), `DrillParsing` (pure, now unit-tested prompt-building and response-parsing functions), and `DrillTextGenerators` (one `DrillTextGenerator` per provider — Gemini via its existing SDK, Anthropic and OpenAI via direct REST calls, since neither publishes an official Android SDK)
+- Added OkHttp as a dependency for the Anthropic (`/v1/messages`) and OpenAI (`/v1/chat/completions`) REST calls; both providers' current stable model IDs (`claude-sonnet-5`, `gpt-5.5`) were confirmed via each vendor's documentation before use
+- `TrainingViewModel` now stores one key per provider plus the selected provider in the same encrypted preferences file, and `generateDrills()` dispatches to whichever provider is currently selected; error messages (e.g. "Add your OpenAI ChatGPT API key in Settings") name the active provider
+- The Gemini-only legacy plaintext-key migration continues to work unchanged, since it maps into the same `AiProvider.GEMINI` storage slot
+- Smoke-tested on a device: verified the provider chips (using a `FlowRow` so the third chip wraps instead of getting squeezed into a single row), independent per-provider key save/switch/remove, and provider-aware error messaging on the Training tab
+
 ## Current repository review
 - The project builds cleanly with zero compiler warnings across the main, unit test, and instrumented test source sets.
-- `./gradlew lintDebug` -> `BUILD SUCCESSFUL`, with no new findings introduced by the Version 2.8 changes.
-- All unit tests pass, including new coverage for `calculatePlayerGameStats` and `MvpVotes`.
-- `./gradlew assembleRelease` -> `BUILD SUCCESSFUL` with R8 minification and resource shrinking enabled.
-- Confirmed the app remains a single-module Android project using Compose, Room, and an optional Gemini-backed training feature.
+- `./gradlew lintDebug` -> `BUILD SUCCESSFUL`, with no new findings.
+- All unit tests pass, including coverage for `calculatePlayerGameStats`, `MvpVotes`, and `DrillParsing`.
+- `./gradlew assembleRelease` -> `BUILD SUCCESSFUL` with R8 minification and resource shrinking enabled, including the newly-added OkHttp dependency.
+- Confirmed the app remains a single-module Android project using Compose, Room, and an optional multi-provider (Gemini/Claude/ChatGPT) training feature.
 - Current Room schema version is 9; the changes in this pass are UI/ViewModel/preferences-layer only and did not require a schema bump.
-- The training assistant is optional and reads its Gemini key from either an in-app Settings entry (now encrypted at rest) or `GEMINI_API_KEY` in `local.properties`.
+- The training assistant is optional and reads its per-provider key from an in-app Settings entry (encrypted at rest); Gemini additionally falls back to `GEMINI_API_KEY` in `local.properties` if no in-app key is saved.
 - The app is still local-first and does not include a backend, cloud sync, or user authentication layer.
 - Testing now covers the core stat-calculation logic directly; repository-level Room integration tests (e.g. exercising `BasketballRepository`'s transactions against a real database) remain a future improvement area.

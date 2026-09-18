@@ -2,6 +2,7 @@ package com.example.basketballrotation.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,19 +31,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.basketballrotation.ai.AiProvider
 
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
     onClearAllData: () -> Unit,
-    geminiApiKey: String = "",
+    apiKeys: Map<AiProvider, String> = emptyMap(),
+    selectedProvider: AiProvider = AiProvider.GEMINI,
     hasBuiltInApiKey: Boolean = false,
-    onSaveGeminiApiKey: (String) -> Unit = {},
-    onClearGeminiApiKey: () -> Unit = {},
+    onSelectProvider: (AiProvider) -> Unit = {},
+    onSaveApiKey: (AiProvider, String) -> Unit = { _, _ -> },
+    onClearApiKey: (AiProvider) -> Unit = {},
 ) {
     val layout = LocalResponsiveLayout.current
     var showConfirm by remember { mutableStateOf(value = false) }
-    var apiKeyInput by remember(geminiApiKey) { mutableStateOf(geminiApiKey) }
+    val savedKey = apiKeys[selectedProvider].orEmpty()
+    var apiKeyInput by remember(selectedProvider, savedKey) { mutableStateOf(savedKey) }
     var apiKeyVisible by remember { mutableStateOf(value = false) }
 
     Column(
@@ -55,18 +61,38 @@ fun SettingsScreen(
         )
 
         SectionCard(title = "AI training assistant") {
+            Text("Choose which AI generates training drills, then add its API key. Each provider requires its own key — the app does not support signing in with a Gemini, Claude, or ChatGPT account.")
+            Spacer(Modifier.height(layout.smallGap))
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
+                verticalArrangement = Arrangement.spacedBy(layout.smallGap),
+            ) {
+                AiProvider.entries.forEach { provider ->
+                    FilterChip(
+                        selected = provider == selectedProvider,
+                        onClick = { onSelectProvider(provider) },
+                        label = { Text(provider.displayName) },
+                    )
+                }
+            }
+            Spacer(Modifier.height(layout.smallGap))
+
             Text(
                 when {
-                    geminiApiKey.isNotBlank() -> "A Gemini API key is saved on this device. AI drill generation is enabled."
-                    hasBuiltInApiKey -> "Using the GEMINI_API_KEY built into this app. AI drill generation is enabled."
-                    else -> "No Gemini API key configured. Add one below to enable AI drill generation on the Training tab."
+                    savedKey.isNotBlank() ->
+                        "Your saved ${selectedProvider.displayName} API key is active. AI drill generation is enabled."
+                    (selectedProvider == AiProvider.GEMINI) && hasBuiltInApiKey ->
+                        "Using the GEMINI_API_KEY built into this app. AI drill generation is enabled."
+                    else ->
+                        "No ${selectedProvider.displayName} API key configured. Add one below to enable AI drill generation on the Training tab."
                 }
             )
             Spacer(Modifier.height(layout.smallGap))
             OutlinedTextField(
                 value = apiKeyInput,
                 onValueChange = { apiKeyInput = it },
-                label = { Text("Gemini API key") },
+                label = { Text("${selectedProvider.displayName} API key") },
                 singleLine = true,
                 visualTransformation = if (apiKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -82,16 +108,16 @@ fun SettingsScreen(
             Spacer(Modifier.height(layout.smallGap))
             Row(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 Button(
-                    onClick = { onSaveGeminiApiKey(apiKeyInput.trim()) },
-                    enabled = apiKeyInput.trim() != geminiApiKey,
+                    onClick = { onSaveApiKey(selectedProvider, apiKeyInput.trim()) },
+                    enabled = apiKeyInput.trim() != savedKey,
                 ) {
                     Text("Save")
                 }
-                if (geminiApiKey.isNotBlank()) {
+                if (savedKey.isNotBlank()) {
                     TextButton(
                         onClick = {
                             apiKeyInput = ""
-                            onClearGeminiApiKey()
+                            onClearApiKey(selectedProvider)
                         },
                     ) {
                         Text("Remove saved key")
@@ -100,7 +126,7 @@ fun SettingsScreen(
             }
             Spacer(Modifier.height(layout.smallGap))
             Text(
-                "Get a free key from Google AI Studio, then paste it here. The key is stored only on this device.",
+                "${selectedProvider.getKeyHint} The key is stored only on this device.",
                 style = MaterialTheme.typography.bodySmall,
             )
         }

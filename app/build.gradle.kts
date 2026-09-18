@@ -90,6 +90,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.security.crypto)
+    implementation(libs.okhttp)
 
     testImplementation(libs.junit)
     // Real org.json implementation for JVM unit tests: the android.jar used to compile/run

@@ -85,7 +85,8 @@ private fun BasketballApp(
     val selectedGame by appViewModel.selectedGame.collectAsState()
     val events by appViewModel.selectedGameEvents.collectAsState()
     val stats by appViewModel.selectedGameStats.collectAsState()
-    val geminiApiKey by trainingViewModel.savedApiKey.collectAsState()
+    val apiKeys by trainingViewModel.apiKeys.collectAsState()
+    val selectedAiProvider by trainingViewModel.selectedProvider.collectAsState()
 
     var currentTab by rememberSaveable { mutableStateOf(AppTab.ROSTER.name) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -199,10 +200,12 @@ private fun BasketballApp(
                     AppTab.SETTINGS -> SettingsScreen(
                         modifier = Modifier.fillMaxSize(),
                         onClearAllData = appViewModel::clearAllData,
-                        geminiApiKey = geminiApiKey,
+                        apiKeys = apiKeys,
+                        selectedProvider = selectedAiProvider,
                         hasBuiltInApiKey = trainingViewModel.hasBuiltInApiKey,
-                        onSaveGeminiApiKey = trainingViewModel::updateApiKey,
-                        onClearGeminiApiKey = trainingViewModel::clearApiKey,
+                        onSelectProvider = trainingViewModel::selectProvider,
+                        onSaveApiKey = trainingViewModel::updateApiKey,
+                        onClearApiKey = trainingViewModel::clearApiKey,
                     )
                 }
             }

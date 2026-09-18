@@ -45,10 +45,12 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
   - Compact layout with bottom navigation
   - Expanded screens with navigation rail and split panels
 - Training tab
-  - Age-group drill generation via Gemini
+  - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, or OpenAI ChatGPT
   - Coming-soon placeholders for future training modules
 - Settings tab
-  - Add, update, or remove a Gemini API key directly in the app, encrypted at rest on-device (`EncryptedSharedPreferences`) and used ahead of any build-time `GEMINI_API_KEY`
+  - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device (`EncryptedSharedPreferences`)
+  - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
+  - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic and OpenAI have no build-time fallback
   - Clear all local data (players, games, events)
 
 ## Tech stack
@@ -60,7 +62,8 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
 - Jetpack Compose BOM `2026.08.00`
 - ViewModel / lifecycle patterns
 - Room `2.8.4` + KSP
-- Google Generative AI client `0.9.0`
+- Google Generative AI client `0.9.0` (Gemini)
+- OkHttp `4.12.0` (direct REST calls to Anthropic and OpenAI, which have no official Android SDK)
 - AndroidX Security Crypto `1.1.0-alpha06` (`EncryptedSharedPreferences`)
 
 ## Requirements
@@ -77,15 +80,19 @@ From the current Gradle configuration:
 
 1. Clone or open the project in Android Studio.
 2. Ensure JDK 17 is configured for Gradle.
-3. Add your optional Gemini key, either:
-   - In-app: open the Settings tab and paste the key into "AI training assistant" (no rebuild required, and this takes priority over the build-time key), or
-   - At build time, in `local.properties` at the project root:
+3. Add an optional API key for whichever AI provider you want the Training tab to use, either:
+   - In-app: open the Settings tab, pick a provider chip (Google Gemini, Anthropic Claude, or OpenAI ChatGPT), and paste its key into "AI training assistant" (no rebuild required; for Gemini this takes priority over the build-time key), or
+   - At build time, in `local.properties` at the project root (Gemini only):
 
 ```properties
 GEMINI_API_KEY=your_key_here
 ```
 
-If no key is set either way, the app still builds, but the Training tab will show an error when generating AI drills.
+If no key is set for the selected provider, the app still builds, but the Training tab will show an error when generating AI drills.
+
+## AI provider access
+
+The app requires each user's own API key per provider (entered in Settings) rather than a "log in with your Gemini/Claude/ChatGPT account" option. This is deliberate: as of the time this was implemented, Google and Anthropic have both made it a Terms of Service violation for a third-party app to use a consumer subscription's login (Gemini Advanced/Ultra, Claude Pro/Max) instead of billed API access, with real account suspensions enforced — including paying subscribers. OpenAI's "Sign in with ChatGPT" is scoped to its own Codex tooling, not general third-party apps. API keys are the only supported, ToS-compliant path for a third-party app like this one.
 
 ## Running locally
 
@@ -137,6 +144,11 @@ The existing test coverage includes the core game-stat calculation logic, CSV/ev
 - State and logic
   - `app/src/main/java/com/example/basketballrotation/ui/AppViewModel.kt` (also hosts the pure `calculatePlayerGameStats` function)
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingViewModel.kt`
+- AI provider layer (`app/src/main/java/com/example/basketballrotation/ai/`)
+  - `AiProvider.kt` — the Gemini/Anthropic/OpenAI enum, each provider's preferences key and display strings
+  - `BasketballDrill.kt` — the parsed-drill domain model
+  - `DrillParsing.kt` — pure prompt-building and response-parsing functions (unit tested)
+  - `DrillTextGenerators.kt` — one `DrillTextGenerator` implementation per provider (Gemini via its SDK, Anthropic/OpenAI via direct REST calls)
 - Data layer
   - Entities: `app/src/main/java/com/example/basketballrotation/data/Entities.kt`
   - DAOs: `app/src/main/java/com/example/basketballrotation/data/Dao.kt`
