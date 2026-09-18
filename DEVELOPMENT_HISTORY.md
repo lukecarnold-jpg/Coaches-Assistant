@@ -132,6 +132,12 @@ This history captures the key milestones in the app's evolution, from the initia
 - Fixed the on-court/bench status badge on player action cards, which derived its state from shift time and timer status instead of the authoritative `onCourt` flag, so a just-added starter showed BENCH until the game clock had been started at least once
 - Verified end-to-end on a real emulator: signed and installed the release (minified) build, exercised the roster → game → starting lineup → substitution flow, and confirmed the encrypted API key survives a full process kill and relaunch
 
+## Version 2.9 (Gemini Model Update)
+- Switched the Training tab's drill-generation model from `gemini-2.5-flash` to `gemini-3.8-flash`
+- `gemini-2.5-flash` (released June 2025) is the oldest model in Google's current Gemini API lineup; Google has signaled its retirement (no earlier than October 16, 2026) and some developers have already reported it returning "model no longer available" errors ahead of that date
+- `gemini-3.8-flash` is the current stable flagship Flash-tier model with no shutdown date announced, per Google's official models and deprecations documentation (checked September 2026)
+- Deliberately pinned to the specific stable version rather than the `gemini-flash-latest` alias, which Google's own release notes recommend against for production use since it can silently repoint to a newer (and at the time of checking, preview-status) model without a code change
+
 ## Current repository review
 - The project builds cleanly with zero compiler warnings across the main, unit test, and instrumented test source sets.
 - `./gradlew lintDebug` -> `BUILD SUCCESSFUL`, with no new findings introduced by the Version 2.8 changes.

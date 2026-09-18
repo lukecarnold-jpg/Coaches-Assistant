@@ -71,7 +71,7 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
             _uiState.value = TrainingUiState.Loading
             try {
                 val generativeModel = GenerativeModel(
-                    modelName = "gemini-2.5-flash",
+                    modelName = "gemini-3.8-flash",
                     apiKey = apiKey,
                 )
                 val prompt = "Generate exactly 3 age-appropriate basketball drills for $ageGroup players. " +

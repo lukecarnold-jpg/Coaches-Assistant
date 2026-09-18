@@ -9,7 +9,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional Gemini-powe
 - Single-module Android app (`:app`)
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 9)
-- AI drills: Google Generative AI (`gemini-2.5-flash`), using a key entered on the Settings tab or, if none is saved, `GEMINI_API_KEY` from `local.properties`
+- AI drills: Google Generative AI (`gemini-3.8-flash`), using a key entered on the Settings tab or, if none is saved, `GEMINI_API_KEY` from `local.properties`
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests and lint on every push/PR to `master`
 
 ## Core features
