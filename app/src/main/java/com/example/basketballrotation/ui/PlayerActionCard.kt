@@ -16,6 +16,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun PlayerActionCard(
     stat: PlayerGameStat,
+    sportConfig: SportConfig,
     onAddScore: (Long, Int) -> Unit,
     onAddFoul: (Long, Int) -> Unit,
     onAddMvpVote: (Long) -> Unit,
@@ -62,7 +63,7 @@ fun PlayerActionCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Text("Points: ${stat.points}   Fouls: ${stat.fouls}   Subbed off: ${stat.timesSubbedOff}")
+                    Text("Points: ${stat.points}   ${sportConfig.infractionLabelPlural}: ${stat.fouls}   Subbed off: ${stat.timesSubbedOff}")
                     if (enabled) {
                         Row {
                             TextButton(
@@ -111,14 +112,10 @@ fun PlayerActionCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
                 ) {
-                    SmallActionButton(label = "+1", modifier = Modifier.weight(1f)) {
-                        onAddScore(stat.player.id, 1)
-                    }
-                    SmallActionButton(label = "+2", modifier = Modifier.weight(1f)) {
-                        onAddScore(stat.player.id, 2)
-                    }
-                    SmallActionButton(label = "+3", modifier = Modifier.weight(1f)) {
-                        onAddScore(stat.player.id, 3)
+                    sportConfig.scoringOptions.forEach { option ->
+                        SmallActionButton(label = option.label, modifier = Modifier.weight(1f)) {
+                            onAddScore(stat.player.id, option.points)
+                        }
                     }
                 }
 
@@ -128,7 +125,7 @@ fun PlayerActionCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Fouls",
+                        sportConfig.infractionLabel,
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold

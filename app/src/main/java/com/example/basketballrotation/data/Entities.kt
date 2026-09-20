@@ -25,6 +25,10 @@ data class PlayerEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val jerseyNumber: Int? = null,
+    @ColumnInfo(defaultValue = "BASKETBALL")
+    val sport: String = Sport.BASKETBALL.name,
+    @ColumnInfo(defaultValue = "NULL")
+    val position: String? = null,
 )
 
 @Entity(tableName = "games")
@@ -48,6 +52,10 @@ data class GameEntity(
     val absentPlayerIdsCsv: String = "",
     @ColumnInfo(defaultValue = "")
     val notes: String = "",
+    @ColumnInfo(defaultValue = "BASKETBALL")
+    val sport: String = Sport.BASKETBALL.name,
+    @ColumnInfo(defaultValue = "5")
+    val onCourtSize: Int = 5,
 )
 
 @Entity(

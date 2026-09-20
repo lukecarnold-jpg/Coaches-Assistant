@@ -1,5 +1,6 @@
 package com.example.basketballrotation
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,14 +29,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.basketballrotation.data.Sport
 import com.example.basketballrotation.ui.AppViewModel
+import com.example.basketballrotation.ui.AppViewModelFactory
 import com.example.basketballrotation.ui.GameHistoryScreen
 import com.example.basketballrotation.ui.GameScreen
 import com.example.basketballrotation.ui.RosterScreen
 import com.example.basketballrotation.ui.LocalResponsiveLayout
 import com.example.basketballrotation.ui.SettingsScreen
 import com.example.basketballrotation.ui.ResponsiveLayoutProvider
+import com.example.basketballrotation.ui.SportPreferences
+import com.example.basketballrotation.ui.SportSelectionScreen
 import com.example.basketballrotation.ui.TrainingScreen
 import com.example.basketballrotation.ui.TrainingViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -46,10 +52,35 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 ResponsiveLayoutProvider {
-                    BasketballApp()
+                    RotationApp()
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun RotationApp() {
+    val context = LocalContext.current
+    var selectedSport by rememberSaveable { mutableStateOf(SportPreferences.load(context)) }
+
+    val sport = selectedSport
+    if (sport == null) {
+        SportSelectionScreen(
+            modifier = Modifier.fillMaxSize(),
+            onSelectSport = {
+                SportPreferences.save(context, it)
+                selectedSport = it
+            },
+        )
+    } else {
+        SportApp(
+            sport = sport,
+            onSwitchSport = {
+                SportPreferences.save(context, null)
+                selectedSport = null
+            },
+        )
     }
 }
 
@@ -67,19 +98,29 @@ private data class NavTabSpec(
     val icon: @Composable () -> Unit,
 )
 
-private val navTabSpecs = listOf(
-    NavTabSpec(AppTab.ROSTER, "Roster") { Text("👥") },
-    NavTabSpec(AppTab.GAME, "Game") { Text("🏀") },
-    NavTabSpec(AppTab.TRAINING, "Training") { Text("🏋️") },
-    NavTabSpec(AppTab.HISTORY, "History") { Text("🕘") },
-    NavTabSpec(AppTab.SETTINGS, "Settings") { Icon(Icons.Default.Settings, contentDescription = null) },
-)
+private fun navTabSpecsFor(sport: Sport): List<NavTabSpec> = buildList {
+    add(NavTabSpec(AppTab.ROSTER, "Roster") { Text("👥") })
+    add(NavTabSpec(AppTab.GAME, "Game") { Text(sport.emoji) })
+    if (sport == Sport.BASKETBALL) {
+        add(NavTabSpec(AppTab.TRAINING, "Training") { Text("🏋️") })
+    }
+    add(NavTabSpec(AppTab.HISTORY, "History") { Text("🕘") })
+    add(NavTabSpec(AppTab.SETTINGS, "Settings") { Icon(Icons.Default.Settings, contentDescription = null) })
+}
 
 @Composable
-private fun BasketballApp(
-    appViewModel: AppViewModel = viewModel(),
+private fun SportApp(
+    sport: Sport,
+    onSwitchSport: () -> Unit,
     trainingViewModel: TrainingViewModel = viewModel(),
 ) {
+    val application = LocalContext.current.applicationContext as Application
+    val appViewModel: AppViewModel = viewModel(
+        key = "AppViewModel-${sport.name}",
+        factory = remember(sport) { AppViewModelFactory(application, sport) },
+    )
+    val navTabSpecs = remember(sport) { navTabSpecsFor(sport) }
+
     val players by appViewModel.players.collectAsState()
     val games by appViewModel.games.collectAsState()
     val selectedGame by appViewModel.selectedGame.collectAsState()
@@ -89,7 +130,7 @@ private fun BasketballApp(
     val selectedAiProvider by trainingViewModel.selectedProvider.collectAsState()
     val customAiEndpoint by trainingViewModel.customEndpoint.collectAsState()
 
-    var currentTab by rememberSaveable { mutableStateOf(AppTab.ROSTER.name) }
+    var currentTab by rememberSaveable(sport) { mutableStateOf(AppTab.ROSTER.name) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     val responsiveLayout = LocalResponsiveLayout.current
@@ -143,6 +184,7 @@ private fun BasketballApp(
                     AppTab.ROSTER -> RosterScreen(
                         modifier = Modifier.fillMaxSize(),
                         isExpanded = isExpanded,
+                        sport = sport,
                         players = players,
                         onAddPlayer = appViewModel::addPlayer,
                         onUpdatePlayer = appViewModel::updatePlayer,
@@ -154,6 +196,7 @@ private fun BasketballApp(
                     AppTab.GAME -> GameScreen(
                         modifier = Modifier.fillMaxSize(),
                         isExpanded = isExpanded,
+                        sport = sport,
                         players = players,
                         games = games,
                         selectedGame = selectedGame,
@@ -209,6 +252,8 @@ private fun BasketballApp(
                         onSaveApiKey = trainingViewModel::updateApiKey,
                         onClearApiKey = trainingViewModel::clearApiKey,
                         onSaveCustomEndpoint = trainingViewModel::updateCustomEndpoint,
+                        currentSport = sport,
+                        onSwitchSport = onSwitchSport,
                     )
                 }
             }

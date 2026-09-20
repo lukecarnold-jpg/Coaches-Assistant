@@ -17,6 +17,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun GameControlPanel(
     selectedGame: GameEntity,
+    sportConfig: SportConfig,
     onToggleTimer: () -> Unit,
     onResetTimer: () -> Unit,
     onSetGameTime: (Long) -> Unit,
@@ -132,8 +133,10 @@ fun GameControlPanel(
                     IconButton(onClick = { onAddScore(null, -1) }) {
                         Text("-1", style = MaterialTheme.typography.bodySmall)
                     }
-                    IconButton(onClick = { onAddScore(null, 1) }) {
-                        Text("+1", style = MaterialTheme.typography.bodySmall)
+                    sportConfig.scoringOptions.forEach { option ->
+                        IconButton(onClick = { onAddScore(null, option.points) }) {
+                            Text("+${option.points}", style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 }
             }
@@ -161,12 +164,14 @@ fun GameControlPanel(
         }
     }
 
-    if (players.size < 5) {
-        EmptyMessage("You need at least 5 players in the roster before you can set the lineup.")
+    val requiredOnCourt = sportConfig.onCourtSize
+
+    if (players.size < requiredOnCourt) {
+        EmptyMessage("You need at least $requiredOnCourt players in the roster before you can set the lineup.")
     } else {
-        if (onCourtIds.size < 5) {
+        if (onCourtIds.size < requiredOnCourt) {
             SectionCard(title = "Set starting lineup") {
-                Text("Select exactly 5 players.")
+                Text("Select exactly $requiredOnCourt players.")
                 Spacer(Modifier.height(layout.smallGap))
 
                 players.forEach { player ->
@@ -181,7 +186,7 @@ fun GameControlPanel(
                         Checkbox(
                             checked = checked,
                             onCheckedChange = { newValue ->
-                                if (newValue && !checked && (startingLineupSelection.size < 5)) {
+                                if (newValue && !checked && (startingLineupSelection.size < requiredOnCourt)) {
                                     startingLineupSelection.add(player.id)
                                 }
                                 if (!newValue && checked) {
@@ -197,7 +202,7 @@ fun GameControlPanel(
 
                 Button(
                     onClick = { onSetLineup(startingLineupSelection.toList()) },
-                    enabled = startingLineupSelection.size == 5
+                    enabled = startingLineupSelection.size == requiredOnCourt
                 ) {
                     Text("Save starting lineup")
                 }
@@ -208,6 +213,7 @@ fun GameControlPanel(
                     onCourtStats.forEach { stat ->
                         PlayerActionCard(
                             stat = stat,
+                            sportConfig = sportConfig,
                             onAddScore = onAddScore,
                             onAddFoul = onAddFoul,
                             onAddMvpVote = onAddMvpVote,

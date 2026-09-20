@@ -73,6 +73,7 @@ fun AttendanceDialog(
 fun EventEditDialog(
     event: GameEventEntity,
     onDismiss: () -> Unit,
+    infractionLabel: String = "Foul",
     onConfirm: (GameEventEntity) -> Unit,
 ) {
     var points by remember { mutableStateOf(event.points.toString()) }
@@ -93,7 +94,7 @@ fun EventEditDialog(
                     OutlinedTextField(
                         value = points,
                         onValueChange = { points = it },
-                        label = { Text(if (event.type == EventType.FOUL.name) "Foul count/adj" else "Points") },
+                        label = { Text(if (event.type == EventType.FOUL.name) "$infractionLabel count/adj" else "Points") },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

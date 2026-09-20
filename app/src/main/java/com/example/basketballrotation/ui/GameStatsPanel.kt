@@ -14,6 +14,8 @@ fun GameStatsPanel(
     events: List<GameEventEntity> = emptyList(),
     playerById: Map<Long, PlayerEntity> = emptyMap(),
     opponentName: String = "",
+    infractionLabel: String = "Foul",
+    infractionLabelPlural: String = "Fouls",
     onEditEvent: (GameEventEntity) -> Unit = {},
     onDeleteEvent: (GameEventEntity) -> Unit = {},
     gameTitle: String = "",
@@ -148,7 +150,7 @@ fun GameStatsPanel(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
-                                Text("Points: ${stat.points} | Fouls: ${stat.fouls} | Votes: ${stat.mvpVotes} | Subbed off: ${stat.timesSubbedOff}")
+                                Text("Points: ${stat.points} | $infractionLabelPlural: ${stat.fouls} | Votes: ${stat.mvpVotes} | Subbed off: ${stat.timesSubbedOff}")
                                 Text(
                                     "Total Time: ${formatDuration(stat.totalTimeMillis)}",
                                     style = MaterialTheme.typography.bodySmall
@@ -179,7 +181,7 @@ fun GameStatsPanel(
                                     verticalArrangement = Arrangement.spacedBy(layout.tinyGap)
                                 ) {
                                     Text(
-                                        text = eventDescription(event, playerById, opponentName),
+                                        text = eventDescription(event, playerById, opponentName, infractionLabel),
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Medium
                                     )

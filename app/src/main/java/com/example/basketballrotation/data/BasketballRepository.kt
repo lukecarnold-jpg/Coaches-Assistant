@@ -20,14 +20,19 @@ class BasketballRepository(
     val players: Flow<List<PlayerEntity>> = playerDao.observeAll()
     val games: Flow<List<GameEntity>> = gameDao.observeAll()
 
+    fun playersForSport(sport: Sport): Flow<List<PlayerEntity>> = playerDao.observeAllBySport(sport.name)
+    fun gamesForSport(sport: Sport): Flow<List<GameEntity>> = gameDao.observeAllBySport(sport.name)
+
     fun observeEvents(gameId: Long): Flow<List<GameEventEntity>> =
         gameEventDao.observeByGame(gameId)
 
-    suspend fun addPlayer(name: String, jerseyNumber: Int?): Long {
+    suspend fun addPlayer(sport: Sport, name: String, jerseyNumber: Int?, position: String? = null): Long {
         return playerDao.insert(
             PlayerEntity(
                 name = name.trim(),
                 jerseyNumber = jerseyNumber,
+                sport = sport.name,
+                position = position,
             ),
         )
     }
@@ -41,10 +46,12 @@ class BasketballRepository(
     }
 
     suspend fun createGame(
+        sport: Sport,
         title: String,
         opponent: String,
         useQuarters: Boolean = false,
         periodDurationMillis: Long = 10 * 60 * 1000L,
+        onCourtSize: Int = 5,
     ): Long {
         return gameDao.insert(
             GameEntity(
@@ -53,6 +60,8 @@ class BasketballRepository(
                 createdAt = System.currentTimeMillis(),
                 useQuarters = useQuarters,
                 periodDurationMillis = periodDurationMillis,
+                sport = sport.name,
+                onCourtSize = onCourtSize,
             ),
         )
     }
@@ -171,10 +180,10 @@ class BasketballRepository(
         }
     }
 
-    suspend fun selectStartingLineup(gameId: Long, playerIds: List<Long>) {
+    suspend fun selectStartingLineup(gameId: Long, playerIds: List<Long>, maxSize: Int = 5) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
-            val normalizedIds = playerIds.asSequence().distinct().take(5).toList()
+            val normalizedIds = playerIds.asSequence().distinct().take(maxSize).toList()
 
             gameDao.update(game.copy(onCourtCsv = idsToCsv(normalizedIds)))
             gameEventDao.insert(
@@ -333,9 +342,9 @@ class BasketballRepository(
         return base + (System.currentTimeMillis() - start)
     }
 
-    suspend fun exportPlayersCsv(contentResolver: ContentResolver, uri: Uri) {
+    suspend fun exportPlayersCsv(contentResolver: ContentResolver, uri: Uri, sport: Sport) {
         withContext(Dispatchers.IO) {
-            val players = playerDao.getAll()
+            val players = playerDao.getAllBySport(sport.name)
 
             contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
                 writer.appendLine("id,name,jerseyNumber")
@@ -353,7 +362,7 @@ class BasketballRepository(
         }
     }
 
-    suspend fun importPlayersCsv(contentResolver: ContentResolver, uri: Uri) {
+    suspend fun importPlayersCsv(contentResolver: ContentResolver, uri: Uri, sport: Sport) {
         withContext(Dispatchers.IO) {
             contentResolver.openInputStream(uri)?.bufferedReader()?.use { reader ->
                 val lines = reader.readLines()
@@ -378,6 +387,7 @@ class BasketballRepository(
                                     PlayerEntity(
                                         name = name,
                                         jerseyNumber = jersey,
+                                        sport = sport.name,
                                     ),
                                 )
                             }

@@ -1,33 +1,40 @@
 # Basketball Rotation
 
-Basketball Rotation is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data.
+Basketball Rotation is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data — for Basketball, Netball, Soccer, AFL, Rugby Union, and Rugby League.
 
-The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered training assistant (Google Gemini, Anthropic Claude, OpenAI ChatGPT, or any other OpenAI-compatible provider — your choice). It is designed for local, in-season use and keeps the workflow lightweight: roster setup, live substitutions, score tracking, attendance, and exportable game records.
+The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered training assistant (Google Gemini, Anthropic Claude, OpenAI ChatGPT, or any other OpenAI-compatible provider — your choice, Basketball only for now). It is designed for local, in-season use and keeps the workflow lightweight: roster setup, live substitutions, score tracking, attendance, and exportable game records.
 
 ## Project status
 
 - Single-module Android app (`:app`)
+- Multi-sport: a landing screen lets the user pick Basketball, Netball, Soccer, AFL, Rugby Union, or Rugby League; each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
 - UI: Jetpack Compose + Material 3
-- Persistence: Room database (schema version 9)
+- Persistence: Room database (schema version 10)
 - AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash`), Anthropic Claude (`claude-sonnet-5`), OpenAI ChatGPT (`gpt-5.5`), or "Other" (any OpenAI-compatible endpoint the user configures, e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server) — and supplies that provider's API key (Gemini also falls back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests and lint on every push/PR to `master`
 
 ## Core features
 
+- Sport support
+  - Landing screen to pick a sport: Basketball, Netball, Soccer, AFL, Rugby Union, or Rugby League (Rugby prompts a "which code?" dialog before continuing)
+  - Each sport gets its own roster and game history — players and games are tagged by sport and never mix across sports
+  - One shared rotation-tracking engine, configured per sport (`ui/SportConfig.kt`) rather than a separate implementation per sport: on-court size (5 for Basketball up to 18 for AFL), optional squad positions (e.g. Netball's GS/GA/WA/C/WD/GD/GK), default period structure and duration, sport-correct scoring buttons (from a single "Goal" worth 1 point up to Rugby's Try/Conversion/Penalty/Drop Goal), and the label used for the per-player infraction counter (Foul, Penalty, Card, or Free Kick)
+  - "Switch sport" in Settings returns to the landing screen without clearing any sport's data; the app remembers the last-picked sport across restarts
+  - Position is an optional, informational label on a roster player — the app does not enforce sport-specific positional legality, interchange caps, or replacement rules
 - Roster management
   - Add, edit, and remove players
-  - Optional jersey numbers
-  - CSV import and CSV export
+  - Optional jersey number and optional sport-appropriate position
+  - CSV import and CSV export (per sport; the CSV format itself is unchanged — name and jersey number only)
 - Game management
   - Create, select, and delete games
-  - Flexible periods (quarters or halves) with configurable durations
-  - Starting lineup selection
+  - Flexible periods (quarters or halves) with configurable durations, defaulted per sport
+  - Starting lineup selection, sized to the sport's on-court count
   - Live substitutions and multi-sub workflows, with numbered badges showing which bench player is paired with which outgoing court player
   - Countdown timer with start, stop, reset, and manual adjustment
   - Per-player on-court shift timer that starts from 0 the moment a player is subbed on and freezes when they're subbed off, tracked against the game clock rather than wall-clock time
   - Game stats cards lead with an ON COURT/BENCH status badge and a live time (current shift length while on court, elapsed bench time since their last sub-off while benched)
-  - Team and opponent score tracking, with opponent-score events in the event log labeled with the actual opponent team name (falling back to "Opponent" only when no name was entered)
-  - Foul logging and MVP vote tracking
+  - Team and opponent score tracking, with the sport's scoring buttons available for both sides, and opponent-score events in the event log labeled with the actual opponent team name (falling back to "Opponent" only when no name was entered)
+  - Per-player infraction logging (labeled Foul/Penalty/Card/Free Kick per sport) and MVP vote tracking
   - Per-game attendance management
   - Coaching notes with TXT export
   - Event editing and deletion
@@ -44,15 +51,16 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Adaptive layouts
   - Compact layout with bottom navigation
   - Expanded screens with navigation rail and split panels
-- Training tab
+- Training tab (Basketball only — hidden from navigation for the other five sports)
   - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, OpenAI ChatGPT, or a custom OpenAI-compatible endpoint
   - Coming-soon placeholders for future training modules
 - Settings tab
+  - "Switch sport" returns to the sport landing screen
   - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device (`EncryptedSharedPreferences`)
   - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
   - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic, OpenAI, and the "Other" provider have no build-time fallback
   - "Other" also requires an endpoint URL and model name, since it can point at any OpenAI-compatible service
-  - Clear all local data (players, games, events)
+  - Clear all local data (players, games, events, across every sport)
 
 ## Tech stack
 
@@ -124,13 +132,19 @@ The current project state was validated in this workspace with:
 - `./gradlew.bat assembleRelease` -> `BUILD SUCCESSFUL` with R8 minification and resource shrinking enabled
 - A signed release build was installed and driven end-to-end on an emulator (roster setup, game creation, starting lineup, live substitution, and API key save/persist-through-restart/remove), with no crashes or logged exceptions
 - The multi-provider Settings UI was device-tested for all four providers, including a real network round-trip for the "Other" provider against a live OpenAI-compatible endpoint (the request correctly reached the server and the app surfaced the server's real error response for an invalid key)
+- Multi-sport support was device-tested on an emulator across all six sports: Basketball and Netball were driven through a full roster (with positions) → game creation → starting lineup → scoring → infraction → substitution cycle; Soccer, AFL, and Rugby Union were spot-checked for correct on-court size, period defaults, and scoring buttons. This testing caught and led to a fix for a real bug where switching sports reused the previous sport's `AppViewModel` instance instead of creating a new one, leaking one sport's roster into another's Roster tab
 
 The existing test coverage includes the core game-stat calculation logic, CSV/event parsing, and MVP-vote serialization, but repository-level Room integration tests (exercising `BasketballRepository`'s transactions against a real database) are still a gap compared with a full production QA suite.
 
 ## High-level project structure
 
 - App entry
-  - `app/src/main/java/com/example/basketballrotation/MainActivity.kt`
+  - `app/src/main/java/com/example/basketballrotation/MainActivity.kt` — routes between the sport landing screen and the per-sport app shell (`SportApp`), and hosts a sport-keyed `AppViewModel` factory
+- Sport layer
+  - `app/src/main/java/com/example/basketballrotation/data/Sport.kt` — the `Sport` enum (domain concept, shared by the DAOs/repository and the UI)
+  - `app/src/main/java/com/example/basketballrotation/ui/SportConfig.kt` — per-sport rotation/scoring configuration (on-court size, squad positions, period defaults, scoring options, infraction label)
+  - `app/src/main/java/com/example/basketballrotation/ui/SportSelectionScreen.kt` — the landing screen, including the Rugby Union/League picker dialog
+  - `app/src/main/java/com/example/basketballrotation/ui/SportPreferences.kt` — remembers the last-picked sport across app restarts
 - UI screens
   - `app/src/main/java/com/example/basketballrotation/ui/RosterScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/GameScreen.kt` — top-level Game tab layout; delegates to:
@@ -164,9 +178,9 @@ The existing test coverage includes the core game-stat calculation logic, CSV/ev
 
 ## Data model summary
 
-- `players`: roster entries (`id`, `name`, optional `jerseyNumber`)
-- `games`: game metadata and state (score, timer, period configuration, absence list, notes, `isFinished` flag and `finishedAt` timestamp)
-- `game_events`: event timeline entries (lineup, substitutions, team score, opponent score, fouls, MVP votes, period changes, game end)
+- `players`: roster entries (`id`, `name`, optional `jerseyNumber`, `sport`, optional `position`)
+- `games`: game metadata and state (score, timer, period configuration, absence list, notes, `isFinished` flag and `finishedAt` timestamp, `sport`, `onCourtSize`)
+- `game_events`: event timeline entries (lineup, substitutions, team score, opponent score, per-player infractions, MVP votes, period changes, game end) — the `FOUL` event type is shared across sports and relabeled per sport in the UI (Foul/Penalty/Card/Free Kick)
 
 ## CSV and TXT notes
 

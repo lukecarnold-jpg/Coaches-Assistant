@@ -17,6 +17,7 @@ import com.example.basketballrotation.data.*
 fun GameScreen(
     modifier: Modifier = Modifier,
     isExpanded: Boolean,
+    sport: Sport,
     players: List<PlayerEntity>,
     games: List<GameEntity>,
     selectedGame: GameEntity?,
@@ -44,11 +45,12 @@ fun GameScreen(
     onDeleteEvent: (GameEventEntity) -> Unit,
 ) {
     val layout = LocalResponsiveLayout.current
+    val sportConfig = sport.config
 
     var gameTitle by rememberSaveable { mutableStateOf("") }
     var opponent by rememberSaveable { mutableStateOf("") }
-    var useQuarters by rememberSaveable { mutableStateOf(value = false) }
-    var periodMins by rememberSaveable { mutableStateOf("10") }
+    var useQuarters by rememberSaveable(sport) { mutableStateOf(sportConfig.useQuartersDefault) }
+    var periodMins by rememberSaveable(sport) { mutableStateOf(sportConfig.defaultPeriodMinutes.toString()) }
     var showAttendanceDialog by remember { mutableStateOf(false) }
     var showNotesDialog by remember { mutableStateOf(false) }
 
@@ -87,6 +89,7 @@ fun GameScreen(
                 if (selectedGame != null) {
                     GameControlPanel(
                         selectedGame = selectedGame,
+                        sportConfig = sportConfig,
                         onToggleTimer = onToggleTimer,
                         onResetTimer = onResetTimer,
                         onSetGameTime = onSetGameTime,
@@ -148,6 +151,8 @@ fun GameScreen(
                     events = events,
                     playerById = playerById,
                     opponentName = selectedGame?.opponent.orEmpty(),
+                    infractionLabel = sportConfig.infractionLabel,
+                    infractionLabelPlural = sportConfig.infractionLabelPlural,
                     onEditEvent = { editingEvent = it },
                     onDeleteEvent = onDeleteEvent,
                     gameTitle = gameTitle,
@@ -191,6 +196,8 @@ fun GameScreen(
                 events = emptyList(),
                 playerById = emptyMap(),
                 opponentName = selectedGame?.opponent.orEmpty(),
+                infractionLabel = sportConfig.infractionLabel,
+                infractionLabelPlural = sportConfig.infractionLabelPlural,
                 onEditEvent = {},
                 onDeleteEvent = {},
                 gameTitle = gameTitle,
@@ -220,6 +227,7 @@ fun GameScreen(
 
                 GameControlPanel(
                     selectedGame = selectedGame,
+                    sportConfig = sportConfig,
                     onToggleTimer = onToggleTimer,
                     onResetTimer = onResetTimer,
                     onSetGameTime = onSetGameTime,
@@ -264,6 +272,8 @@ fun GameScreen(
                     events = events,
                     playerById = playerById,
                     opponentName = selectedGame.opponent,
+                    infractionLabel = sportConfig.infractionLabel,
+                    infractionLabelPlural = sportConfig.infractionLabelPlural,
                     onEditEvent = { editingEvent = it },
                     onDeleteEvent = onDeleteEvent,
                     onlyStats = true,
@@ -279,6 +289,7 @@ fun GameScreen(
         EventEditDialog(
             event = event,
             onDismiss = { editingEvent = null },
+            infractionLabel = sportConfig.infractionLabel,
         ) { updated ->
             onUpdateEvent(updated)
             editingEvent = null

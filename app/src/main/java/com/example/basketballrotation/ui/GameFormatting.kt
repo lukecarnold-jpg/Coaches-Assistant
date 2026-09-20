@@ -8,6 +8,7 @@ fun eventDescription(
     event: GameEventEntity,
     playersById: Map<Long, PlayerEntity>,
     opponentName: String = "",
+    infractionLabel: String = "Foul",
 ): String {
     return when (EventType.fromRaw(event.type)) {
         EventType.START_LINEUP -> {
@@ -39,7 +40,7 @@ fun eventDescription(
 
         EventType.FOUL -> {
             val playerName = event.playerId?.let(playersById::get)?.displayLabel().orEmpty()
-            "$playerName foul"
+            "$playerName ${infractionLabel.lowercase()}"
         }
 
         EventType.MVP_VOTE -> {

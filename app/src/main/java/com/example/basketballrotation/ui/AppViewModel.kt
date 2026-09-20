@@ -3,6 +3,8 @@ package com.example.basketballrotation.ui
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.basketballrotation.data.AppDatabase
 import com.example.basketballrotation.data.BasketballRepository
@@ -11,6 +13,7 @@ import com.example.basketballrotation.data.GameEntity
 import com.example.basketballrotation.data.GameEventEntity
 import com.example.basketballrotation.data.MvpVotes
 import com.example.basketballrotation.data.PlayerEntity
+import com.example.basketballrotation.data.Sport
 import com.example.basketballrotation.data.absentPlayerIds
 import com.example.basketballrotation.data.onCourtIds
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -37,20 +40,20 @@ data class PlayerGameStat(
     val totalTimeMillis: Long,
 )
 
-class AppViewModel(application: Application) : AndroidViewModel(application) {
+class AppViewModel(application: Application, private val sport: Sport) : AndroidViewModel(application) {
     private val repository = BasketballRepository(AppDatabase.getInstance(application))
 
     private val selectedGameId = MutableStateFlow<Long?>(null)
     private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val messages = _messages.asSharedFlow()
 
-    val players = repository.players.stateIn(
+    val players = repository.playersForSport(sport).stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
         emptyList(),
     )
 
-    val games = repository.games.stateIn(
+    val games = repository.gamesForSport(sport).stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
         emptyList(),
@@ -108,7 +111,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         selectedGameId.value = gameId
     }
 
-    fun addPlayer(name: String, jerseyNumberText: String) {
+    fun addPlayer(name: String, jerseyNumberText: String, position: String? = null) {
         val trimmedName = name.trim()
         if (trimmedName.isBlank()) {
             _messages.tryEmit("Enter a player name.")
@@ -123,12 +126,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         viewModelScope.launch {
-            repository.addPlayer(trimmedName, jerseyNumber)
+            repository.addPlayer(sport, trimmedName, jerseyNumber, position)
             _messages.emit("Player added.")
         }
     }
 
-    fun updatePlayer(player: PlayerEntity, newName: String, newJerseyNumberText: String) {
+    fun updatePlayer(player: PlayerEntity, newName: String, newJerseyNumberText: String, newPosition: String? = player.position) {
         val trimmedName = newName.trim()
         if (trimmedName.isBlank()) {
             _messages.tryEmit("Name cannot be empty.")
@@ -142,7 +145,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         viewModelScope.launch {
-            repository.updatePlayer(player.copy(name = trimmedName, jerseyNumber = jerseyNumber))
+            repository.updatePlayer(player.copy(name = trimmedName, jerseyNumber = jerseyNumber, position = newPosition))
             _messages.emit("Player updated.")
         }
     }
@@ -166,7 +169,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val durationMillis = periodMins * 60 * 1000L
 
         viewModelScope.launch {
-            val gameId = repository.createGame(finalTitle, opponent, useQuarters, durationMillis)
+            val gameId = repository.createGame(
+                sport = sport,
+                title = finalTitle,
+                opponent = opponent,
+                useQuarters = useQuarters,
+                periodDurationMillis = durationMillis,
+                onCourtSize = sport.config.onCourtSize,
+            )
             selectedGameId.value = gameId
             _messages.emit("Game created.")
         }
@@ -230,13 +240,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _messages.tryEmit("Create or select a game first.")
             return
         }
-        if (playerIds.distinct().size != 5) {
-            _messages.tryEmit("Select exactly 5 players for the starting lineup.")
+        val requiredSize = sport.config.onCourtSize
+        if (playerIds.distinct().size != requiredSize) {
+            _messages.tryEmit("Select exactly $requiredSize players for the starting lineup.")
             return
         }
 
         viewModelScope.launch {
-            repository.selectStartingLineup(gameId, playerIds)
+            repository.selectStartingLineup(gameId, playerIds, requiredSize)
             _messages.emit("Starting lineup saved.")
         }
     }
@@ -319,7 +330,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun exportPlayersCsv(uri: Uri) {
         viewModelScope.launch {
             runCatching {
-                repository.exportPlayersCsv(getApplication<Application>().contentResolver, uri)
+                repository.exportPlayersCsv(getApplication<Application>().contentResolver, uri, sport)
             }.onSuccess {
                 _messages.emit("Roster CSV exported.")
             }.onFailure {
@@ -331,7 +342,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun importPlayersCsv(uri: Uri) {
         viewModelScope.launch {
             runCatching {
-                repository.importPlayersCsv(getApplication<Application>().contentResolver, uri)
+                repository.importPlayersCsv(getApplication<Application>().contentResolver, uri, sport)
             }.onSuccess {
                 _messages.emit("Roster CSV imported.")
             }.onFailure {
@@ -362,6 +373,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 _messages.emit(it.message ?: "Export failed.")
             }
         }
+    }
+}
+
+class AppViewModelFactory(
+    private val application: Application,
+    private val sport: Sport,
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        @Suppress("UNCHECKED_CAST")
+        return AppViewModel(application, sport) as T
     }
 }
 

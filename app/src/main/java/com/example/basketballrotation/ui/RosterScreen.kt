@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
@@ -31,28 +33,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.basketballrotation.data.PlayerEntity
+import com.example.basketballrotation.data.Sport
 import com.example.basketballrotation.data.displayLabel
 
 @Composable
 fun RosterScreen(
     modifier: Modifier = Modifier,
     isExpanded: Boolean,
+    sport: Sport,
     players: List<PlayerEntity>,
-    onAddPlayer: (String, String) -> Unit,
-    onUpdatePlayer: (PlayerEntity, String, String) -> Unit,
+    onAddPlayer: (String, String, String?) -> Unit,
+    onUpdatePlayer: (PlayerEntity, String, String, String?) -> Unit,
     onDeletePlayer: (Long) -> Unit,
     onExportPlayers: (Uri) -> Unit,
     onImportPlayers: (Uri) -> Unit,
 ) {
     val layout = LocalResponsiveLayout.current
+    val squadPositions = sport.config.squadPositions
 
     var name by rememberSaveable { mutableStateOf("") }
     var jerseyNumber by rememberSaveable { mutableStateOf("") }
+    var position by rememberSaveable(sport) { mutableStateOf<String?>(null) }
     var showError by rememberSaveable { mutableStateOf(value = false) }
 
     var editingPlayer by remember { mutableStateOf<PlayerEntity?>(null) }
     var editName by remember { mutableStateOf("") }
     var editJerseyNumber by remember { mutableStateOf("") }
+    var editPosition by remember { mutableStateOf<String?>(null) }
 
     val exportRosterLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv"),
@@ -98,14 +105,18 @@ fun RosterScreen(
                             jerseyNumber = it
                             showError = false
                         },
+                        squadPositions = squadPositions,
+                        position = position,
+                        onPositionChange = { position = it },
                         showError = showError,
                         onAddPlayer = {
                             if (name.isBlank()) {
                                 showError = true
                             } else {
-                                onAddPlayer(name, jerseyNumber)
+                                onAddPlayer(name, jerseyNumber, position)
                                 name = ""
                                 jerseyNumber = ""
+                                position = null
                                 showError = false
                             }
                         },
@@ -128,8 +139,11 @@ fun RosterScreen(
                         onEditNameChange = { editName = it },
                         editJerseyNumber = editJerseyNumber,
                         onEditJerseyNumberChange = { editJerseyNumber = it },
+                        squadPositions = squadPositions,
+                        editPosition = editPosition,
+                        onEditPositionChange = { editPosition = it },
                         onSaveUpdate = { player ->
-                            onUpdatePlayer(player, editName, editJerseyNumber)
+                            onUpdatePlayer(player, editName, editJerseyNumber, editPosition)
                             editingPlayer = null
                         },
                         onCancelEdit = { editingPlayer = null },
@@ -137,6 +151,7 @@ fun RosterScreen(
                             editingPlayer = player
                             editName = player.name
                             editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
+                            editPosition = player.position
                         },
                         onDeletePlayer = onDeletePlayer,
                     )
@@ -154,14 +169,18 @@ fun RosterScreen(
                     jerseyNumber = it
                     showError = false
                 },
+                squadPositions = squadPositions,
+                position = position,
+                onPositionChange = { position = it },
                 showError = showError,
                 onAddPlayer = {
                     if (name.isBlank()) {
                         showError = true
                     } else {
-                        onAddPlayer(name, jerseyNumber)
+                        onAddPlayer(name, jerseyNumber, position)
                         name = ""
                         jerseyNumber = ""
+                        position = null
                         showError = false
                     }
                 },
@@ -179,8 +198,11 @@ fun RosterScreen(
                 onEditNameChange = { editName = it },
                 editJerseyNumber = editJerseyNumber,
                 onEditJerseyNumberChange = { editJerseyNumber = it },
+                squadPositions = squadPositions,
+                editPosition = editPosition,
+                onEditPositionChange = { editPosition = it },
                 onSaveUpdate = { player ->
-                    onUpdatePlayer(player, editName, editJerseyNumber)
+                    onUpdatePlayer(player, editName, editJerseyNumber, editPosition)
                     editingPlayer = null
                 },
                 onCancelEdit = { editingPlayer = null },
@@ -188,6 +210,7 @@ fun RosterScreen(
                     editingPlayer = player
                     editName = player.name
                     editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
+                    editPosition = player.position
                 },
                 onDeletePlayer = onDeletePlayer,
             )
@@ -201,6 +224,9 @@ fun RosterForm(
     onNameChange: (String) -> Unit,
     jerseyNumber: String,
     onJerseyNumberChange: (String) -> Unit,
+    squadPositions: List<String>,
+    position: String?,
+    onPositionChange: (String?) -> Unit,
     showError: Boolean,
     onAddPlayer: () -> Unit,
     onExportPlayers: () -> Unit,
@@ -223,6 +249,14 @@ fun RosterForm(
             label = { Text("Jersey number (optional)") },
             modifier = Modifier.fillMaxWidth()
         )
+
+        if (squadPositions.isNotEmpty()) {
+            PositionSelector(
+                squadPositions = squadPositions,
+                position = position,
+                onPositionChange = onPositionChange,
+            )
+        }
 
         if (showError) {
             Card(
@@ -282,6 +316,9 @@ fun RosterList(
     onEditNameChange: (String) -> Unit,
     editJerseyNumber: String,
     onEditJerseyNumberChange: (String) -> Unit,
+    squadPositions: List<String>,
+    editPosition: String?,
+    onEditPositionChange: (String?) -> Unit,
     onSaveUpdate: (PlayerEntity) -> Unit,
     onCancelEdit: () -> Unit,
     onStartEdit: (PlayerEntity) -> Unit,
@@ -313,6 +350,13 @@ fun RosterList(
                             label = { Text("Jersey number (optional)") },
                             modifier = Modifier.fillMaxWidth()
                         )
+                        if (squadPositions.isNotEmpty()) {
+                            PositionSelector(
+                                squadPositions = squadPositions,
+                                position = editPosition,
+                                onPositionChange = onEditPositionChange,
+                            )
+                        }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
@@ -341,11 +385,20 @@ fun RosterList(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = player.displayLabel(),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Column {
+                            Text(
+                                text = player.displayLabel(),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            if (!player.position.isNullOrBlank()) {
+                                Text(
+                                    text = player.position,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                )
+                            }
+                        }
 
                         Row {
                             TextButton(
@@ -362,6 +415,31 @@ fun RosterList(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun PositionSelector(
+    squadPositions: List<String>,
+    position: String?,
+    onPositionChange: (String?) -> Unit,
+) {
+    val layout = LocalResponsiveLayout.current
+
+    Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap)) {
+        Text("Position (optional)", style = MaterialTheme.typography.labelMedium)
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
+            verticalArrangement = Arrangement.spacedBy(layout.smallGap),
+        ) {
+            squadPositions.forEach { candidate ->
+                FilterChip(
+                    selected = position == candidate,
+                    onClick = { onPositionChange(if (position == candidate) null else candidate) },
+                    label = { Text(candidate) },
+                )
             }
         }
     }

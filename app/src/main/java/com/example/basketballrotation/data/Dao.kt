@@ -15,6 +15,12 @@ interface PlayerDao {
     @Query("SELECT * FROM players ORDER BY jerseyNumber, name COLLATE NOCASE")
     suspend fun getAll(): List<PlayerEntity>
 
+    @Query("SELECT * FROM players WHERE sport = :sport ORDER BY jerseyNumber, name COLLATE NOCASE")
+    fun observeAllBySport(sport: String): Flow<List<PlayerEntity>>
+
+    @Query("SELECT * FROM players WHERE sport = :sport ORDER BY jerseyNumber, name COLLATE NOCASE")
+    suspend fun getAllBySport(sport: String): List<PlayerEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(player: PlayerEntity): Long
 
@@ -32,6 +38,9 @@ interface PlayerDao {
 interface GameDao {
     @Query("SELECT * FROM games ORDER BY createdAt DESC")
     fun observeAll(): Flow<List<GameEntity>>
+
+    @Query("SELECT * FROM games WHERE sport = :sport ORDER BY createdAt DESC")
+    fun observeAllBySport(sport: String): Flow<List<GameEntity>>
 
     @Query("SELECT * FROM games WHERE id = :gameId LIMIT 1")
     suspend fun getById(gameId: Long): GameEntity?

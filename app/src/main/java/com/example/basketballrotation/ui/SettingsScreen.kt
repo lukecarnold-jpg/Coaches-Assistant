@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.basketballrotation.ai.AiProvider
 import com.example.basketballrotation.ai.CustomEndpointConfig
+import com.example.basketballrotation.data.Sport
 
 @Composable
 fun SettingsScreen(
@@ -48,6 +49,8 @@ fun SettingsScreen(
     onSaveApiKey: (AiProvider, String) -> Unit = { _, _ -> },
     onClearApiKey: (AiProvider) -> Unit = {},
     onSaveCustomEndpoint: (CustomEndpointConfig) -> Unit = {},
+    currentSport: Sport? = null,
+    onSwitchSport: () -> Unit = {},
 ) {
     val layout = LocalResponsiveLayout.current
     var showConfirm by remember { mutableStateOf(value = false) }
@@ -69,6 +72,16 @@ fun SettingsScreen(
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
+
+        if (currentSport != null) {
+            SectionCard(title = "Sport") {
+                Text("Currently coaching ${currentSport.emoji} ${currentSport.displayName}.")
+                Spacer(Modifier.height(layout.smallGap))
+                Button(onClick = onSwitchSport) {
+                    Text("Switch sport")
+                }
+            }
+        }
 
         SectionCard(title = "AI training assistant") {
             Text("Choose which AI generates training drills, then add its API key. Each provider requires its own key — the app does not support signing in with a Gemini, Claude, or ChatGPT account.")

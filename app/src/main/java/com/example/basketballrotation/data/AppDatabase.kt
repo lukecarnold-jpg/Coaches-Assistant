@@ -7,12 +7,13 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [PlayerEntity::class, GameEntity::class, GameEventEntity::class],
-    version = 9,
+    version = 10,
     autoMigrations = [
         androidx.room.AutoMigration(from = 5, to = 6),
         androidx.room.AutoMigration(from = 6, to = 7),
         androidx.room.AutoMigration(from = 7, to = 8),
         androidx.room.AutoMigration(from = 8, to = 9),
+        androidx.room.AutoMigration(from = 9, to = 10),
     ],
     exportSchema = true,
 )
