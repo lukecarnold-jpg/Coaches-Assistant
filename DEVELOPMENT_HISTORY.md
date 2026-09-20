@@ -176,12 +176,19 @@ This history captures the key milestones in the app's evolution, from the initia
 - Game deletion continues to remove related game events transactionally; selecting games in the new data-management dialog applies the same cascading cleanup to all games
 - Updated the README feature list to describe selective deletion and the full-data deletion option
 
+## Version 3.2 (Expanded Multi-Sport Support: 10 Additional Team Sports)
+- Added 10 additional team sports to `Sport` and `SportConfig`: **Futsal**, **Field Hockey**, **Ice Hockey**, **Touch Football**, **Water Polo**, **Handball**, **Lacrosse**, **Gaelic Football**, **Flag Football**, and **Ultimate Frisbee** — bringing the total supported team sports to 16
+- Configured each new sport with its standard on-court/on-field size, squad position options, default period structure (halves/quarters) and duration, scoring actions, and infraction terminology (Foul, Penalty, Card, Exclusion)
+- Redesigned `SportSelectionScreen.kt` to organize all 16 sports into clean, categorized sections (**Court Sports**, **Field Sports**, **Ice & Water Sports**)
+- Expanded unit tests in `SportConfigTest.kt` to cover on-court team sizes, scoring options, and infraction pluralizations for all 16 sports (`26 passed, 0 failed`)
+- Updated `README.md` to document the 16 supported team sports and updated layout capabilities
+
 ## Current repository review
 - The project builds cleanly with zero compiler warnings across the main, unit test, and instrumented test source sets.
 - `./gradlew lintDebug` -> `BUILD SUCCESSFUL`, with no new findings.
-- All unit tests pass, including coverage for `calculatePlayerGameStats`, `MvpVotes`, `DrillParsing`, and the new `SportConfigTest`.
+- All unit tests pass, including coverage for `calculatePlayerGameStats`, `MvpVotes`, `DrillParsing`, and `SportConfigTest` across all 16 team sports.
 - `./gradlew assembleRelease` -> `BUILD SUCCESSFUL` with R8 minification and resource shrinking enabled, including the newly-added OkHttp dependency.
-- The app remains a single-module Android project using Compose and Room, now generalized to six sports (Basketball, Netball, Soccer, AFL, Rugby Union, Rugby League) sharing one rotation-tracking engine, plus an optional multi-provider (Gemini/Claude/ChatGPT/Other) training feature that stays Basketball-only.
+- The app remains a single-module Android project using Compose and Room, generalized across 16 sports (Basketball, Netball, Soccer, AFL, Rugby Union, Rugby League, Futsal, Field Hockey, Ice Hockey, Touch Football, Water Polo, Handball, Lacrosse, Gaelic Football, Flag Football, and Ultimate Frisbee) sharing one rotation-tracking engine, plus an optional multi-provider (Gemini/Claude/ChatGPT/Other) training feature that stays Basketball-only.
 - Current Room schema version is 10.
 - The training assistant is optional and reads its per-provider key from an in-app Settings entry (encrypted at rest); Gemini additionally falls back to `GEMINI_API_KEY` in `local.properties` if no in-app key is saved.
 - Settings now supports transactional deletion of players, games, and events individually, as well as deletion of all local records across every sport.

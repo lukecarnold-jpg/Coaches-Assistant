@@ -54,21 +54,80 @@ fun SportSelectionScreen(
             style = MaterialTheme.typography.bodyMedium,
         )
 
-        Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
-            SportTile(emoji = Sport.BASKETBALL.emoji, label = Sport.BASKETBALL.displayName) {
-                onSelectSport(Sport.BASKETBALL)
+        Column(verticalArrangement = Arrangement.spacedBy(layout.sectionGap)) {
+            // Court Sports
+            Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+                Text(
+                    text = "Court Sports",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+                SportTile(emoji = Sport.BASKETBALL.emoji, label = Sport.BASKETBALL.displayName) {
+                    onSelectSport(Sport.BASKETBALL)
+                }
+                SportTile(emoji = Sport.NETBALL.emoji, label = Sport.NETBALL.displayName) {
+                    onSelectSport(Sport.NETBALL)
+                }
+                SportTile(emoji = Sport.FUTSAL.emoji, label = Sport.FUTSAL.displayName) {
+                    onSelectSport(Sport.FUTSAL)
+                }
+                SportTile(emoji = Sport.HANDBALL.emoji, label = Sport.HANDBALL.displayName) {
+                    onSelectSport(Sport.HANDBALL)
+                }
             }
-            SportTile(emoji = Sport.NETBALL.emoji, label = Sport.NETBALL.displayName) {
-                onSelectSport(Sport.NETBALL)
+
+            // Field Sports
+            Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+                Text(
+                    text = "Field Sports",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+                SportTile(emoji = Sport.SOCCER.emoji, label = Sport.SOCCER.displayName) {
+                    onSelectSport(Sport.SOCCER)
+                }
+                SportTile(emoji = Sport.AFL.emoji, label = Sport.AFL.displayName) {
+                    onSelectSport(Sport.AFL)
+                }
+                SportTile(emoji = Sport.RUGBY_UNION.emoji, label = "Rugby") {
+                    showRugbyDialog = true
+                }
+                SportTile(emoji = Sport.TOUCH_FOOTBALL.emoji, label = Sport.TOUCH_FOOTBALL.displayName) {
+                    onSelectSport(Sport.TOUCH_FOOTBALL)
+                }
+                SportTile(emoji = Sport.FLAG_FOOTBALL.emoji, label = Sport.FLAG_FOOTBALL.displayName) {
+                    onSelectSport(Sport.FLAG_FOOTBALL)
+                }
+                SportTile(emoji = Sport.GAELIC_FOOTBALL.emoji, label = Sport.GAELIC_FOOTBALL.displayName) {
+                    onSelectSport(Sport.GAELIC_FOOTBALL)
+                }
+                SportTile(emoji = Sport.FIELD_HOCKEY.emoji, label = Sport.FIELD_HOCKEY.displayName) {
+                    onSelectSport(Sport.FIELD_HOCKEY)
+                }
+                SportTile(emoji = Sport.LACROSSE.emoji, label = Sport.LACROSSE.displayName) {
+                    onSelectSport(Sport.LACROSSE)
+                }
+                SportTile(emoji = Sport.ULTIMATE_FRISBEE.emoji, label = Sport.ULTIMATE_FRISBEE.displayName) {
+                    onSelectSport(Sport.ULTIMATE_FRISBEE)
+                }
             }
-            SportTile(emoji = Sport.SOCCER.emoji, label = Sport.SOCCER.displayName) {
-                onSelectSport(Sport.SOCCER)
-            }
-            SportTile(emoji = Sport.AFL.emoji, label = Sport.AFL.displayName) {
-                onSelectSport(Sport.AFL)
-            }
-            SportTile(emoji = Sport.RUGBY_UNION.emoji, label = "Rugby") {
-                showRugbyDialog = true
+
+            // Ice & Water Sports
+            Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+                Text(
+                    text = "Ice & Water Sports",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+                SportTile(emoji = Sport.ICE_HOCKEY.emoji, label = Sport.ICE_HOCKEY.displayName) {
+                    onSelectSport(Sport.ICE_HOCKEY)
+                }
+                SportTile(emoji = Sport.WATER_POLO.emoji, label = Sport.WATER_POLO.displayName) {
+                    onSelectSport(Sport.WATER_POLO)
+                }
             }
         }
     }

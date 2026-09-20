@@ -101,4 +101,122 @@ val Sport.config: SportConfig
             ),
             infractionLabel = "Penalty",
         )
+
+        Sport.FUTSAL -> SportConfig(
+            onCourtSize = 5,
+            squadPositions = listOf("GK", "FIX", "ALA", "PIVO"),
+            useQuartersDefault = false,
+            defaultPeriodMinutes = 20,
+            scoringOptions = listOf(
+                ScoreOption("Goal", 1),
+            ),
+            infractionLabel = "Foul",
+        )
+
+        Sport.FIELD_HOCKEY -> SportConfig(
+            onCourtSize = 11,
+            squadPositions = listOf("GK", "DEF", "MID", "FWD"),
+            useQuartersDefault = true,
+            defaultPeriodMinutes = 15,
+            scoringOptions = listOf(
+                ScoreOption("Goal", 1),
+            ),
+            infractionLabel = "Card",
+        )
+
+        Sport.ICE_HOCKEY -> SportConfig(
+            onCourtSize = 6,
+            squadPositions = listOf("G", "LD", "RD", "LW", "C", "RW"),
+            useQuartersDefault = false,
+            defaultPeriodMinutes = 20,
+            scoringOptions = listOf(
+                ScoreOption("Goal", 1),
+            ),
+            infractionLabel = "Penalty",
+        )
+
+        Sport.TOUCH_FOOTBALL -> SportConfig(
+            onCourtSize = 6,
+            squadPositions = listOf("Link", "Middle", "Wing"),
+            useQuartersDefault = false,
+            defaultPeriodMinutes = 20,
+            scoringOptions = listOf(
+                ScoreOption("Touchdown", 1),
+            ),
+            infractionLabel = "Penalty",
+        )
+
+        Sport.WATER_POLO -> SportConfig(
+            onCourtSize = 7,
+            squadPositions = listOf("GK", "Driver", "Hole Set", "Wing", "Point"),
+            useQuartersDefault = true,
+            defaultPeriodMinutes = 8,
+            scoringOptions = listOf(
+                ScoreOption("Goal", 1),
+            ),
+            infractionLabel = "Exclusion",
+        )
+
+        Sport.HANDBALL -> SportConfig(
+            onCourtSize = 7,
+            squadPositions = listOf(
+                "GK", "Left Wing", "Left Back", "Centre Back", "Right Back", "Right Wing", "Pivot",
+            ),
+            useQuartersDefault = false,
+            defaultPeriodMinutes = 30,
+            scoringOptions = listOf(
+                ScoreOption("Goal", 1),
+            ),
+            infractionLabel = "Foul",
+        )
+
+        Sport.LACROSSE -> SportConfig(
+            onCourtSize = 10,
+            squadPositions = listOf("GK", "Defense", "Midfield", "Attack"),
+            useQuartersDefault = true,
+            defaultPeriodMinutes = 15,
+            scoringOptions = listOf(
+                ScoreOption("Goal", 1),
+            ),
+            infractionLabel = "Penalty",
+        )
+
+        Sport.GAELIC_FOOTBALL -> SportConfig(
+            onCourtSize = 15,
+            squadPositions = listOf(
+                "GK", "Full Back", "Half Back", "Midfield", "Half Forward", "Full Forward",
+            ),
+            useQuartersDefault = false,
+            defaultPeriodMinutes = 30,
+            scoringOptions = listOf(
+                ScoreOption("Goal (3)", 3),
+                ScoreOption("Point (1)", 1),
+            ),
+            infractionLabel = "Foul",
+        )
+
+        Sport.FLAG_FOOTBALL -> SportConfig(
+            onCourtSize = 5,
+            squadPositions = listOf("QB", "WR", "RB", "DB", "Rusher"),
+            useQuartersDefault = false,
+            defaultPeriodMinutes = 20,
+            scoringOptions = listOf(
+                ScoreOption("Touchdown (6)", 6),
+                ScoreOption("1-pt Extra (1)", 1),
+                ScoreOption("2-pt Extra (2)", 2),
+                ScoreOption("Safety (2)", 2),
+            ),
+            infractionLabel = "Penalty",
+        )
+
+        Sport.ULTIMATE_FRISBEE -> SportConfig(
+            onCourtSize = 7,
+            squadPositions = listOf("Handler", "Cutter", "Deep"),
+            useQuartersDefault = false,
+            defaultPeriodMinutes = 20,
+            scoringOptions = listOf(
+                ScoreOption("Point", 1),
+            ),
+            infractionLabel = "Foul",
+        )
     }

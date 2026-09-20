@@ -1,13 +1,13 @@
 # Coaches Assistant
 
-Coaches Assistant is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data — for Basketball, Netball, Soccer, AFL, Rugby Union, and Rugby League.
+Coaches Assistant is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data — across 16 team sports: Basketball, Netball, Soccer, AFL, Rugby Union, Rugby League, Futsal, Field Hockey, Ice Hockey, Touch Football, Water Polo, Handball, Lacrosse, Gaelic Football, Flag Football, and Ultimate Frisbee.
 
 The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered training assistant (Google Gemini, Anthropic Claude, OpenAI ChatGPT, or any other OpenAI-compatible provider — your choice, Basketball only for now). It is designed for local, in-season use and keeps the workflow lightweight: roster setup, live substitutions, score tracking, attendance, and exportable game records.
 
 ## Project status
 
 - Single-module Android app (`:app`)
-- Multi-sport: a landing screen lets the user pick Basketball, Netball, Soccer, AFL, Rugby Union, or Rugby League; each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
+- Multi-sport: a landing screen lets the user pick from 16 supported team sports (categorized into Court, Field, and Ice & Water sports); each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 10)
 - AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash`), Anthropic Claude (`claude-sonnet-5`), OpenAI ChatGPT (`gpt-5.5`), or "Other" (any OpenAI-compatible endpoint the user configures, e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server) — and supplies that provider's API key (Gemini also falls back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
@@ -16,7 +16,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 ## Core features
 
 - Sport support
-  - Landing screen to pick a sport: Basketball, Netball, Soccer, AFL, Rugby Union, or Rugby League (Rugby prompts a "which code?" dialog before continuing)
+  - Landing screen to pick from 16 team sports across Court, Field, and Ice & Water categories (Rugby prompts a "which code?" dialog for Union vs League)
   - Each sport gets its own roster and game history — players and games are tagged by sport and never mix across sports
   - One shared rotation-tracking engine, configured per sport (`ui/SportConfig.kt`) rather than a separate implementation per sport: on-court size (5 for Basketball up to 18 for AFL), optional squad positions (e.g. Netball's GS/GA/WA/C/WD/GD/GK), default period structure and duration, sport-correct scoring buttons (from a single "Goal" worth 1 point up to Rugby's Try/Conversion/Penalty/Drop Goal), and the label used for the per-player infraction counter (Foul, Penalty, Card, or Free Kick)
   - "Switch sport" in Settings returns to the landing screen without clearing any sport's data; the app remembers the last-picked sport across restarts

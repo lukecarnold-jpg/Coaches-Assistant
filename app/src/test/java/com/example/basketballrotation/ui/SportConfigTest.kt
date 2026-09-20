@@ -28,6 +28,16 @@ class SportConfigTest {
         assertEquals(18, Sport.AFL.config.onCourtSize)
         assertEquals(15, Sport.RUGBY_UNION.config.onCourtSize)
         assertEquals(13, Sport.RUGBY_LEAGUE.config.onCourtSize)
+        assertEquals(5, Sport.FUTSAL.config.onCourtSize)
+        assertEquals(11, Sport.FIELD_HOCKEY.config.onCourtSize)
+        assertEquals(6, Sport.ICE_HOCKEY.config.onCourtSize)
+        assertEquals(6, Sport.TOUCH_FOOTBALL.config.onCourtSize)
+        assertEquals(7, Sport.WATER_POLO.config.onCourtSize)
+        assertEquals(7, Sport.HANDBALL.config.onCourtSize)
+        assertEquals(10, Sport.LACROSSE.config.onCourtSize)
+        assertEquals(15, Sport.GAELIC_FOOTBALL.config.onCourtSize)
+        assertEquals(5, Sport.FLAG_FOOTBALL.config.onCourtSize)
+        assertEquals(7, Sport.ULTIMATE_FRISBEE.config.onCourtSize)
     }
 
     @Test
@@ -42,5 +52,6 @@ class SportConfigTest {
         assertEquals("Fouls", Sport.BASKETBALL.config.infractionLabelPlural)
         assertEquals("Penalties", Sport.NETBALL.config.infractionLabelPlural)
         assertEquals("Cards", Sport.SOCCER.config.infractionLabelPlural)
+        assertEquals("Exclusions", Sport.WATER_POLO.config.infractionLabelPlural)
     }
 }
