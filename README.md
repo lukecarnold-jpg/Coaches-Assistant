@@ -1,6 +1,6 @@
-# Basketball Rotation
+# Coaches Assistant
 
-Basketball Rotation is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data — for Basketball, Netball, Soccer, AFL, Rugby Union, and Rugby League.
+Coaches Assistant is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data — for Basketball, Netball, Soccer, AFL, Rugby Union, and Rugby League.
 
 The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered training assistant (Google Gemini, Anthropic Claude, OpenAI ChatGPT, or any other OpenAI-compatible provider — your choice, Basketball only for now). It is designed for local, in-season use and keeps the workflow lightweight: roster setup, live substitutions, score tracking, attendance, and exportable game records.
 
