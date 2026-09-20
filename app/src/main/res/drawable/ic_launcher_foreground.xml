@@ -4,21 +4,22 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Basketball Lines -->
+    <!-- Clipboard and roster mark for the multi-sport coaching app. -->
     <path
-        android:pathData="M54,0 L54,108"
-        android:strokeColor="#000000"
-        android:strokeWidth="4" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,25h40c4.4,0 8,3.6 8,8v49c0,4.4 -3.6,8 -8,8H34c-4.4,0 -8,-3.6 -8,-8V33c0,-4.4 3.6,-8 8,-8z" />
     <path
-        android:pathData="M0,54 L108,54"
-        android:strokeColor="#000000"
-        android:strokeWidth="4" />
+        android:fillColor="#243B64"
+        android:pathData="M42,19h24c2.2,0 4,1.8 4,4v8H38v-8c0,-2.2 1.8,-4 4,-4z" />
     <path
-        android:pathData="M20,0 Q54,54 20,108"
-        android:strokeColor="#000000"
-        android:strokeWidth="4" />
+        android:pathData="M38,47h32M38,63h32M38,79h18"
+        android:strokeColor="#243B64"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
     <path
-        android:pathData="M88,0 Q54,54 88,108"
-        android:strokeColor="#000000"
-        android:strokeWidth="4" />
+        android:fillColor="#F4B942"
+        android:pathData="M74,68m-11,0a11,11 0,1 0,22,0a11,11 0,1 0,-22,0" />
+    <path
+        android:fillColor="#2CB67D"
+        android:pathData="M74,68l-4,4 -2,-2 -3,3 5,5 7,-7z" />
 </vector>
