@@ -167,6 +167,15 @@ This history captures the key milestones in the app's evolution, from the initia
 - **Found and fixed a real bug during emulator testing**: switching sports via Settings didn't actually create a new `AppViewModel` — Compose's `viewModel()` composable caches instances by class name within the Activity's `ViewModelStore`, so without an explicit per-sport `key`, switching to Netball kept returning the already-constructed Basketball-scoped `AppViewModel`, and the Netball Roster tab showed Basketball's players. Fixed by keying the `viewModel()` call on the sport (`key = "AppViewModel-${sport.name}"`)
 - Verified on a Pixel 10 emulator: ran the full roster (with positions) → game creation → starting lineup → scoring → infraction → substitution cycle for both Basketball and Netball; spot-checked Soccer, AFL, and Rugby Union for correct on-court size gates, period defaults, and scoring button values (including Rugby's four-button row); confirmed switching back to Basketball preserved its own roster/games untouched after the fix
 
+## Version 3.1 (Coaches Assistant Branding, Documentation & Data Management)
+- Renamed the user-facing app label from "Basketball Rotation" to "Coaches Assistant" to reflect the app's multi-sport scope
+- Replaced the basketball-specific launcher artwork with a generic coaching/roster icon while retaining adaptive and round launcher variants
+- Added `STRUCTURE.md`, documenting the project layout, package responsibilities, Android resources, tests, build configuration, and main runtime flow
+- Added `STRUCTURE_DIAGRAM.png` and its design philosophy companion as a visual overview of the entry point, UI, AI, data, Room, resources, tests, and CI layers
+- Added selective local-data deletion in Settings: users can independently remove players, games, or events, while retaining a separate "Delete all data" option
+- Game deletion continues to remove related game events transactionally; selecting games in the new data-management dialog applies the same cascading cleanup to all games
+- Updated the README feature list to describe selective deletion and the full-data deletion option
+
 ## Current repository review
 - The project builds cleanly with zero compiler warnings across the main, unit test, and instrumented test source sets.
 - `./gradlew lintDebug` -> `BUILD SUCCESSFUL`, with no new findings.
@@ -175,5 +184,6 @@ This history captures the key milestones in the app's evolution, from the initia
 - The app remains a single-module Android project using Compose and Room, now generalized to six sports (Basketball, Netball, Soccer, AFL, Rugby Union, Rugby League) sharing one rotation-tracking engine, plus an optional multi-provider (Gemini/Claude/ChatGPT/Other) training feature that stays Basketball-only.
 - Current Room schema version is 10.
 - The training assistant is optional and reads its per-provider key from an in-app Settings entry (encrypted at rest); Gemini additionally falls back to `GEMINI_API_KEY` in `local.properties` if no in-app key is saved.
+- Settings now supports transactional deletion of players, games, and events individually, as well as deletion of all local records across every sport.
 - The app is still local-first and does not include a backend, cloud sync, or user authentication layer.
 - Testing now covers the core stat-calculation logic and sport configuration directly; repository-level Room integration tests (e.g. exercising `BasketballRepository`'s transactions against a real database) remain a future improvement area.

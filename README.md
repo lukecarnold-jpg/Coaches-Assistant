@@ -60,7 +60,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
   - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic, OpenAI, and the "Other" provider have no build-time fallback
   - "Other" also requires an endpoint URL and model name, since it can point at any OpenAI-compatible service
-  - Clear all local data (players, games, events, across every sport)
+  - Selectively delete players, games, or events from local data, or delete everything across every sport
 
 ## Tech stack
 

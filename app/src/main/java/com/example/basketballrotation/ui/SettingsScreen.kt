@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +42,7 @@ import com.example.basketballrotation.data.Sport
 fun SettingsScreen(
     modifier: Modifier = Modifier,
     onClearAllData: () -> Unit,
+    onClearSelectedData: (players: Boolean, games: Boolean, events: Boolean) -> Unit = { _, _, _ -> },
     apiKeys: Map<AiProvider, String> = emptyMap(),
     selectedProvider: AiProvider = AiProvider.GEMINI,
     hasBuiltInApiKey: Boolean = false,
@@ -54,6 +56,10 @@ fun SettingsScreen(
 ) {
     val layout = LocalResponsiveLayout.current
     var showConfirm by remember { mutableStateOf(value = false) }
+    var showDeleteOptions by remember { mutableStateOf(value = false) }
+    var deletePlayers by remember { mutableStateOf(value = true) }
+    var deleteGames by remember { mutableStateOf(value = true) }
+    var deleteEvents by remember { mutableStateOf(value = true) }
     val savedKey = apiKeys[selectedProvider].orEmpty()
     var apiKeyInput by remember(selectedProvider, savedKey) { mutableStateOf(savedKey) }
     var apiKeyVisible by remember { mutableStateOf(value = false) }
@@ -183,13 +189,13 @@ fun SettingsScreen(
         }
 
         SectionCard(title = "Data management") {
-            Text("Clear all local data including players, games, and events. This action cannot be undone.")
+            Text("Choose which local data to remove, or delete everything at once. These actions cannot be undone.")
             Spacer(Modifier.height(layout.smallGap))
             Button(
-                onClick = { showConfirm = true },
+                onClick = { showDeleteOptions = true },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
             ) {
-                Text("Clear all data")
+                Text("Delete data")
             }
         }
 
@@ -221,5 +227,76 @@ fun SettingsScreen(
                 }
             )
         }
+
+        if (showDeleteOptions) {
+            AlertDialog(
+                onDismissRequest = { showDeleteOptions = false },
+                title = { Text("Delete local data") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+                        Text("Select the data categories to delete.")
+                        DataDeletionOption(
+                            label = "Players",
+                            checked = deletePlayers,
+                            onCheckedChange = { deletePlayers = it },
+                        )
+                        DataDeletionOption(
+                            label = "Games",
+                            checked = deleteGames,
+                            onCheckedChange = { deleteGames = it },
+                        )
+                        DataDeletionOption(
+                            label = "Events",
+                            checked = deleteEvents,
+                            onCheckedChange = { deleteEvents = it },
+                        )
+                    }
+                },
+                confirmButton = {
+                    Column {
+                        TextButton(
+                            onClick = {
+                                showDeleteOptions = false
+                                showConfirm = true
+                            },
+                        ) {
+                            Text("Delete all data", color = MaterialTheme.colorScheme.error)
+                        }
+                        TextButton(
+                            onClick = {
+                                onClearSelectedData(deletePlayers, deleteGames, deleteEvents)
+                                showDeleteOptions = false
+                            },
+                            enabled = deletePlayers || deleteGames || deleteEvents,
+                        ) {
+                            Text("Delete selected", color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteOptions = false }) {
+                        Text("Cancel")
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun DataDeletionOption(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(label)
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+        )
     }
 }

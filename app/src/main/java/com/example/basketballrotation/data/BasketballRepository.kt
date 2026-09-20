@@ -309,6 +309,24 @@ class BasketballRepository(
         }
     }
 
+    suspend fun clearSelectedData(
+        players: Boolean,
+        games: Boolean,
+        events: Boolean,
+    ) {
+        database.withTransaction {
+            if (games) {
+                gameEventDao.deleteAll()
+                gameDao.deleteAll()
+            } else if (events) {
+                gameEventDao.deleteAll()
+            }
+            if (players) {
+                playerDao.deleteAll()
+            }
+        }
+    }
+
     suspend fun resetTimer(gameId: Long) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction

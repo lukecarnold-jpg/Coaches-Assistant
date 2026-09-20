@@ -244,6 +244,7 @@ private fun SportApp(
                     AppTab.SETTINGS -> SettingsScreen(
                         modifier = Modifier.fillMaxSize(),
                         onClearAllData = appViewModel::clearAllData,
+                        onClearSelectedData = appViewModel::clearSelectedData,
                         apiKeys = apiKeys,
                         selectedProvider = selectedAiProvider,
                         hasBuiltInApiKey = trainingViewModel.hasBuiltInApiKey,

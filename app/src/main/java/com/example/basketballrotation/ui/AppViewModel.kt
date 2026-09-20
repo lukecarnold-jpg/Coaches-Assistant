@@ -164,6 +164,13 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         }
     }
 
+    fun clearSelectedData(players: Boolean, games: Boolean, events: Boolean) {
+        viewModelScope.launch {
+            repository.clearSelectedData(players, games, events)
+            _messages.emit("Selected data cleared.")
+        }
+    }
+
     fun createGame(title: String, opponent: String, useQuarters: Boolean, periodMins: Int) {
         val finalTitle = title.trim().ifBlank { "Game ${games.value.size + 1}" }
         val durationMillis = periodMins * 60 * 1000L
