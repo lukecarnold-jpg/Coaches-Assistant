@@ -1,4 +1,4 @@
-# Basketball Rotation & Stats Tracker - Development History
+# Coaches Assistant & Stats Tracker - Development History
 
 This history captures the key milestones in the app's evolution, from the initial game tracker through the current roster-and-game-management workflow.
 
