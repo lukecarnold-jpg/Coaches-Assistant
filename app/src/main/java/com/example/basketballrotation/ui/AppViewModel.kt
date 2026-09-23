@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.basketballrotation.data.AppDatabase
 import com.example.basketballrotation.data.BasketballRepository
 import com.example.basketballrotation.data.EventType
+import com.example.basketballrotation.data.GameCsvIo
 import com.example.basketballrotation.data.GameEntity
 import com.example.basketballrotation.data.GameEventEntity
 import com.example.basketballrotation.data.MvpVotes
@@ -42,6 +43,7 @@ data class PlayerGameStat(
 
 class AppViewModel(application: Application, private val sport: Sport) : AndroidViewModel(application) {
     private val repository = BasketballRepository(AppDatabase.getInstance(application))
+    private val csvIo = GameCsvIo(AppDatabase.getInstance(application))
 
     private val selectedGameId = MutableStateFlow<Long?>(null)
     private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -337,7 +339,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     fun exportPlayersCsv(uri: Uri) {
         viewModelScope.launch {
             runCatching {
-                repository.exportPlayersCsv(getApplication<Application>().contentResolver, uri, sport)
+                csvIo.exportPlayersCsv(getApplication<Application>().contentResolver, uri, sport)
             }.onSuccess {
                 _messages.emit("Roster CSV exported.")
             }.onFailure {
@@ -349,7 +351,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     fun importPlayersCsv(uri: Uri) {
         viewModelScope.launch {
             runCatching {
-                repository.importPlayersCsv(getApplication<Application>().contentResolver, uri, sport)
+                csvIo.importPlayersCsv(getApplication<Application>().contentResolver, uri, sport)
             }.onSuccess {
                 _messages.emit("Roster CSV imported.")
             }.onFailure {
@@ -361,7 +363,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     fun exportGameNotesTxt(gameId: Long, uri: Uri) {
         viewModelScope.launch {
             runCatching {
-                repository.exportGameNotesTxt(getApplication<Application>().contentResolver, gameId, uri)
+                csvIo.exportGameNotesTxt(getApplication<Application>().contentResolver, gameId, uri)
             }.onSuccess {
                 _messages.emit("Coaching notes exported.")
             }.onFailure {
@@ -373,7 +375,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     fun exportGameCsv(gameId: Long, uri: Uri) {
         viewModelScope.launch {
             runCatching {
-                repository.exportGameCsv(getApplication<Application>().contentResolver, gameId, uri)
+                csvIo.exportGameCsv(getApplication<Application>().contentResolver, gameId, uri)
             }.onSuccess {
                 _messages.emit("Game CSV exported.")
             }.onFailure {
