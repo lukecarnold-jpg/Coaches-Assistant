@@ -78,9 +78,6 @@ interface GameEventDao {
     @Query("DELETE FROM game_events WHERE id = :eventId")
     suspend fun deleteById(eventId: Long)
 
-    @Query("DELETE FROM game_events WHERE gameId = :gameId")
-    suspend fun deleteByGame(gameId: Long)
-
     @Query("DELETE FROM game_events")
     suspend fun deleteAll()
 }

@@ -67,6 +67,39 @@ class BasketballRepositoryTest {
     }
 
     @Test
+    fun deletePlayer_nullsTheirIdOnPastEventsInsteadOfLeavingADanglingReference() = runBlocking {
+        val playerIds = addPlayers(2)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds, maxSize = 2)
+        repository.addScore(game.id, playerIds[0], 2)
+        repository.substitute(game.id, playerInId = playerIds[1], playerOutId = playerIds[0])
+        val eventsBefore = database.gameEventDao().getByGame(game.id)
+        // Sanity check: the events we're about to verify actually reference the deleted player.
+        assertTrue(eventsBefore.any { it.playerId == playerIds[0] || it.relatedPlayerId == playerIds[0] })
+
+        repository.deletePlayer(playerIds[0])
+
+        val eventsAfter = database.gameEventDao().getByGame(game.id)
+        assertTrue(eventsAfter.none { it.playerId == playerIds[0] || it.relatedPlayerId == playerIds[0] })
+        // The events themselves survive as history; only the dangling reference is cleared.
+        assertEquals(eventsBefore.size, eventsAfter.size)
+    }
+
+    @Test
+    fun clearSelectedData_playersOnly_alsoFreesEveryGamesOnCourtAndAbsentSlots() = runBlocking {
+        val playerIds = addPlayers(6)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
+        repository.updateAbsentPlayers(game.id, listOf(playerIds[5]))
+
+        repository.clearSelectedData(players = true, games = false, events = false)
+
+        val updated = database.gameDao().getById(game.id)!!
+        assertTrue(updated.onCourtIds().isEmpty())
+        assertTrue(updated.absentPlayerIds().isEmpty())
+    }
+
+    @Test
     fun deletePlayer_alsoRemovesFromAbsentList() = runBlocking {
         val playerIds = addPlayers(6)
         val game = newGame()

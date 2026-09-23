@@ -7,13 +7,16 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [PlayerEntity::class, GameEntity::class, GameEventEntity::class],
-    version = 10,
+    version = 11,
     autoMigrations = [
         androidx.room.AutoMigration(from = 5, to = 6),
         androidx.room.AutoMigration(from = 6, to = 7),
         androidx.room.AutoMigration(from = 7, to = 8),
         androidx.room.AutoMigration(from = 8, to = 9),
         androidx.room.AutoMigration(from = 9, to = 10),
+        // Adds the game_events foreign keys (games -> CASCADE, players -> SET_NULL); no column
+        // changes, so no AutoMigrationSpec is needed to backfill anything.
+        androidx.room.AutoMigration(from = 10, to = 11),
     ],
     exportSchema = true,
 )

@@ -29,8 +29,8 @@ class AppDatabaseMigrationTest {
     )
 
     @Test
-    fun migrate5To10_preservesExistingRowsAndBackfillsNewColumns() {
-        val dbName = "migration-test-5-to-10"
+    fun migrate5To11_preservesExistingRowsAndBackfillsNewColumns() {
+        val dbName = "migration-test-5-to-11"
 
         helper.createDatabase(dbName, 5).apply {
             execSQL("INSERT INTO players (id, name, jerseyNumber) VALUES (1, 'Alex', 23)")
@@ -59,7 +59,7 @@ class AppDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate(dbName, 10, true)
+        val migrated = helper.runMigrationsAndValidate(dbName, 11, true)
 
         migrated.query("SELECT name, jerseyNumber, sport, position FROM players WHERE id = 1").use { cursor ->
             assertTrue(cursor.moveToFirst())
@@ -125,5 +125,56 @@ class AppDatabaseMigrationTest {
             assertEquals("BASKETBALL", cursor.getString(0))
             assertEquals(5, cursor.getInt(1))
         }
+    }
+
+    @Test
+    fun migrate10To11_preservesDataAndAddsGameEventsForeignKeys() {
+        val dbName = "migration-test-10-to-11"
+
+        helper.createDatabase(dbName, 10).apply {
+            execSQL(
+                "INSERT INTO players (id, name, jerseyNumber, sport, position) VALUES (1, 'Sam', 7, 'BASKETBALL', NULL)",
+            )
+            execSQL(
+                """
+                INSERT INTO games (
+                    id, title, opponent, createdAt, teamScore, opponentScore, mvpVotesJson,
+                    onCourtCsv, runningTimeMillis, timerLastStartedAt, isFinished, finishedAt,
+                    useQuarters, currentPeriod, periodDurationMillis, absentPlayerIdsCsv, notes,
+                    sport, onCourtSize
+                ) VALUES (
+                    1, 'Championship', 'Rivals', 3000, 2, 0, '{}',
+                    '1', 0, NULL, 0, NULL,
+                    1, 1, 720000, '', '', 'BASKETBALL', 5
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO game_events (
+                    id, gameId, timestamp, type, playerId, relatedPlayerId, points, note, gameTimeMillis
+                ) VALUES (
+                    1, 1, 3000, 'SCORE', 1, NULL, 2, '', 15000
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        // runMigrationsAndValidate compares the migrated table's real schema (including its
+        // foreign key definitions) against app/schemas' 11.json, so this alone proves the
+        // gameId/playerId/relatedPlayerId foreign keys were added as declared.
+        val migrated = helper.runMigrationsAndValidate(dbName, 11, true)
+
+        migrated.query("SELECT gameId, playerId, points FROM game_events WHERE id = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(0))
+            assertEquals(1, cursor.getInt(1))
+            assertEquals(2, cursor.getInt(2))
+        }
+        // The connection here is the raw migrated database, without Room's `PRAGMA
+        // foreign_keys=ON` (that's only enabled once a RoomDatabase opens the file normally), so
+        // this doesn't re-prove the constraints are *enforced* — BasketballRepositoryTest's
+        // deleteGame/deletePlayer tests already do that against a normally-opened database.
     }
 }

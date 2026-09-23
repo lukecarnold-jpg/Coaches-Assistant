@@ -181,11 +181,10 @@ class BasketballRepository(
         }
     }
 
+    // game_events.gameId is now ON DELETE CASCADE, so this no longer needs to delete a game's
+    // events itself — the database does it as part of the same delete.
     suspend fun deleteGame(gameId: Long) {
-        database.withTransaction {
-            gameEventDao.deleteByGame(gameId)
-            gameDao.deleteById(gameId)
-        }
+        gameDao.deleteById(gameId)
     }
 
     suspend fun selectStartingLineup(gameId: Long, playerIds: List<Long>, maxSize: Int = 5) {
@@ -311,8 +310,7 @@ class BasketballRepository(
 
     suspend fun clearAllData() {
         database.withTransaction {
-            gameEventDao.deleteAll()
-            gameDao.deleteAll()
+            gameDao.deleteAll() // game_events.gameId is ON DELETE CASCADE
             playerDao.deleteAll()
         }
     }
@@ -324,12 +322,23 @@ class BasketballRepository(
     ) {
         database.withTransaction {
             if (games) {
-                gameEventDao.deleteAll()
-                gameDao.deleteAll()
+                gameDao.deleteAll() // game_events.gameId is ON DELETE CASCADE
             } else if (events) {
                 gameEventDao.deleteAll()
             }
             if (players) {
+                if (!games) {
+                    // Every player is about to disappear. Without this, every surviving game keeps
+                    // referencing the now-deleted player ids in onCourtCsv/absentPlayerIdsCsv —
+                    // the same ghost-slot problem deletePlayer() guards against, just for every
+                    // game at once (games.onCourtCsv isn't a real foreign key, so it isn't covered
+                    // by the player -> game_events SET_NULL constraint).
+                    gameDao.getAll().forEach { game ->
+                        if (game.onCourtCsv.isNotEmpty() || game.absentPlayerIdsCsv.isNotEmpty()) {
+                            gameDao.update(game.copy(onCourtCsv = "", absentPlayerIdsCsv = ""))
+                        }
+                    }
+                }
                 playerDao.deleteAll()
             }
         }

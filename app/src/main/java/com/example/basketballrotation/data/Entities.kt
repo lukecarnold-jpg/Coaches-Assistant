@@ -2,6 +2,7 @@ package com.example.basketballrotation.data
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
@@ -61,6 +62,33 @@ data class GameEntity(
 @Entity(
     tableName = "game_events",
     indices = [Index("gameId"), Index("playerId"), Index("relatedPlayerId")],
+    foreignKeys = [
+        // A game's events are meaningless without it, so they're deleted with it — this is what
+        // BasketballRepository.deleteGame already did manually; the constraint just makes that
+        // guarantee hold everywhere, not only through that one code path.
+        ForeignKey(
+            entity = GameEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["gameId"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+        // Events are historical game records, not player records, so deleting a player clears the
+        // reference rather than the event (eventDescription() already renders a missing player as
+        // a blank name, so this just makes that the only way a dangling id shows up, instead of a
+        // stale id nothing points to).
+        ForeignKey(
+            entity = PlayerEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["playerId"],
+            onDelete = ForeignKey.SET_NULL,
+        ),
+        ForeignKey(
+            entity = PlayerEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["relatedPlayerId"],
+            onDelete = ForeignKey.SET_NULL,
+        ),
+    ],
 )
 data class GameEventEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
