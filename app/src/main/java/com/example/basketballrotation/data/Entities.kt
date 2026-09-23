@@ -84,4 +84,22 @@ fun GameEntity.absentPlayerIds(): List<Long> =
 
 fun idsToCsv(ids: Collection<Long>): String = ids.joinToString(",")
 
+/**
+ * Strips [playerId] from this game's on-court and absent lists, e.g. when the player is deleted
+ * from the roster. Without this, a deleted player's id lingers in [GameEntity.onCourtCsv] forever:
+ * the on-court count still matches the sport's required size, so the game never re-prompts for a
+ * starting lineup, but the player has no card in the UI (it's filtered by current roster) — leaving
+ * a slot that looks occupied but can never be subbed into.
+ */
+fun GameEntity.withoutPlayer(playerId: Long): GameEntity {
+    val onCourt = onCourtIds()
+    val absent = absentPlayerIds()
+    if (!onCourt.contains(playerId) && !absent.contains(playerId)) return this
+
+    return copy(
+        onCourtCsv = idsToCsv(onCourt - playerId),
+        absentPlayerIdsCsv = idsToCsv(absent - playerId),
+    )
+}
+
 fun PlayerEntity.displayLabel(): String = if (jerseyNumber != null) "#$jerseyNumber $name" else name

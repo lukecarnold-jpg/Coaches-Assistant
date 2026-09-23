@@ -42,7 +42,15 @@ class BasketballRepository(
     }
 
     suspend fun deletePlayer(playerId: Long) {
-        playerDao.deleteById(playerId)
+        database.withTransaction {
+            gameDao.getAll().forEach { game ->
+                val cleaned = game.withoutPlayer(playerId)
+                if (cleaned !== game) {
+                    gameDao.update(cleaned)
+                }
+            }
+            playerDao.deleteById(playerId)
+        }
     }
 
     suspend fun createGame(

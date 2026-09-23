@@ -39,6 +39,9 @@ interface GameDao {
     @Query("SELECT * FROM games ORDER BY createdAt DESC")
     fun observeAll(): Flow<List<GameEntity>>
 
+    @Query("SELECT * FROM games")
+    suspend fun getAll(): List<GameEntity>
+
     @Query("SELECT * FROM games WHERE sport = :sport ORDER BY createdAt DESC")
     fun observeAllBySport(sport: String): Flow<List<GameEntity>>
 
