@@ -48,6 +48,12 @@ android {
         buildConfig = true
     }
 
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -97,6 +103,10 @@ dependencies {
     // `test` sources only stubs org.json (as it does the rest of the Android SDK), so
     // MvpVotesTest needs a working implementation on the unit test classpath.
     testImplementation(libs.json)
+    // Robolectric provides a real SQLite implementation so BasketballRepositoryTest can run an
+    // in-memory Room database as a fast JVM unit test instead of an emulator-backed androidTest.
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
