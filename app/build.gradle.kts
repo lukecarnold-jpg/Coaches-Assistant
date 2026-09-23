@@ -54,6 +54,18 @@ android {
         }
     }
 
+    sourceSets {
+        // Room's MigrationTestHelper loads each version's exported schema JSON as an asset at
+        // "<schemaLocation>/<db qualified name>/<version>.json". Robolectric (used by
+        // AppDatabaseMigrationTest) resolves unit test assets from the *debug variant's* merged
+        // assets rather than a test-specific set, so this goes on "debug" — exposing app/schemas
+        // directly (where `ksp { arg("room.schemaLocation", ...) }` already writes them) avoids
+        // keeping a second copy in sync. It never reaches a release build.
+        getByName("debug") {
+            assets.srcDirs(rootProject.layout.projectDirectory.dir("app/schemas"))
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -94,6 +106,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    testImplementation(libs.androidx.room.testing)
 
     implementation(libs.androidx.security.crypto)
     implementation(libs.okhttp)
