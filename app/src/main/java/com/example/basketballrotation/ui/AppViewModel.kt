@@ -67,11 +67,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     val selectedGame: StateFlow<GameEntity?> =
         @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
         combine(games, selectedGameId) { gameList, chosenId ->
-            when {
-                gameList.isEmpty() -> null
-                chosenId == null -> gameList.first()
-                else -> gameList.firstOrNull { it.id == chosenId } ?: gameList.first()
-            }
+            gameList.firstOrNull { it.id == chosenId } ?: defaultGame(gameList)
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
@@ -103,9 +99,9 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
 
                 when {
                     gameList.isEmpty() -> selectedGameId.value = null
-                    currentSelection == null -> selectedGameId.value = gameList.firstOrNull()?.id
+                    currentSelection == null -> selectedGameId.value = defaultGame(gameList)?.id
                     gameList.none { it.id == currentSelection } -> {
-                        selectedGameId.value = gameList.firstOrNull()?.id
+                        selectedGameId.value = defaultGame(gameList)?.id
                     }
                 }
             }
@@ -406,6 +402,13 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         }
     }
 }
+
+/**
+ * The game to show when none is explicitly selected: the newest one still in progress, since
+ * finished games live on the History tab, or the newest game if every game is finished.
+ */
+private fun defaultGame(newestFirst: List<GameEntity>): GameEntity? =
+    newestFirst.firstOrNull { !it.isFinished } ?: newestFirst.firstOrNull()
 
 class AppViewModelFactory(
     private val application: Application,
