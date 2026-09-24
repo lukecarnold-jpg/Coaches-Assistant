@@ -43,7 +43,7 @@ class AnthropicTextGenerator : DrillTextGenerator {
     override suspend fun generateText(prompt: String, apiKey: String): String = withContext(Dispatchers.IO) {
         val body = JSONObject().apply {
             put("model", "claude-sonnet-5")
-            put("max_tokens", 1024)
+            put("max_tokens", 2048)
             put(
                 "messages",
                 JSONArray().put(
@@ -63,7 +63,13 @@ class AnthropicTextGenerator : DrillTextGenerator {
             .build()
 
         executeForText(request) { json ->
-            json.optJSONArray("content")?.optJSONObject(0)?.optString("text").orEmpty()
+            // The response's content is a list of typed blocks; the first isn't guaranteed to be
+            // text, so join every text block rather than assuming index 0.
+            val content = json.optJSONArray("content") ?: JSONArray()
+            (0 until content.length())
+                .mapNotNull { content.optJSONObject(it) }
+                .filter { it.optString("type") == "text" }
+                .joinToString("") { it.optString("text") }
         }
     }
 }
