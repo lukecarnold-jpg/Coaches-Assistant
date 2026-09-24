@@ -113,6 +113,20 @@ fun GameEntity.absentPlayerIds(): List<Long> =
 fun idsToCsv(ids: Collection<Long>): String = ids.joinToString(",")
 
 /**
+ * Elapsed time in the current period as of [now], capped at [GameEntity.periodDurationMillis].
+ * The cap is what keeps a clock nobody stopped (app backgrounded, coach distracted) from running
+ * past the end of the period and crediting on-court players with minutes that were never played.
+ */
+fun GameEntity.currentGameTimeMillis(now: Long = System.currentTimeMillis()): Long {
+    val elapsed = runningTimeMillis + (timerLastStartedAt?.let { now - it } ?: 0L)
+    return if (periodDurationMillis > 0) elapsed.coerceIn(0L, periodDurationMillis) else maxOf(0L, elapsed)
+}
+
+/** Time until the period's clock runs out as of [now], or null if the period has no set length. */
+fun GameEntity.remainingPeriodTimeMillis(now: Long = System.currentTimeMillis()): Long? =
+    if (periodDurationMillis > 0) periodDurationMillis - currentGameTimeMillis(now) else null
+
+/**
  * Strips [playerId] from this game's on-court and absent lists, e.g. when the player is deleted
  * from the roster. Without this, a deleted player's id lingers in [GameEntity.onCourtCsv] forever:
  * the on-court count still matches the sport's required size, so the game never re-prompts for a

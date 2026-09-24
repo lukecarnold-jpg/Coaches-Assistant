@@ -34,4 +34,28 @@ class GameEntityTest {
 
         assertSame(baseGame, cleaned)
     }
+
+    @Test
+    fun currentGameTimeMillis_addsTimeSinceTheClockStarted() {
+        val running = baseGame.copy(runningTimeMillis = 60_000L, timerLastStartedAt = 1_000L)
+
+        assertEquals(90_000L, running.currentGameTimeMillis(now = 31_000L))
+    }
+
+    @Test
+    fun currentGameTimeMillis_isCappedAtThePeriodLength() {
+        // 10-minute period, clock left running for 15 minutes.
+        val running = baseGame.copy(periodDurationMillis = 600_000L, timerLastStartedAt = 0L)
+
+        assertEquals(600_000L, running.currentGameTimeMillis(now = 900_000L))
+        assertEquals(0L, running.remainingPeriodTimeMillis(now = 900_000L))
+    }
+
+    @Test
+    fun currentGameTimeMillis_isUncappedWhenThePeriodHasNoLength() {
+        val running = baseGame.copy(periodDurationMillis = 0L, timerLastStartedAt = 0L)
+
+        assertEquals(900_000L, running.currentGameTimeMillis(now = 900_000L))
+        assertEquals(null, running.remainingPeriodTimeMillis(now = 900_000L))
+    }
 }

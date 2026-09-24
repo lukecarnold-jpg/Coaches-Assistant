@@ -17,11 +17,14 @@ import com.example.basketballrotation.data.PlayerEntity
 import com.example.basketballrotation.data.Sport
 import com.example.basketballrotation.data.absentPlayerIds
 import com.example.basketballrotation.data.onCourtIds
+import com.example.basketballrotation.data.remainingPeriodTimeMillis
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -105,6 +108,20 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
                         selectedGameId.value = gameList.firstOrNull()?.id
                     }
                 }
+            }
+        }
+
+        // Stop the clock when the period runs out. collectLatest restarts the wait whenever the
+        // game changes (stopped, edited, or a different game selected), so it only ever fires for
+        // the clock that's actually running. If the app isn't around to do this, the time is still
+        // capped at the period length wherever it's read (see GameEntity.currentGameTimeMillis).
+        viewModelScope.launch {
+            selectedGame.collectLatest { game ->
+                if (game == null || game.isFinished || game.timerLastStartedAt == null) return@collectLatest
+                val remaining = game.remainingPeriodTimeMillis() ?: return@collectLatest
+                delay(remaining)
+                repository.stopTimer(game.id)
+                _messages.emit("End of period — clock stopped.")
             }
         }
     }
@@ -307,7 +324,12 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     }
 
     fun toggleTimer() {
-        val gameId = selectedGame.value?.id ?: return
+        val game = selectedGame.value ?: return
+        val gameId = game.id
+        if (game.timerLastStartedAt == null && game.remainingPeriodTimeMillis() == 0L) {
+            _messages.tryEmit("This period's time is up. Move to the next period or adjust the clock.")
+            return
+        }
         viewModelScope.launch {
             repository.toggleTimer(gameId)
         }
@@ -462,6 +484,10 @@ fun calculatePlayerGameStats(
                     totalTimeByPlayer[id] = (totalTimeByPlayer[id] ?: 0L) + duration
                 }
                 lastEnteredAt.clear()
+                // The clock restarts at 0 each period, so a sub-off time from an earlier period
+                // can't be compared against the new period's clock; bench time counts from the
+                // start of the current period instead, just as shift time does.
+                lastBenchedAt.clear()
             }
 
             EventType.GAME_END -> {

@@ -20,28 +20,28 @@ fun PlayerActionCard(
     onAddScore: (Long, Int) -> Unit,
     onAddFoul: (Long, Int) -> Unit,
     onAddMvpVote: (Long) -> Unit,
-    gameTimerLastStartedAt: Long?,
-    gameRunningTimeMillis: Long,
+    game: GameEntity,
     enabled: Boolean = true,
 ) {
     val layout = LocalResponsiveLayout.current
+    val gameRunningTimeMillis = game.runningTimeMillis
+    val gameTimerLastStartedAt = game.timerLastStartedAt
 
     var shiftDisplayTime by remember(stat.shiftStartGameTimeMillis, gameRunningTimeMillis, gameTimerLastStartedAt) {
         mutableLongStateOf(stat.currentShiftTimeMillis)
     }
 
-    LaunchedEffect(stat.shiftStartGameTimeMillis, gameRunningTimeMillis, gameTimerLastStartedAt) {
+    LaunchedEffect(stat.shiftStartGameTimeMillis, gameRunningTimeMillis, gameTimerLastStartedAt, game.periodDurationMillis) {
         val shiftStart = stat.shiftStartGameTimeMillis
         if (shiftStart == null) {
             shiftDisplayTime = 0L
         } else if (gameTimerLastStartedAt != null) {
             while (true) {
-                val currentGameTimeMillis = gameRunningTimeMillis + (System.currentTimeMillis() - gameTimerLastStartedAt)
-                shiftDisplayTime = maxOf(0L, currentGameTimeMillis - shiftStart)
+                shiftDisplayTime = maxOf(0L, game.currentGameTimeMillis() - shiftStart)
                 delay(100)
             }
         } else {
-            shiftDisplayTime = maxOf(0L, gameRunningTimeMillis - shiftStart)
+            shiftDisplayTime = maxOf(0L, game.currentGameTimeMillis() - shiftStart)
         }
     }
 
