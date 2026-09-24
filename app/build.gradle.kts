@@ -17,7 +17,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.example.basketballrotation"
+        applicationId = "com.lukearnold.coachesassistant"
         minSdk = 26
         targetSdk = 37
         versionCode = 1
