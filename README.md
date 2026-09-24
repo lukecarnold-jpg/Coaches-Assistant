@@ -73,7 +73,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Jetpack Compose BOM `2026.08.00`
 - ViewModel / lifecycle patterns
 - Room `2.8.4` + KSP
-- OkHttp `4.12.0` (direct REST calls to every AI provider: Gemini, Anthropic, OpenAI, and OpenAI-compatible endpoints)
+- OkHttp `5.5.0` (direct REST calls to every AI provider: Gemini, Anthropic, OpenAI, and OpenAI-compatible endpoints)
 - AndroidX Security Crypto `1.1.0` — deprecated upstream; used only to move API keys saved by older versions out of `EncryptedSharedPreferences` on first launch, and can be removed once no installs predate that
 
 ## Requirements

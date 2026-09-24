@@ -154,7 +154,7 @@ private suspend fun openAiCompatibleRequest(url: String, apiKey: String, model: 
 
 private fun executeForText(request: Request, extract: (JSONObject) -> String): String {
     httpClient.newCall(request).execute().use { response ->
-        val bodyString = response.body?.string().orEmpty()
+        val bodyString = response.body.string()
 
         if (!response.isSuccessful) {
             val apiMessage = runCatching {
