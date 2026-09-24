@@ -41,7 +41,22 @@ data class PlayerGameStat(
     val currentBenchTimeMillis: Long,
     val shiftStartGameTimeMillis: Long?,
     val totalTimeMillis: Long,
-)
+    /** Game time the player last went to the bench this period (0 if never on court), or null on court. */
+    val benchStartGameTimeMillis: Long? = null,
+) {
+    // The *TimeMillis fields above are as of the game's stored running time, which only advances
+    // when the clock is stopped. These give the same figures as of [gameTimeMillis], the live
+    // clock, so on-screen times keep moving while the clock runs.
+
+    fun shiftTimeAt(gameTimeMillis: Long): Long =
+        shiftStartGameTimeMillis?.let { maxOf(0L, gameTimeMillis - it) } ?: 0L
+
+    fun benchTimeAt(gameTimeMillis: Long): Long =
+        benchStartGameTimeMillis?.let { maxOf(0L, gameTimeMillis - it) } ?: 0L
+
+    fun totalTimeAt(gameTimeMillis: Long): Long =
+        totalTimeMillis - currentShiftTimeMillis + shiftTimeAt(gameTimeMillis)
+}
 
 class AppViewModel(application: Application, private val sport: Sport) : AndroidViewModel(application) {
     private val repository = GameRepository(AppDatabase.getInstance(application))
@@ -578,6 +593,7 @@ fun calculatePlayerGameStats(
                 currentBenchTimeMillis = currentBench,
                 shiftStartGameTimeMillis = if (isOnCourt) enteredAt else null,
                 totalTimeMillis = totalTime,
+                benchStartGameTimeMillis = if (isOnCourt) null else benchedAt,
             )
         }
         .toList()

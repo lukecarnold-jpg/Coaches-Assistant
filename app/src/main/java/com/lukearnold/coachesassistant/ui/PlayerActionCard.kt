@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lukearnold.coachesassistant.data.*
-import kotlinx.coroutines.delay
 
 @Composable
 fun PlayerActionCard(
@@ -20,30 +19,10 @@ fun PlayerActionCard(
     onAddScore: (Long, Int) -> Unit,
     onAddFoul: (Long, Int) -> Unit,
     onAddMvpVote: (Long) -> Unit,
-    game: GameEntity,
+    gameTimeMillis: () -> Long,
     enabled: Boolean = true,
 ) {
     val layout = LocalResponsiveLayout.current
-    val gameRunningTimeMillis = game.runningTimeMillis
-    val gameTimerLastStartedAt = game.timerLastStartedAt
-
-    var shiftDisplayTime by remember(stat.shiftStartGameTimeMillis, gameRunningTimeMillis, gameTimerLastStartedAt) {
-        mutableLongStateOf(stat.currentShiftTimeMillis)
-    }
-
-    LaunchedEffect(stat.shiftStartGameTimeMillis, gameRunningTimeMillis, gameTimerLastStartedAt, game.periodDurationMillis) {
-        val shiftStart = stat.shiftStartGameTimeMillis
-        if (shiftStart == null) {
-            shiftDisplayTime = 0L
-        } else if (gameTimerLastStartedAt != null) {
-            while (true) {
-                shiftDisplayTime = maxOf(0L, game.currentGameTimeMillis() - shiftStart)
-                delay(100)
-            }
-        } else {
-            shiftDisplayTime = maxOf(0L, game.currentGameTimeMillis() - shiftStart)
-        }
-    }
 
     OutlinedCard(
         modifier = Modifier.fillMaxWidth()
@@ -76,15 +55,16 @@ fun PlayerActionCard(
                         }
                     }
                     Row {
+                        val now = gameTimeMillis()
                         Text(
-                            text = "Shift: ${formatDuration(shiftDisplayTime)}",
+                            text = "Shift: ${formatDuration(stat.shiftTimeAt(now))}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.width(layout.smallGap))
                         Text(
-                            text = "Total: ${formatDuration(stat.totalTimeMillis - stat.currentShiftTimeMillis + shiftDisplayTime)}",
+                            text = "Total: ${formatDuration(stat.totalTimeAt(now))}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary
                         )

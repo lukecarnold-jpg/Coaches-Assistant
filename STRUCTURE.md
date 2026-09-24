@@ -64,6 +64,7 @@ presentation helpers:
 - `GameDialogs.kt` - attendance and event editing dialogs.
 - `GameNotesPanel.kt` - coaching notes and TXT export.
 - `GameFormatting.kt` - event descriptions, period labels, and time formatting.
+- `LiveGameClock.kt` - the Game screen's single live clock ticker, shared by the game clock, player cards, and stats.
 - `GameHistoryScreen.kt` - finished-game history, viewing, exporting, and deletion.
 - `TrainingScreen.kt` - basketball-only AI training assistant UI.
 - `SettingsScreen.kt` - sport switching, AI provider settings, and data clearing.

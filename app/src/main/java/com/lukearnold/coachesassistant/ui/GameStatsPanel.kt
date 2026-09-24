@@ -11,6 +11,8 @@ import com.lukearnold.coachesassistant.data.*
 @Composable
 fun GameStatsPanel(
     stats: List<PlayerGameStat> = emptyList(),
+    /** The live game clock (see rememberLiveGameTime), for times that keep moving while it runs. */
+    gameTimeMillis: () -> Long = { 0L },
     events: List<GameEventEntity> = emptyList(),
     playerById: Map<Long, PlayerEntity> = emptyMap(),
     opponentName: String = "",
@@ -146,9 +148,10 @@ fun GameStatsPanel(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     StatusBadge(if (stat.onCourt) "ON COURT" else "BENCH")
+                                    val now = gameTimeMillis()
                                     Text(
                                         text = formatDuration(
-                                            if (stat.onCourt) stat.currentShiftTimeMillis else stat.currentBenchTimeMillis
+                                            if (stat.onCourt) stat.shiftTimeAt(now) else stat.benchTimeAt(now)
                                         ),
                                         style = MaterialTheme.typography.labelSmall
                                     )
@@ -160,7 +163,7 @@ fun GameStatsPanel(
                                 )
                                 Text("Points: ${stat.points} | $infractionLabelPlural: ${stat.fouls} | Votes: ${stat.mvpVotes} | Subbed off: ${stat.timesSubbedOff}")
                                 Text(
-                                    "Total Time: ${formatDuration(stat.totalTimeMillis)}",
+                                    "Total Time: ${formatDuration(stat.totalTimeAt(gameTimeMillis()))}",
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }

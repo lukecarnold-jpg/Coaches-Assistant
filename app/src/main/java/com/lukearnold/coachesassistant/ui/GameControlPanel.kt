@@ -12,11 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lukearnold.coachesassistant.data.*
-import kotlinx.coroutines.delay
 
 @Composable
 fun GameControlPanel(
     selectedGame: GameEntity,
+    gameTimeMillis: () -> Long,
     sportConfig: SportConfig,
     onToggleTimer: () -> Unit,
     onResetTimer: () -> Unit,
@@ -54,6 +54,7 @@ fun GameControlPanel(
 
         GameClock(
             game = selectedGame,
+            gameTimeMillis = gameTimeMillis,
             onToggleTimer = onToggleTimer,
             onResetTimer = onResetTimer,
             onSetGameTime = onSetGameTime
@@ -219,7 +220,7 @@ fun GameControlPanel(
                             onAddScore = onAddPlayerScore,
                             onAddFoul = onAddFoul,
                             onAddMvpVote = onAddMvpVote,
-                            game = selectedGame,
+                            gameTimeMillis = gameTimeMillis,
                             enabled = !selectedGame.isFinished
                         )
                     }
@@ -301,35 +302,18 @@ fun GameControlPanel(
 @Composable
 fun GameClock(
     game: GameEntity,
+    gameTimeMillis: () -> Long,
     onToggleTimer: () -> Unit,
     onResetTimer: () -> Unit,
     onSetGameTime: (Long) -> Unit,
 ) {
     val layout = LocalResponsiveLayout.current
 
-    val runningTimeMillis = game.runningTimeMillis
     val timerLastStartedAt = game.timerLastStartedAt
-    val duration = game.periodDurationMillis
-
-    var elapsedDisplay by remember(runningTimeMillis, timerLastStartedAt) {
-        mutableLongStateOf(game.currentGameTimeMillis())
-    }
+    val elapsed = gameTimeMillis()
+    val remainingTime = maxOf(0L, game.periodDurationMillis - elapsed)
 
     var isEditing by remember { mutableStateOf(value = false) }
-
-    LaunchedEffect(runningTimeMillis, timerLastStartedAt, duration) {
-        if (timerLastStartedAt != null) {
-            // Holds at the period length once reached; AppViewModel stops the clock itself.
-            while (true) {
-                elapsedDisplay = game.currentGameTimeMillis()
-                delay(100)
-            }
-        } else {
-            elapsedDisplay = game.currentGameTimeMillis()
-        }
-    }
-
-    val remainingTime = maxOf(0L, duration - elapsedDisplay)
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -377,8 +361,8 @@ fun GameClock(
         }
 
         if (isEditing) {
-            var minutesText by remember { mutableStateOf((elapsedDisplay / 60000).toString()) }
-            var secondsText by remember { mutableStateOf(((elapsedDisplay % 60000) / 1000).toString()) }
+            var minutesText by remember { mutableStateOf((elapsed / 60000).toString()) }
+            var secondsText by remember { mutableStateOf(((elapsed % 60000) / 1000).toString()) }
 
             Row(
                 modifier = Modifier
