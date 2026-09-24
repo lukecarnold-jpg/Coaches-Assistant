@@ -13,6 +13,8 @@ fun GameStatsPanel(
     stats: List<PlayerGameStat> = emptyList(),
     /** The live game clock (see rememberLiveGameTime), for times that keep moving while it runs. */
     gameTimeMillis: () -> Long = { 0L },
+    /** Each available player's equal share of playing time at a given clock time (see fairShare). */
+    fairShareAt: (gameTimeMillis: Long) -> FairShare? = { null },
     events: List<GameEventEntity> = emptyList(),
     playerById: Map<Long, PlayerEntity> = emptyMap(),
     opponentName: String = "",
@@ -162,8 +164,16 @@ fun GameStatsPanel(
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text("Points: ${stat.points} | $infractionLabelPlural: ${stat.fouls} | Votes: ${stat.mvpVotes} | Subbed off: ${stat.timesSubbedOff}")
+                                val now = gameTimeMillis()
+                                val played = stat.totalTimeAt(now)
+                                val share = fairShareAt(now)
                                 Text(
-                                    "Total Time: ${formatDuration(stat.totalTimeAt(gameTimeMillis()))}",
+                                    if (share == null) {
+                                        "Total Time: ${formatDuration(played)}"
+                                    } else {
+                                        "Total Time: ${formatDuration(played)} of ${formatDuration(share.fullGameMillis)} target · " +
+                                            paceLabel(share.behindMillis(played))
+                                    },
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }

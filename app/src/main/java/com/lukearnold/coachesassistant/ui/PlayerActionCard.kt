@@ -20,6 +20,7 @@ fun PlayerActionCard(
     onAddFoul: (Long, Int) -> Unit,
     onAddMvpVote: (Long) -> Unit,
     gameTimeMillis: () -> Long,
+    fairShareAt: (gameTimeMillis: Long) -> FairShare?,
     enabled: Boolean = true,
 ) {
     val layout = LocalResponsiveLayout.current
@@ -67,6 +68,15 @@ fun PlayerActionCard(
                             text = "Total: ${formatDuration(stat.totalTimeAt(now))}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    val now = gameTimeMillis()
+                    fairShareAt(now)?.let { share ->
+                        Text(
+                            text = "Target ${formatDuration(share.fullGameMillis)} · " +
+                                paceLabel(share.behindMillis(stat.totalTimeAt(now))),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
