@@ -13,7 +13,7 @@ if (localPropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.example.basketballrotation"
+    namespace = "com.lukearnold.coachesassistant"
     compileSdk = 37
 
     defaultConfig {

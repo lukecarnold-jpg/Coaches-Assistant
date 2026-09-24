@@ -39,7 +39,7 @@ configuration such as `local.properties` is not committed.
 Production code lives under:
 
 ```text
-app/src/main/java/com/example/basketballrotation/
+app/src/main/java/com/lukearnold/coachesassistant/
 ```
 
 ### Application entry point
@@ -91,7 +91,7 @@ The data package defines the multi-sport domain model and local Room database:
 
 The database is local-first and is stored in a Room database named
 `basketball_rotation.db`. Room schema snapshots are kept in
-`app/schemas/com.example.basketballrotation.data.AppDatabase/`.
+`app/schemas/com.lukearnold.coachesassistant.data.AppDatabase/`.
 
 ### `ai/` - training assistant integrations
 
