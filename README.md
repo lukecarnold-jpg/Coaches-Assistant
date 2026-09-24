@@ -57,7 +57,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Coming-soon placeholders for future training modules
 - Settings tab
   - "Switch sport" returns to the sport landing screen
-  - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device (`EncryptedSharedPreferences`)
+  - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device with an AES-256-GCM key held in the Android Keystore (`ai/AiSettingsStore.kt`)
   - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
   - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic, OpenAI, and the "Other" provider have no build-time fallback
   - "Other" also requires an endpoint URL and model name, since it can point at any OpenAI-compatible service
@@ -73,7 +73,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - ViewModel / lifecycle patterns
 - Room `2.8.4` + KSP
 - OkHttp `4.12.0` (direct REST calls to every AI provider: Gemini, Anthropic, OpenAI, and OpenAI-compatible endpoints)
-- AndroidX Security Crypto `1.1.0-alpha06` (`EncryptedSharedPreferences`)
+- AndroidX Security Crypto `1.1.0` — deprecated upstream; used only to move API keys saved by older versions out of `EncryptedSharedPreferences` on first launch, and can be removed once no installs predate that
 
 ## Requirements
 
