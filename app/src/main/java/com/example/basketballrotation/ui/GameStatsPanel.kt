@@ -22,8 +22,8 @@ fun GameStatsPanel(
     onGameTitleChange: (String) -> Unit = {},
     opponent: String = "",
     onOpponentChange: (String) -> Unit = {},
-    useQuarters: Boolean = false,
-    onUseQuartersChange: (Boolean) -> Unit = {},
+    periodCount: Int = 2,
+    onPeriodCountChange: (Int) -> Unit = {},
     periodMins: String = "10",
     onPeriodMinsChange: (String) -> Unit = {},
     onCreateGame: () -> Unit = {},
@@ -57,10 +57,18 @@ fun GameStatsPanel(
 
             Spacer(Modifier.height(layout.smallGap))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = useQuarters, onCheckedChange = onUseQuartersChange)
-                Text("Use Quarters (instead of Halves)")
+            Text("Periods", style = MaterialTheme.typography.labelMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+                PERIOD_COUNT_OPTIONS.forEach { (count, label) ->
+                    FilterChip(
+                        selected = periodCount == count,
+                        onClick = { onPeriodCountChange(count) },
+                        label = { Text(label) },
+                    )
+                }
             }
+
+            Spacer(Modifier.height(layout.smallGap))
 
             OutlinedTextField(
                 value = periodMins,

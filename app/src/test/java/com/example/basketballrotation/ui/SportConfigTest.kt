@@ -54,4 +54,26 @@ class SportConfigTest {
         assertEquals("Cards", Sport.SOCCER.config.infractionLabelPlural)
         assertEquals("Exclusions", Sport.WATER_POLO.config.infractionLabelPlural)
     }
+
+    @Test
+    fun defaultPeriodCount_isHalvesThirdsOrQuarters_andIceHockeyHasThree() {
+        Sport.entries.forEach { sport ->
+            assertTrue(
+                "${sport.name} needs a period count the game setup can offer",
+                PERIOD_COUNT_OPTIONS.any { it.first == sport.config.defaultPeriodCount },
+            )
+        }
+        assertEquals(3, Sport.ICE_HOCKEY.config.defaultPeriodCount)
+        assertEquals(4, Sport.BASKETBALL.config.defaultPeriodCount)
+        assertEquals(2, Sport.SOCCER.config.defaultPeriodCount)
+    }
+
+    @Test
+    fun periodLabel_usesHalvesQuartersOrGenericPeriodPrefix() {
+        val game = com.example.basketballrotation.data.GameEntity(title = "", opponent = "", createdAt = 0L, currentPeriod = 2)
+
+        assertEquals("H2", game.copy(periodCount = 2).periodLabel())
+        assertEquals("P2", game.copy(periodCount = 3).periodLabel())
+        assertEquals("Q2", game.copy(periodCount = 4).periodLabel())
+    }
 }

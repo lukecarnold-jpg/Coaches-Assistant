@@ -46,7 +46,6 @@ data class GameEntity(
     val timerLastStartedAt: Long? = null,
     val isFinished: Boolean = false,
     val finishedAt: Long? = null,
-    val useQuarters: Boolean = false,
     val currentPeriod: Int = 1,
     val periodDurationMillis: Long = 10 * 60 * 1000L, // Default 10 mins
     @ColumnInfo(defaultValue = "")
@@ -57,6 +56,9 @@ data class GameEntity(
     val sport: String = Sport.BASKETBALL.name,
     @ColumnInfo(defaultValue = "5")
     val onCourtSize: Int = 5,
+    /** How many periods the game has, e.g. 2 halves, 3 periods (Ice Hockey), or 4 quarters. */
+    @ColumnInfo(defaultValue = "2")
+    val periodCount: Int = 2,
 )
 
 @Entity(

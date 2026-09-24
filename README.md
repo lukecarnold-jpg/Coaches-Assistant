@@ -9,7 +9,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Single-module Android app (`:app`)
 - Multi-sport: a landing screen lets the user pick from 16 supported team sports (categorized into Court, Field, and Ice & Water sports); each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
 - UI: Jetpack Compose + Material 3
-- Persistence: Room database (schema version 10)
+- Persistence: Room database (schema version 12)
 - AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash`), Anthropic Claude (`claude-sonnet-5`), OpenAI ChatGPT (`gpt-5.5`), or "Other" (any OpenAI-compatible endpoint the user configures, e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server) — and supplies that provider's API key (Gemini also falls back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests and lint on every push/PR to `master`
 
@@ -27,7 +27,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - CSV import and CSV export (per sport; the CSV format itself is unchanged — name and jersey number only)
 - Game management
   - Create, select, and delete games
-  - Flexible periods (quarters or halves) with configurable durations, defaulted per sport
+  - Flexible periods (2 halves, 3 periods, or 4 quarters) with configurable durations, defaulted per sport (e.g. 3 periods for Ice Hockey)
   - Starting lineup selection, sized to the sport's on-court count
   - Live substitutions and multi-sub workflows, with numbered badges showing which bench player is paired with which outgoing court player
   - Countdown timer with start, stop, reset, and manual adjustment; it stops itself when the period runs out, and game time is never counted past the end of a period
@@ -153,7 +153,7 @@ The existing test coverage includes the core game-stat calculation logic, CSV/ev
     - `PlayerActionCard.kt` (per-player on-court action card)
     - `GameDialogs.kt` (attendance and event-edit dialogs)
     - `GameNotesPanel.kt` (coaching notes panel and dialog)
-    - `GameFormatting.kt` (event description and time formatting helpers)
+    - `GameFormatting.kt` (event description, period label, and time formatting helpers)
   - `app/src/main/java/com/example/basketballrotation/ui/GameHistoryScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/SettingsScreen.kt`

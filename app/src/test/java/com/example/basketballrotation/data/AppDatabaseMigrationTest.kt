@@ -177,4 +177,60 @@ class AppDatabaseMigrationTest {
         // this doesn't re-prove the constraints are *enforced* — BasketballRepositoryTest's
         // deleteGame/deletePlayer tests already do that against a normally-opened database.
     }
+
+    @Test
+    fun migrate11To12_replacesUseQuartersWithPeriodCountAndKeepsEvents() {
+        val dbName = "migration-test-11-to-12"
+
+        helper.createDatabase(dbName, 11).apply {
+            execSQL(
+                "INSERT INTO players (id, name, jerseyNumber, sport, position) VALUES (1, 'Sam', 7, 'BASKETBALL', NULL)",
+            )
+            listOf(1 to 1, 2 to 0).forEach { (id, useQuarters) ->
+                execSQL(
+                    """
+                    INSERT INTO games (
+                        id, title, opponent, createdAt, teamScore, opponentScore, mvpVotesJson,
+                        onCourtCsv, runningTimeMillis, timerLastStartedAt, isFinished, finishedAt,
+                        useQuarters, currentPeriod, periodDurationMillis, absentPlayerIdsCsv, notes,
+                        sport, onCourtSize
+                    ) VALUES (
+                        $id, 'Game $id', 'Rivals', 3000, 2, 0, '{}',
+                        '1', 0, NULL, 0, NULL,
+                        $useQuarters, 1, 720000, '', 'Keep me', 'BASKETBALL', 5
+                    )
+                    """.trimIndent(),
+                )
+            }
+            execSQL(
+                """
+                INSERT INTO game_events (
+                    id, gameId, timestamp, type, playerId, relatedPlayerId, points, note, gameTimeMillis
+                ) VALUES (
+                    1, 1, 3000, 'SCORE', 1, NULL, 2, '', 15000
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate(dbName, 12, true, MIGRATION_11_12)
+
+        migrated.query("SELECT id, periodCount, notes, teamScore FROM games ORDER BY id").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(0))
+            assertEquals(4, cursor.getInt(1)) // useQuarters = 1
+            assertEquals("Keep me", cursor.getString(2))
+            assertEquals(2, cursor.getInt(3))
+            assertTrue(cursor.moveToNext())
+            assertEquals(2, cursor.getInt(0))
+            assertEquals(2, cursor.getInt(1)) // useQuarters = 0
+        }
+
+        migrated.query("SELECT gameId, points FROM game_events WHERE id = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(0))
+            assertEquals(2, cursor.getInt(1))
+        }
+    }
 }

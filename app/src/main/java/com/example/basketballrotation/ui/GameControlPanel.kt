@@ -44,9 +44,8 @@ fun GameControlPanel(
     val layout = LocalResponsiveLayout.current
 
     SectionCard(title = "Game clock & score") {
-        val periodName = if (selectedGame.useQuarters) "Q${selectedGame.currentPeriod}" else "H${selectedGame.currentPeriod}"
         Text(
-            text = "Period: $periodName",
+            text = "Period: ${selectedGame.periodLabel()}",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -63,8 +62,7 @@ fun GameControlPanel(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
             ) {
-                val maxPeriods = if (selectedGame.useQuarters) 4 else 2
-                if (selectedGame.currentPeriod < maxPeriods) {
+                if (selectedGame.currentPeriod < selectedGame.periodCount) {
                     OutlinedButton(onClick = onAdvancePeriod, modifier = Modifier.weight(1f)) {
                         Text("Next Period")
                     }

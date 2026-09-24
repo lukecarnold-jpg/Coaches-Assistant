@@ -9,7 +9,8 @@ data class ScoreOption(val label: String, val points: Int)
 data class SportConfig(
     val onCourtSize: Int,
     val squadPositions: List<String>,
-    val useQuartersDefault: Boolean,
+    /** Default number of periods: 2 halves, 3 periods, or 4 quarters. */
+    val defaultPeriodCount: Int,
     val defaultPeriodMinutes: Int,
     val scoringOptions: List<ScoreOption>,
     val infractionLabel: String,
@@ -24,7 +25,7 @@ val Sport.config: SportConfig
         Sport.BASKETBALL -> SportConfig(
             onCourtSize = 5,
             squadPositions = listOf("PG", "SG", "SF", "PF", "C"),
-            useQuartersDefault = true,
+            defaultPeriodCount = 4,
             defaultPeriodMinutes = 10,
             scoringOptions = listOf(
                 ScoreOption("+1", 1),
@@ -37,7 +38,7 @@ val Sport.config: SportConfig
         Sport.NETBALL -> SportConfig(
             onCourtSize = 7,
             squadPositions = listOf("GS", "GA", "WA", "C", "WD", "GD", "GK"),
-            useQuartersDefault = true,
+            defaultPeriodCount = 4,
             defaultPeriodMinutes = 15,
             scoringOptions = listOf(
                 ScoreOption("Goal", 1),
@@ -48,7 +49,7 @@ val Sport.config: SportConfig
         Sport.SOCCER -> SportConfig(
             onCourtSize = 11,
             squadPositions = listOf("GK", "DEF", "MID", "FWD"),
-            useQuartersDefault = false,
+            defaultPeriodCount = 2,
             defaultPeriodMinutes = 45,
             scoringOptions = listOf(
                 ScoreOption("Goal", 1),
@@ -61,7 +62,7 @@ val Sport.config: SportConfig
             squadPositions = listOf(
                 "Full Forward", "Half Forward", "Midfield", "Half Back", "Full Back", "Ruck", "Interchange",
             ),
-            useQuartersDefault = true,
+            defaultPeriodCount = 4,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
                 ScoreOption("Goal (6)", 6),
@@ -75,7 +76,7 @@ val Sport.config: SportConfig
             squadPositions = listOf(
                 "Prop", "Hooker", "Lock", "Flanker", "No.8", "Scrum-half", "Fly-half", "Centre", "Wing", "Fullback",
             ),
-            useQuartersDefault = false,
+            defaultPeriodCount = 2,
             defaultPeriodMinutes = 40,
             scoringOptions = listOf(
                 ScoreOption("Try", 5),
@@ -91,7 +92,7 @@ val Sport.config: SportConfig
             squadPositions = listOf(
                 "Prop", "Hooker", "Second Row", "Lock", "Halfback", "Five-Eighth", "Centre", "Wing", "Fullback",
             ),
-            useQuartersDefault = false,
+            defaultPeriodCount = 2,
             defaultPeriodMinutes = 40,
             scoringOptions = listOf(
                 ScoreOption("Try", 4),
@@ -105,7 +106,7 @@ val Sport.config: SportConfig
         Sport.FUTSAL -> SportConfig(
             onCourtSize = 5,
             squadPositions = listOf("GK", "FIX", "ALA", "PIVO"),
-            useQuartersDefault = false,
+            defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
                 ScoreOption("Goal", 1),
@@ -116,7 +117,7 @@ val Sport.config: SportConfig
         Sport.FIELD_HOCKEY -> SportConfig(
             onCourtSize = 11,
             squadPositions = listOf("GK", "DEF", "MID", "FWD"),
-            useQuartersDefault = true,
+            defaultPeriodCount = 4,
             defaultPeriodMinutes = 15,
             scoringOptions = listOf(
                 ScoreOption("Goal", 1),
@@ -127,7 +128,7 @@ val Sport.config: SportConfig
         Sport.ICE_HOCKEY -> SportConfig(
             onCourtSize = 6,
             squadPositions = listOf("G", "LD", "RD", "LW", "C", "RW"),
-            useQuartersDefault = false,
+            defaultPeriodCount = 3,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
                 ScoreOption("Goal", 1),
@@ -138,7 +139,7 @@ val Sport.config: SportConfig
         Sport.TOUCH_FOOTBALL -> SportConfig(
             onCourtSize = 6,
             squadPositions = listOf("Link", "Middle", "Wing"),
-            useQuartersDefault = false,
+            defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
                 ScoreOption("Touchdown", 1),
@@ -149,7 +150,7 @@ val Sport.config: SportConfig
         Sport.WATER_POLO -> SportConfig(
             onCourtSize = 7,
             squadPositions = listOf("GK", "Driver", "Hole Set", "Wing", "Point"),
-            useQuartersDefault = true,
+            defaultPeriodCount = 4,
             defaultPeriodMinutes = 8,
             scoringOptions = listOf(
                 ScoreOption("Goal", 1),
@@ -162,7 +163,7 @@ val Sport.config: SportConfig
             squadPositions = listOf(
                 "GK", "Left Wing", "Left Back", "Centre Back", "Right Back", "Right Wing", "Pivot",
             ),
-            useQuartersDefault = false,
+            defaultPeriodCount = 2,
             defaultPeriodMinutes = 30,
             scoringOptions = listOf(
                 ScoreOption("Goal", 1),
@@ -173,7 +174,7 @@ val Sport.config: SportConfig
         Sport.LACROSSE -> SportConfig(
             onCourtSize = 10,
             squadPositions = listOf("GK", "Defense", "Midfield", "Attack"),
-            useQuartersDefault = true,
+            defaultPeriodCount = 4,
             defaultPeriodMinutes = 15,
             scoringOptions = listOf(
                 ScoreOption("Goal", 1),
@@ -186,7 +187,7 @@ val Sport.config: SportConfig
             squadPositions = listOf(
                 "GK", "Full Back", "Half Back", "Midfield", "Half Forward", "Full Forward",
             ),
-            useQuartersDefault = false,
+            defaultPeriodCount = 2,
             defaultPeriodMinutes = 30,
             scoringOptions = listOf(
                 ScoreOption("Goal (3)", 3),
@@ -198,7 +199,7 @@ val Sport.config: SportConfig
         Sport.FLAG_FOOTBALL -> SportConfig(
             onCourtSize = 5,
             squadPositions = listOf("QB", "WR", "RB", "DB", "Rusher"),
-            useQuartersDefault = false,
+            defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
                 ScoreOption("Touchdown (6)", 6),
@@ -212,7 +213,7 @@ val Sport.config: SportConfig
         Sport.ULTIMATE_FRISBEE -> SportConfig(
             onCourtSize = 7,
             squadPositions = listOf("Handler", "Cutter", "Deep"),
-            useQuartersDefault = false,
+            defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
                 ScoreOption("Point", 1),
