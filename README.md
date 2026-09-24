@@ -123,6 +123,8 @@ To deploy directly to a connected device/emulator:
 
 Release builds have R8 minification and resource shrinking enabled (`./gradlew.bat assembleRelease`). No release signing config is checked in, so the output APK is unsigned; sign it with your own keystore (or a debug keystore, for local testing) before installing it on a device.
 
+`versionCode` is the number of commits in the checked-out history (`git rev-list --count HEAD`), so it goes up with every commit on `master`, whose history is linear because PRs are rebase-merged. Build from a full clone: a shallow clone gets a too-low code (with a warning), and a copy with no `.git` falls back to `1`. To set it explicitly, pass `-PversionCode=N`, e.g. `./gradlew.bat assembleRelease -PversionCode=150`. `versionName` is still set by hand in `app/build.gradle.kts`.
+
 ## Verified status
 
 The current project state was validated in this workspace with:
