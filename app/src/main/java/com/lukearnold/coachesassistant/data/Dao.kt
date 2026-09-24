@@ -81,6 +81,9 @@ interface GameEventDao {
     )
     fun observeForFinishedGames(sport: String): Flow<List<GameEventEntity>>
 
+    @Query("SELECT * FROM game_events WHERE id = :eventId")
+    suspend fun getById(eventId: Long): GameEventEntity?
+
     @Query("SELECT * FROM game_events WHERE gameId = :gameId ORDER BY timestamp ASC, id ASC")
     suspend fun getByGame(gameId: Long): List<GameEventEntity>
 

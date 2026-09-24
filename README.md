@@ -40,6 +40,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Per-game attendance management
   - Coaching notes with TXT export
   - Event editing and deletion
+  - Undo from the snackbar after a score, team or opponent adjustment, infraction, MVP vote, or substitution (a batch of subs undoes as one); a substitution is only undone if its players are still where it put them
   - End-game workflow
 - Game history
   - Dedicated History tab listing all finished games, newest first

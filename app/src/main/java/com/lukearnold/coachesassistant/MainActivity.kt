@@ -16,8 +16,10 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -145,9 +147,16 @@ private fun SportApp(
     val responsiveLayout = LocalResponsiveLayout.current
     val isExpanded = responsiveLayout.widthDp >= 600
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(appViewModel) {
+        // collectLatest: a new message replaces the one showing (and its Undo) straight away.
         appViewModel.messages.collectLatest { message ->
-            snackbarHostState.showSnackbar(message)
+            val undo = message.undo
+            val result = snackbarHostState.showSnackbar(
+                message = message.text,
+                actionLabel = if (undo != null) "Undo" else null,
+                duration = if (undo != null) SnackbarDuration.Long else SnackbarDuration.Short,
+            )
+            if (result == SnackbarResult.ActionPerformed) undo?.invoke()
         }
     }
 

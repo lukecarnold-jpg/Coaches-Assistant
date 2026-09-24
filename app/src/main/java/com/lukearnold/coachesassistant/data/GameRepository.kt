@@ -181,13 +181,14 @@ class GameRepository(
         }
     }
 
-    suspend fun substitute(gameId: Long, playerInId: Long, playerOutId: Long) {
+    /** Swaps [playerInId] on for [playerOutId]; returns the event's id, or null if it wasn't a valid swap. */
+    suspend fun substitute(gameId: Long, playerInId: Long, playerOutId: Long): Long? =
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction
+            val game = gameDao.getById(gameId) ?: return@withTransaction null
             val lineup = getLineup(gameId)
 
             if (!lineup.onCourtIds.contains(playerOutId) || lineup.onCourtIds.contains(playerInId)) {
-                return@withTransaction
+                return@withTransaction null
             }
 
             saveLineup(gameId, lineup.copy(onCourtIds = lineup.onCourtIds - playerOutId + playerInId))
@@ -202,14 +203,13 @@ class GameRepository(
                 ),
             )
         }
-    }
 
     /**
      * Adds [points] (negative to correct) to our team's score, credited to [playerId]. A null
      * player is a team-level adjustment that changes the team total without touching any
-     * player's stats.
+     * player's stats. Returns the event's id, or null if nothing was recorded.
      */
-    suspend fun addTeamScore(gameId: Long, playerId: Long?, points: Int) {
+    suspend fun addTeamScore(gameId: Long, playerId: Long?, points: Int): Long? =
         insertScore(
             gameId = gameId,
             type = EventType.SCORE,
@@ -217,20 +217,18 @@ class GameRepository(
             points = points,
             note = if (playerId == null) TEAM_ADJUSTMENT_NOTE else "",
         )
-    }
 
-    /** Adds [points] (negative to correct) to the opponent's score. */
-    suspend fun addOpponentScore(gameId: Long, points: Int) {
+    /** Adds [points] (negative to correct) to the opponent's score. Returns the event's id, or null. */
+    suspend fun addOpponentScore(gameId: Long, points: Int): Long? =
         insertScore(gameId, EventType.OPPONENT_SCORE, playerId = null, points = points, note = "")
-    }
 
-    private suspend fun insertScore(gameId: Long, type: EventType, playerId: Long?, points: Int, note: String) {
+    private suspend fun insertScore(gameId: Long, type: EventType, playerId: Long?, points: Int, note: String): Long? =
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction
+            val game = gameDao.getById(gameId) ?: return@withTransaction null
             val currentScore = if (type == EventType.OPPONENT_SCORE) game.opponentScore else game.teamScore
-            if (currentScore + points < 0) return@withTransaction
+            if (currentScore + points < 0) return@withTransaction null
 
-            gameEventDao.insert(
+            val eventId = gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
                     timestamp = System.currentTimeMillis(),
@@ -242,12 +240,13 @@ class GameRepository(
                 ),
             )
             recalculateTotals(gameId)
+            eventId
         }
-    }
 
-    suspend fun addFoul(gameId: Long, playerId: Long, adjustment: Int = 1) {
+    /** Returns the event's id, or null if the game doesn't exist. */
+    suspend fun addFoul(gameId: Long, playerId: Long, adjustment: Int = 1): Long? =
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction
+            val game = gameDao.getById(gameId) ?: return@withTransaction null
             gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
@@ -259,7 +258,6 @@ class GameRepository(
                 ),
             )
         }
-    }
 
     suspend fun toggleTimer(gameId: Long) {
         database.withTransaction {
@@ -342,10 +340,11 @@ class GameRepository(
         }
     }
 
-    suspend fun addMvpVote(gameId: Long, playerId: Long) {
+    /** Returns the event's id, or null if the game doesn't exist. */
+    suspend fun addMvpVote(gameId: Long, playerId: Long): Long? =
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction
-            gameEventDao.insert(
+            val game = gameDao.getById(gameId) ?: return@withTransaction null
+            val eventId = gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
                     timestamp = System.currentTimeMillis(),
@@ -355,7 +354,52 @@ class GameRepository(
                 ),
             )
             recalculateTotals(gameId)
+            eventId
         }
+
+    suspend fun getEvent(eventId: Long): GameEventEntity? = gameEventDao.getById(eventId)
+
+    /**
+     * Reverses the actions that recorded [eventIds] (scores, infractions, MVP votes, and
+     * substitutions), newest first, all or nothing. Each event is deleted, and a substitution also
+     * swaps its players back, but only if they're still where it put them: if the lineup has moved
+     * on since, nothing is undone and this returns false, as it does if an event no longer exists.
+     */
+    suspend fun undoEvents(eventIds: List<Long>): Boolean = try {
+        database.withTransaction {
+            eventIds.asReversed().forEach { eventId -> requireUndone(undoEvent(eventId)) }
+            true
+        }
+    } catch (_: UndoNotPossible) {
+        false
+    }
+
+    private class UndoNotPossible : Exception()
+
+    private fun requireUndone(undone: Boolean) {
+        // Throwing (rather than returning) rolls back the whole transaction.
+        if (!undone) throw UndoNotPossible()
+    }
+
+    /** Undoes one event; call inside a transaction. */
+    private suspend fun undoEvent(eventId: Long): Boolean {
+        val event = gameEventDao.getById(eventId) ?: return false
+        when (EventType.fromRaw(event.type)) {
+            EventType.SCORE, EventType.OPPONENT_SCORE, EventType.FOUL, EventType.MVP_VOTE -> Unit
+            EventType.SUBSTITUTION -> {
+                val playerIn = event.playerId ?: return false
+                val playerOut = event.relatedPlayerId ?: return false
+                val lineup = getLineup(event.gameId)
+                if (playerIn !in lineup.onCourtIds || playerOut in lineup.onCourtIds) return false
+                saveLineup(event.gameId, lineup.copy(onCourtIds = lineup.onCourtIds - playerIn + playerOut))
+            }
+            // These change more than the event itself (period, clock, the whole lineup), so they
+            // aren't offered for undo.
+            EventType.START_LINEUP, EventType.PERIOD_CHANGE, EventType.GAME_END -> return false
+        }
+        gameEventDao.deleteById(eventId)
+        recalculateTotals(event.gameId)
+        return true
     }
 
     /** Replaces the game's on-court/absent rows with [lineup]; call inside a transaction. */
