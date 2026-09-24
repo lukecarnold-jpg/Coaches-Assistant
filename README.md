@@ -7,7 +7,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 ## Project status
 
 - Single-module Android app (`:app`)
-- Application ID `com.lukearnold.coachesassistant` (the Kotlin package is still `com.example.basketballrotation`)
+- Application ID and Kotlin package: `com.lukearnold.coachesassistant`
 - Multi-sport: a landing screen lets the user pick from 16 supported team sports (categorized into Court, Field, and Ice & Water sports); each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 13)
@@ -139,43 +139,43 @@ The unit test suite covers the core game-stat calculation logic, CSV/event parsi
 ## High-level project structure
 
 - App entry
-  - `app/src/main/java/com/example/basketballrotation/MainActivity.kt` — routes between the sport landing screen and the per-sport app shell (`SportApp`), and hosts a sport-keyed `AppViewModel` factory
+  - `app/src/main/java/com/lukearnold/coachesassistant/MainActivity.kt` — routes between the sport landing screen and the per-sport app shell (`SportApp`), and hosts a sport-keyed `AppViewModel` factory
 - Sport layer
-  - `app/src/main/java/com/example/basketballrotation/data/Sport.kt` — the `Sport` enum (domain concept, shared by the DAOs/repository and the UI)
-  - `app/src/main/java/com/example/basketballrotation/ui/SportConfig.kt` — per-sport rotation/scoring configuration (on-court size, squad positions, period defaults, scoring options, infraction label)
-  - `app/src/main/java/com/example/basketballrotation/ui/SportSelectionScreen.kt` — the landing screen, including the Rugby Union/League picker dialog
-  - `app/src/main/java/com/example/basketballrotation/ui/SportPreferences.kt` — remembers the last-picked sport across app restarts
+  - `app/src/main/java/com/lukearnold/coachesassistant/data/Sport.kt` — the `Sport` enum (domain concept, shared by the DAOs/repository and the UI)
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/SportConfig.kt` — per-sport rotation/scoring configuration (on-court size, squad positions, period defaults, scoring options, infraction label)
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/SportSelectionScreen.kt` — the landing screen, including the Rugby Union/League picker dialog
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/SportPreferences.kt` — remembers the last-picked sport across app restarts
 - UI screens
-  - `app/src/main/java/com/example/basketballrotation/ui/RosterScreen.kt`
-  - `app/src/main/java/com/example/basketballrotation/ui/GameScreen.kt` — top-level Game tab layout; delegates to:
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/RosterScreen.kt`
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/GameScreen.kt` — top-level Game tab layout; delegates to:
     - `GameControlPanel.kt` (clock/score controls, lineup, substitution)
     - `GameStatsPanel.kt` (game creation/list, stats, event log)
     - `PlayerActionCard.kt` (per-player on-court action card)
     - `GameDialogs.kt` (attendance and event-edit dialogs)
     - `GameNotesPanel.kt` (coaching notes panel and dialog)
     - `GameFormatting.kt` (event description, period label, and time formatting helpers)
-  - `app/src/main/java/com/example/basketballrotation/ui/GameHistoryScreen.kt`
-  - `app/src/main/java/com/example/basketballrotation/ui/TrainingScreen.kt`
-  - `app/src/main/java/com/example/basketballrotation/ui/SettingsScreen.kt`
-  - Shared components: `app/src/main/java/com/example/basketballrotation/ui/Components.kt` (includes `GameListCard`, used by both the Game and Game History screens)
-  - Theme: `app/src/main/java/com/example/basketballrotation/ui/Theme.kt`
-  - Shared file-export launcher: `app/src/main/java/com/example/basketballrotation/ui/FileExport.kt`
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/GameHistoryScreen.kt`
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/TrainingScreen.kt`
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/SettingsScreen.kt`
+  - Shared components: `app/src/main/java/com/lukearnold/coachesassistant/ui/Components.kt` (includes `GameListCard`, used by both the Game and Game History screens)
+  - Theme: `app/src/main/java/com/lukearnold/coachesassistant/ui/Theme.kt`
+  - Shared file-export launcher: `app/src/main/java/com/lukearnold/coachesassistant/ui/FileExport.kt`
 - State and logic
-  - `app/src/main/java/com/example/basketballrotation/ui/AppViewModel.kt` (also hosts the pure `calculatePlayerGameStats` function)
-  - `app/src/main/java/com/example/basketballrotation/ui/TrainingViewModel.kt`
-- AI provider layer (`app/src/main/java/com/example/basketballrotation/ai/`)
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/AppViewModel.kt` (also hosts the pure `calculatePlayerGameStats` function)
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/TrainingViewModel.kt`
+- AI provider layer (`app/src/main/java/com/lukearnold/coachesassistant/ai/`)
   - `AiProvider.kt` — the Gemini/Anthropic/OpenAI/Other enum, each provider's preferences key and display strings
   - `CustomEndpointConfig.kt` — user-supplied endpoint URL and model name for the "Other" provider
   - `BasketballDrill.kt` — the parsed-drill domain model
   - `DrillParsing.kt` — pure prompt-building and response-parsing functions (unit tested)
   - `DrillTextGenerators.kt` — one `DrillTextGenerator` implementation per provider (Gemini via its SDK; Anthropic, OpenAI, and Other via direct REST calls, with Other and OpenAI sharing an `openAiCompatibleRequest` helper)
 - Data layer
-  - Entities: `app/src/main/java/com/example/basketballrotation/data/Entities.kt`
-  - DAOs: `app/src/main/java/com/example/basketballrotation/data/Dao.kt`
-  - Repository: `app/src/main/java/com/example/basketballrotation/data/GameRepository.kt`
-  - Database: `app/src/main/java/com/example/basketballrotation/data/AppDatabase.kt`
-  - MVP-vote serialization: `app/src/main/java/com/example/basketballrotation/data/MvpVotes.kt`
-  - Room schema exports: `app/schemas/com.example.basketballrotation.data.AppDatabase/`
+  - Entities: `app/src/main/java/com/lukearnold/coachesassistant/data/Entities.kt`
+  - DAOs: `app/src/main/java/com/lukearnold/coachesassistant/data/Dao.kt`
+  - Repository: `app/src/main/java/com/lukearnold/coachesassistant/data/GameRepository.kt`
+  - Database: `app/src/main/java/com/lukearnold/coachesassistant/data/AppDatabase.kt`
+  - MVP-vote serialization: `app/src/main/java/com/lukearnold/coachesassistant/data/MvpVotes.kt`
+  - Room schema exports: `app/schemas/com.lukearnold.coachesassistant.data.AppDatabase/`
 
 ## Data model summary
 
