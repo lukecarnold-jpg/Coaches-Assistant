@@ -60,7 +60,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
   - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic, OpenAI, and the "Other" provider have no build-time fallback
   - "Other" also requires an endpoint URL and model name, since it can point at any OpenAI-compatible service
-  - Selectively delete players, games, or events from local data, or delete everything across every sport
+  - Selectively delete the current sport's players, games, or events (other sports are untouched), or delete everything across every sport
 
 ## Tech stack
 
@@ -193,7 +193,7 @@ The existing test coverage includes the core game-stat calculation logic, CSV/ev
 ## Known notes and risks
 
 - Destructive migration is intentionally enabled for downgrades in `AppDatabase.kt`; this protects the normal upgrade workflow but will clear local data if the app is downgraded.
-- Repository-level Room integration tests (exercising `BasketballRepository`'s transactions against a real database) are not yet in place; game-flow logic itself is covered by unit tests against the pure `calculatePlayerGameStats` function.
+- A game's score and MVP totals are stored on the game row for quick display, but are always recomputed from its events (the source of truth) whenever events change.
 - The project is local-first and does not currently include a backend, cross-device sync, or account-based auth system.
 
 ## Roadmap and history

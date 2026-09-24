@@ -185,7 +185,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
 
     fun clearSelectedData(players: Boolean, games: Boolean, events: Boolean) {
         viewModelScope.launch {
-            repository.clearSelectedData(players, games, events)
+            repository.clearSelectedData(sport, players, games, events)
             _messages.emit("Selected data cleared.")
         }
     }
