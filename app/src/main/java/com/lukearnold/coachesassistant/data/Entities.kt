@@ -150,6 +150,13 @@ data class GameLineup(
     }
 }
 
+/**
+ * The note on a [EventType.SCORE] event that adjusts the team's score without crediting a player.
+ * It tells such an event apart from a player's score whose player was later deleted, since both
+ * have a null playerId.
+ */
+const val TEAM_ADJUSTMENT_NOTE = "Team adjustment"
+
 fun idsToCsv(ids: Collection<Long>): String = ids.joinToString(",")
 
 /**

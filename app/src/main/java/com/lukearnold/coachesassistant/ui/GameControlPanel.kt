@@ -21,7 +21,9 @@ fun GameControlPanel(
     onToggleTimer: () -> Unit,
     onResetTimer: () -> Unit,
     onSetGameTime: (Long) -> Unit,
-    onAddScore: (Long?, Int) -> Unit,
+    onAddPlayerScore: (playerId: Long, points: Int) -> Unit,
+    onAdjustTeamScore: (points: Int) -> Unit,
+    onAddOpponentScore: (points: Int) -> Unit,
     onCourtIds: Set<Long>,
     onExportGame: () -> Unit,
     exportRosterLauncher: androidx.activity.result.ActivityResultLauncher<String>,
@@ -111,7 +113,9 @@ fun GameControlPanel(
                     fontWeight = FontWeight.Bold
                 )
                 Row {
-                    IconButton(onClick = { onAddScore(onCourtIds.firstOrNull(), -1) }) {
+                    // A team-level correction: it isn't taken off any particular player (each
+                    // player's card has its own -1 for that).
+                    IconButton(onClick = { onAdjustTeamScore(-1) }) {
                         Text("-1", style = MaterialTheme.typography.bodySmall)
                     }
                 }
@@ -128,11 +132,11 @@ fun GameControlPanel(
                     fontWeight = FontWeight.Bold
                 )
                 Row {
-                    IconButton(onClick = { onAddScore(null, -1) }) {
+                    IconButton(onClick = { onAddOpponentScore(-1) }) {
                         Text("-1", style = MaterialTheme.typography.bodySmall)
                     }
                     sportConfig.scoringOptions.forEach { option ->
-                        IconButton(onClick = { onAddScore(null, option.points) }) {
+                        IconButton(onClick = { onAddOpponentScore(option.points) }) {
                             Text("+${option.points}", style = MaterialTheme.typography.bodySmall)
                         }
                     }
@@ -212,7 +216,7 @@ fun GameControlPanel(
                         PlayerActionCard(
                             stat = stat,
                             sportConfig = sportConfig,
-                            onAddScore = onAddScore,
+                            onAddScore = onAddPlayerScore,
                             onAddFoul = onAddFoul,
                             onAddMvpVote = onAddMvpVote,
                             game = selectedGame,

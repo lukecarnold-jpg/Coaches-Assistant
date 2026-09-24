@@ -28,7 +28,9 @@ fun GameScreen(
     onSelectGame: (Long) -> Unit,
     onSetLineup: (List<Long>) -> Unit,
     onSubstitute: (Long?, Long?) -> Unit,
-    onAddScore: (Long?, Int) -> Unit,
+    onAddPlayerScore: (playerId: Long, points: Int) -> Unit,
+    onAdjustTeamScore: (points: Int) -> Unit,
+    onAddOpponentScore: (points: Int) -> Unit,
     onAddFoul: (Long, Int) -> Unit,
     onAddMvpVote: (Long) -> Unit,
     onToggleTimer: () -> Unit,
@@ -94,7 +96,9 @@ fun GameScreen(
                         onToggleTimer = onToggleTimer,
                         onResetTimer = onResetTimer,
                         onSetGameTime = onSetGameTime,
-                        onAddScore = onAddScore,
+                        onAddPlayerScore = onAddPlayerScore,
+                        onAdjustTeamScore = onAdjustTeamScore,
+                        onAddOpponentScore = onAddOpponentScore,
                         onCourtIds = onCourtIds,
                         onExportGame = {
                             exportGame(selectedGame.id, "game_${selectedGame.id}.csv")
@@ -232,7 +236,9 @@ fun GameScreen(
                     onToggleTimer = onToggleTimer,
                     onResetTimer = onResetTimer,
                     onSetGameTime = onSetGameTime,
-                    onAddScore = onAddScore,
+                    onAddPlayerScore = onAddPlayerScore,
+                    onAdjustTeamScore = onAdjustTeamScore,
+                    onAddOpponentScore = onAddOpponentScore,
                     onCourtIds = onCourtIds,
                     onExportGame = {
                         exportGame(selectedGame.id, "game_${selectedGame.id}.csv")

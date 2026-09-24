@@ -28,8 +28,14 @@ fun eventDescription(
         }
 
         EventType.SCORE -> {
-            val playerName = event.playerId?.let(playersById::get)?.displayLabel().orEmpty()
-            "$playerName +${event.points}"
+            val prefix = if (event.points >= 0) "+" else ""
+            val label = when {
+                event.playerId != null -> playersById[event.playerId]?.displayLabel().orEmpty()
+                event.note == TEAM_ADJUSTMENT_NOTE -> "Team adjustment"
+                // playerId is nulled when the player is deleted from the roster.
+                else -> "Removed player"
+            }
+            "$label $prefix${event.points}"
         }
 
         EventType.OPPONENT_SCORE -> {

@@ -95,7 +95,7 @@ class GameCsvIoTest {
     fun exportGameCsv_writesOneRowPerEventWithResolvedPlayerNames() = runBlocking {
         val playerId = repository.addPlayer(Sport.BASKETBALL, "Alex", 23)
         val gameId = repository.createGame(sport = Sport.BASKETBALL, title = "Test Game", opponent = "Rivals")
-        repository.addScore(gameId, playerId, 2)
+        repository.addTeamScore(gameId, playerId, 2)
         val uri = fileUri("game.csv")
 
         csvIo.exportGameCsv(contentResolver, gameId, uri)
