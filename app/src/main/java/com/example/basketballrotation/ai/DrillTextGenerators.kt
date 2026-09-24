@@ -1,6 +1,5 @@
 package com.example.basketballrotation.ai
 
-import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -11,6 +10,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+
+/** A provider's API rejected a request; [httpCode] is the HTTP status it answered with. */
+class AiRequestException(val httpCode: Int, message: String) : IOException(message)
 
 /** Generates raw model text for a prompt using one provider's API. */
 interface DrillTextGenerator {
@@ -32,10 +34,28 @@ private val httpClient = OkHttpClient.Builder()
 
 private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
 
+/**
+ * Calls the Gemini API's REST endpoint directly, like the Anthropic and OpenAI generators, rather
+ * than through Google's deprecated Android client SDK.
+ */
 class GeminiTextGenerator : DrillTextGenerator {
-    override suspend fun generateText(prompt: String, apiKey: String): String {
-        val model = GenerativeModel(modelName = "gemini-3.8-flash", apiKey = apiKey)
-        return model.generateContent(prompt).text.orEmpty()
+    override suspend fun generateText(prompt: String, apiKey: String): String = withContext(Dispatchers.IO) {
+        val body = JSONObject().apply {
+            put(
+                "contents",
+                JSONArray().put(
+                    JSONObject().put("parts", JSONArray().put(JSONObject().put("text", prompt))),
+                ),
+            )
+        }
+
+        val request = Request.Builder()
+            .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent")
+            .addHeader("x-goog-api-key", apiKey)
+            .post(body.toString().toRequestBody(jsonMediaType))
+            .build()
+
+        executeForText(request, ::geminiResponseText)
     }
 }
 
@@ -62,15 +82,7 @@ class AnthropicTextGenerator : DrillTextGenerator {
             .post(body.toString().toRequestBody(jsonMediaType))
             .build()
 
-        executeForText(request) { json ->
-            // The response's content is a list of typed blocks; the first isn't guaranteed to be
-            // text, so join every text block rather than assuming index 0.
-            val content = json.optJSONArray("content") ?: JSONArray()
-            (0 until content.length())
-                .mapNotNull { content.optJSONObject(it) }
-                .filter { it.optString("type") == "text" }
-                .joinToString("") { it.optString("text") }
-        }
+        executeForText(request, ::anthropicResponseText)
     }
 }
 
@@ -125,13 +137,7 @@ private suspend fun openAiCompatibleRequest(url: String, apiKey: String, model: 
             .post(body.toString().toRequestBody(jsonMediaType))
             .build()
 
-        executeForText(request) { json ->
-            json.optJSONArray("choices")
-                ?.optJSONObject(0)
-                ?.optJSONObject("message")
-                ?.optString("content")
-                .orEmpty()
-        }
+        executeForText(request, ::openAiResponseText)
     }
 
 private fun executeForText(request: Request, extract: (JSONObject) -> String): String {
@@ -142,9 +148,42 @@ private fun executeForText(request: Request, extract: (JSONObject) -> String): S
             val apiMessage = runCatching {
                 JSONObject(bodyString).optJSONObject("error")?.optString("message")
             }.getOrNull()
-            throw IOException(apiMessage?.takeIf { it.isNotBlank() } ?: "Request failed (HTTP ${response.code})")
+            throw AiRequestException(
+                response.code,
+                apiMessage?.takeIf { it.isNotBlank() } ?: "Request failed (HTTP ${response.code})",
+            )
         }
 
         return extract(JSONObject(bodyString))
     }
 }
+
+/** The generated text from a Gemini `generateContent` response: every part of the first candidate. */
+internal fun geminiResponseText(json: JSONObject): String {
+    val parts = json.optJSONArray("candidates")
+        ?.optJSONObject(0)
+        ?.optJSONObject("content")
+        ?.optJSONArray("parts")
+        ?: return ""
+    return (0 until parts.length()).joinToString("") { parts.optJSONObject(it)?.optString("text").orEmpty() }
+}
+
+/**
+ * The generated text from an Anthropic Messages response. Content is a list of typed blocks and
+ * the first isn't guaranteed to be text, so every text block is joined rather than assuming index 0.
+ */
+internal fun anthropicResponseText(json: JSONObject): String {
+    val content = json.optJSONArray("content") ?: return ""
+    return (0 until content.length())
+        .mapNotNull { content.optJSONObject(it) }
+        .filter { it.optString("type") == "text" }
+        .joinToString("") { it.optString("text") }
+}
+
+/** The generated text from an OpenAI-compatible chat-completions response. */
+internal fun openAiResponseText(json: JSONObject): String =
+    json.optJSONArray("choices")
+        ?.optJSONObject(0)
+        ?.optJSONObject("message")
+        ?.optString("content")
+        .orEmpty()

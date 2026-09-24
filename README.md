@@ -72,8 +72,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Jetpack Compose BOM `2026.08.00`
 - ViewModel / lifecycle patterns
 - Room `2.8.4` + KSP
-- Google Generative AI client `0.9.0` (Gemini)
-- OkHttp `4.12.0` (direct REST calls to Anthropic and OpenAI, which have no official Android SDK)
+- OkHttp `4.12.0` (direct REST calls to every AI provider: Gemini, Anthropic, OpenAI, and OpenAI-compatible endpoints)
 - AndroidX Security Crypto `1.1.0-alpha06` (`EncryptedSharedPreferences`)
 
 ## Requirements
