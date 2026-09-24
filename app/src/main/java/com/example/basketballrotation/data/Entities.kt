@@ -66,7 +66,7 @@ data class GameEntity(
     indices = [Index("gameId"), Index("playerId"), Index("relatedPlayerId")],
     foreignKeys = [
         // A game's events are meaningless without it, so they're deleted with it — this is what
-        // BasketballRepository.deleteGame already did manually; the constraint just makes that
+        // GameRepository.deleteGame already did manually; the constraint just makes that
         // guarantee hold everywhere, not only through that one code path.
         ForeignKey(
             entity = GameEntity::class,

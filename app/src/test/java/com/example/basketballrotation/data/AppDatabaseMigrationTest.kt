@@ -15,7 +15,7 @@ import org.robolectric.annotation.Config
  * exported schema JSON under app/schemas (exposed to this test as an asset directory in
  * app/build.gradle.kts) to validate the resulting schema at each step. This is what actually
  * proves the migration chain works end to end, as opposed to
- * [BasketballRepositoryTest]'s in-memory database, which is always created fresh at the latest
+ * [GameRepositoryTest]'s in-memory database, which is always created fresh at the latest
  * version and never exercises a migration.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -174,7 +174,7 @@ class AppDatabaseMigrationTest {
         }
         // The connection here is the raw migrated database, without Room's `PRAGMA
         // foreign_keys=ON` (that's only enabled once a RoomDatabase opens the file normally), so
-        // this doesn't re-prove the constraints are *enforced* — BasketballRepositoryTest's
+        // this doesn't re-prove the constraints are *enforced* — GameRepositoryTest's
         // deleteGame/deletePlayer tests already do that against a normally-opened database.
     }
 

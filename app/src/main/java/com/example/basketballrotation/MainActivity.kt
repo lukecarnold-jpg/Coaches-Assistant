@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
@@ -30,9 +29,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.basketballrotation.data.Sport
 import com.example.basketballrotation.ui.AppViewModel
+import com.example.basketballrotation.ui.AppTheme
 import com.example.basketballrotation.ui.AppViewModelFactory
 import com.example.basketballrotation.ui.GameHistoryScreen
 import com.example.basketballrotation.ui.GameScreen
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            AppTheme {
                 ResponsiveLayoutProvider {
                     RotationApp()
                 }
@@ -98,13 +99,19 @@ private data class NavTabSpec(
     val icon: @Composable () -> Unit,
 )
 
+/** An emoji used as a tab icon; hidden from screen readers since the tab's label already names it. */
+@Composable
+private fun EmojiIcon(emoji: String) {
+    Text(emoji, modifier = Modifier.clearAndSetSemantics {})
+}
+
 private fun navTabSpecsFor(sport: Sport): List<NavTabSpec> = buildList {
-    add(NavTabSpec(AppTab.ROSTER, "Roster") { Text("👥") })
-    add(NavTabSpec(AppTab.GAME, "Game") { Text(sport.emoji) })
+    add(NavTabSpec(AppTab.ROSTER, "Roster") { EmojiIcon("👥") })
+    add(NavTabSpec(AppTab.GAME, "Game") { EmojiIcon(sport.emoji) })
     if (sport == Sport.BASKETBALL) {
-        add(NavTabSpec(AppTab.TRAINING, "Training") { Text("🏋️") })
+        add(NavTabSpec(AppTab.TRAINING, "Training") { EmojiIcon("🏋️") })
     }
-    add(NavTabSpec(AppTab.HISTORY, "History") { Text("🕘") })
+    add(NavTabSpec(AppTab.HISTORY, "History") { EmojiIcon("🕘") })
     add(NavTabSpec(AppTab.SETTINGS, "Settings") { Icon(Icons.Default.Settings, contentDescription = null) })
 }
 

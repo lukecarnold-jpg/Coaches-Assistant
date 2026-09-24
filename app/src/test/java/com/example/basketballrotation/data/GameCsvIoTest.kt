@@ -26,7 +26,7 @@ import java.nio.file.Files
 class GameCsvIoTest {
 
     private lateinit var database: AppDatabase
-    private lateinit var repository: BasketballRepository
+    private lateinit var repository: GameRepository
     private lateinit var csvIo: GameCsvIo
     private lateinit var tempDir: File
     private val contentResolver by lazy {
@@ -39,7 +39,7 @@ class GameCsvIoTest {
             ApplicationProvider.getApplicationContext(),
             AppDatabase::class.java,
         ).allowMainThreadQueries().build()
-        repository = BasketballRepository(database)
+        repository = GameRepository(database)
         csvIo = GameCsvIo(database)
         tempDir = Files.createTempDirectory("game-csv-io-test").toFile()
     }

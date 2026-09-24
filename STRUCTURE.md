@@ -69,6 +69,7 @@ presentation helpers:
 - `SettingsScreen.kt` - sport switching, AI provider settings, and data clearing.
 - `Components.kt` - shared Compose components, including game list cards.
 - `ResponsiveLayout.kt` - compact and expanded layout decisions.
+- `Theme.kt` - the app's Material 3 theme (dark mode and Android 12+ dynamic color).
 - `FileExport.kt` - shared file-export launcher.
 - `SportConfig.kt` - sport-specific rules, scoring, periods, positions, and labels.
 - `SportPreferences.kt` - remembers the last selected sport.
@@ -85,7 +86,7 @@ The data package defines the multi-sport domain model and local Room database:
 - `Entities.kt` - Room entities for players, games, and game events.
 - `Dao.kt` - Room data access objects.
 - `AppDatabase.kt` - Room database, version 10, and migrations.
-- `BasketballRepository.kt` - repository operations used by the view models.
+- `GameRepository.kt` - repository operations used by the view models.
 - `MvpVotes.kt` - serialization and parsing for MVP vote data.
 
 The database is local-first and is stored in a Room database named
@@ -166,7 +167,7 @@ commands are also run by `.github/workflows/android-ci.yml`.
 MainActivity
   -> sport selection or SportApp
   -> AppViewModel / TrainingViewModel
-  -> BasketballRepository
+  -> GameRepository
   -> Room DAOs
   -> AppDatabase
 ```

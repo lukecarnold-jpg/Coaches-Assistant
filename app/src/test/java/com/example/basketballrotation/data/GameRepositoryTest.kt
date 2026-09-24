@@ -14,16 +14,16 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Exercises [BasketballRepository]'s transactional behavior against a real (in-memory) Room
+ * Exercises [GameRepository]'s transactional behavior against a real (in-memory) Room
  * database. Robolectric supplies a working SQLite implementation so this runs as a fast JVM unit
  * test rather than needing an emulator-backed androidTest.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
-class BasketballRepositoryTest {
+class GameRepositoryTest {
 
     private lateinit var database: AppDatabase
-    private lateinit var repository: BasketballRepository
+    private lateinit var repository: GameRepository
 
     @Before
     fun setUp() {
@@ -31,7 +31,7 @@ class BasketballRepositoryTest {
             ApplicationProvider.getApplicationContext(),
             AppDatabase::class.java,
         ).allowMainThreadQueries().build()
-        repository = BasketballRepository(database)
+        repository = GameRepository(database)
     }
 
     @After
