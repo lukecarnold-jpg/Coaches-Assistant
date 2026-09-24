@@ -11,7 +11,7 @@ import java.util.Locale
 
 /**
  * CSV/TXT import and export for rosters, games, and coaching notes. Split out of
- * [BasketballRepository] so that class stays focused on transactional game-state changes, and so
+ * [GameRepository] so that class stays focused on transactional game-state changes, and so
  * the pure formatting/parsing helpers below can be unit tested without a database.
  */
 class GameCsvIo(private val database: AppDatabase) {

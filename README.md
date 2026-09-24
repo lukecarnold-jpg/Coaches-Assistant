@@ -52,7 +52,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Adaptive layouts
   - Compact layout with bottom navigation
   - Expanded screens with navigation rail and split panels
-- Training tab (Basketball only — hidden from navigation for the other five sports)
+- Training tab (Basketball only — hidden from navigation for the other 15 sports)
   - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, OpenAI ChatGPT, or a custom OpenAI-compatible endpoint
   - Coming-soon placeholders for future training modules
 - Settings tab
@@ -66,7 +66,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 ## Tech stack
 
 - Kotlin
-- Android Gradle Plugin 9.3.1
+- Android Gradle Plugin 9.4.1
 - Gradle wrapper 9.7.1
 - Java 17
 - Jetpack Compose BOM `2026.08.00`
@@ -135,7 +135,7 @@ The current project state was validated in this workspace with:
 - The multi-provider Settings UI was device-tested for all four providers, including a real network round-trip for the "Other" provider against a live OpenAI-compatible endpoint (the request correctly reached the server and the app surfaced the server's real error response for an invalid key)
 - Multi-sport support was device-tested on an emulator across all six sports: Basketball and Netball were driven through a full roster (with positions) → game creation → starting lineup → scoring → infraction → substitution cycle; Soccer, AFL, and Rugby Union were spot-checked for correct on-court size, period defaults, and scoring buttons. This testing caught and led to a fix for a real bug where switching sports reused the previous sport's `AppViewModel` instance instead of creating a new one, leaking one sport's roster into another's Roster tab
 
-The existing test coverage includes the core game-stat calculation logic, CSV/event parsing, and MVP-vote serialization, but repository-level Room integration tests (exercising `BasketballRepository`'s transactions against a real database) are still a gap compared with a full production QA suite.
+The unit test suite covers the core game-stat calculation logic, CSV/event parsing, MVP-vote serialization, `GameRepository`'s transactions against an in-memory Room database (via Robolectric), and the Room migration chain against the exported schemas.
 
 ## High-level project structure
 
@@ -159,6 +159,7 @@ The existing test coverage includes the core game-stat calculation logic, CSV/ev
   - `app/src/main/java/com/example/basketballrotation/ui/TrainingScreen.kt`
   - `app/src/main/java/com/example/basketballrotation/ui/SettingsScreen.kt`
   - Shared components: `app/src/main/java/com/example/basketballrotation/ui/Components.kt` (includes `GameListCard`, used by both the Game and Game History screens)
+  - Theme: `app/src/main/java/com/example/basketballrotation/ui/Theme.kt`
   - Shared file-export launcher: `app/src/main/java/com/example/basketballrotation/ui/FileExport.kt`
 - State and logic
   - `app/src/main/java/com/example/basketballrotation/ui/AppViewModel.kt` (also hosts the pure `calculatePlayerGameStats` function)
@@ -172,7 +173,7 @@ The existing test coverage includes the core game-stat calculation logic, CSV/ev
 - Data layer
   - Entities: `app/src/main/java/com/example/basketballrotation/data/Entities.kt`
   - DAOs: `app/src/main/java/com/example/basketballrotation/data/Dao.kt`
-  - Repository: `app/src/main/java/com/example/basketballrotation/data/BasketballRepository.kt`
+  - Repository: `app/src/main/java/com/example/basketballrotation/data/GameRepository.kt`
   - Database: `app/src/main/java/com/example/basketballrotation/data/AppDatabase.kt`
   - MVP-vote serialization: `app/src/main/java/com/example/basketballrotation/data/MvpVotes.kt`
   - Room schema exports: `app/schemas/com.example.basketballrotation.data.AppDatabase/`

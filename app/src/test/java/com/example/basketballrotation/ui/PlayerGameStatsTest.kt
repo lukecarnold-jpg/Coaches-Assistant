@@ -122,7 +122,7 @@ class PlayerGameStatsTest {
     fun periodChange_closesOpenShiftIntoTotalTime() {
         val stats = calculatePlayerGameStats(
             playerList = listOf(player1),
-            // Period reset: court cleared and clock zeroed, as BasketballRepository.advancePeriod does.
+            // Period reset: court cleared and clock zeroed, as GameRepository.advancePeriod does.
             game = game(onCourtCsv = "", runningTimeMillis = 0L),
             events = listOf(
                 GameEventEntity(

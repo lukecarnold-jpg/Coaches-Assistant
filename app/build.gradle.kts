@@ -116,7 +116,7 @@ dependencies {
     // `test` sources only stubs org.json (as it does the rest of the Android SDK), so
     // MvpVotesTest needs a working implementation on the unit test classpath.
     testImplementation(libs.json)
-    // Robolectric provides a real SQLite implementation so BasketballRepositoryTest can run an
+    // Robolectric provides a real SQLite implementation so GameRepositoryTest can run an
     // in-memory Room database as a fast JVM unit test instead of an emulator-backed androidTest.
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)

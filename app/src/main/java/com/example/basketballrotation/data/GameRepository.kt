@@ -3,7 +3,7 @@ package com.example.basketballrotation.data
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 
-class BasketballRepository(
+class GameRepository(
     private val database: AppDatabase,
 ) {
     private val playerDao = database.playerDao()

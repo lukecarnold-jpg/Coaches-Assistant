@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.basketballrotation.data.AppDatabase
-import com.example.basketballrotation.data.BasketballRepository
+import com.example.basketballrotation.data.GameRepository
 import com.example.basketballrotation.data.EventType
 import com.example.basketballrotation.data.GameCsvIo
 import com.example.basketballrotation.data.GameEntity
@@ -45,7 +45,7 @@ data class PlayerGameStat(
 )
 
 class AppViewModel(application: Application, private val sport: Sport) : AndroidViewModel(application) {
-    private val repository = BasketballRepository(AppDatabase.getInstance(application))
+    private val repository = GameRepository(AppDatabase.getInstance(application))
     private val csvIo = GameCsvIo(AppDatabase.getInstance(application))
 
     private val selectedGameId = MutableStateFlow<Long?>(null)
