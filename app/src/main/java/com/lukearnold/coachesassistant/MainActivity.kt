@@ -37,6 +37,9 @@ import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.ui.AppViewModel
 import com.lukearnold.coachesassistant.ui.AppTheme
 import com.lukearnold.coachesassistant.ui.AppViewModelFactory
+import com.lukearnold.coachesassistant.ui.DisplayPreferences
+import com.lukearnold.coachesassistant.ui.KeepScreenOn
+import com.lukearnold.coachesassistant.ui.shouldKeepScreenOn
 import com.lukearnold.coachesassistant.ui.GameHistoryScreen
 import com.lukearnold.coachesassistant.ui.GameScreen
 import com.lukearnold.coachesassistant.ui.RosterScreen
@@ -134,6 +137,9 @@ private fun SportApp(
     val players by appViewModel.players.collectAsState()
     val games by appViewModel.games.collectAsState()
     val selectedGame by appViewModel.selectedGame.collectAsState()
+    val context = LocalContext.current
+    var keepScreenOnWhileClockRuns by remember { mutableStateOf(DisplayPreferences.keepScreenOnWhileClockRuns(context)) }
+    KeepScreenOn(shouldKeepScreenOn(selectedGame, keepScreenOnWhileClockRuns))
     val lineup by appViewModel.selectedGameLineup.collectAsState()
     val events by appViewModel.selectedGameEvents.collectAsState()
     val stats by appViewModel.selectedGameStats.collectAsState()
@@ -283,6 +289,11 @@ private fun SportApp(
                         onSaveCustomEndpoint = trainingViewModel::updateCustomEndpoint,
                         currentSport = sport,
                         onSwitchSport = onSwitchSport,
+                        keepScreenOnWhileClockRuns = keepScreenOnWhileClockRuns,
+                        onKeepScreenOnWhileClockRunsChange = { enabled ->
+                            DisplayPreferences.setKeepScreenOnWhileClockRuns(context, enabled)
+                            keepScreenOnWhileClockRuns = enabled
+                        },
                     )
                 }
             }

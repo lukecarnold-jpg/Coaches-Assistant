@@ -60,6 +60,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Coming-soon placeholders for future training modules
 - Settings tab
   - "Switch sport" returns to the sport landing screen
+  - "Keep screen on while the clock runs" (on by default) stops the phone locking mid-game; the normal screen timeout returns as soon as the clock stops
   - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device with an AES-256-GCM key held in the Android Keystore (`ai/AiSettingsStore.kt`)
   - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
   - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic, OpenAI, and the "Other" provider have no build-time fallback
