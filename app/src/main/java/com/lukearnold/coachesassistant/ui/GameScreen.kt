@@ -27,7 +27,7 @@ fun GameScreen(
     onCreateGame: (title: String, opponent: String, periodCount: Int, periodMins: Int) -> Unit,
     onSelectGame: (Long) -> Unit,
     onSetLineup: (List<Long>) -> Unit,
-    onSubstitute: (Long?, Long?) -> Unit,
+    onSubstitute: (pairs: List<Pair<Long, Long>>) -> Unit,
     onAddPlayerScore: (playerId: Long, points: Int) -> Unit,
     onAdjustTeamScore: (points: Int) -> Unit,
     onAddOpponentScore: (points: Int) -> Unit,
@@ -135,9 +135,7 @@ fun GameScreen(
                             val inIds = pendingIn.toList()
                             val outIds = pendingOut.toList()
                             if (inIds.size == outIds.size && inIds.isNotEmpty()) {
-                                inIds.zip(outIds).forEach { (pIn, pOut) ->
-                                    onSubstitute(pIn, pOut)
-                                }
+                                onSubstitute(inIds.zip(outIds))
                                 pendingIn.clear()
                                 pendingOut.clear()
                             }
@@ -279,9 +277,7 @@ fun GameScreen(
                     val inIds = pendingIn.toList()
                     val outIds = pendingOut.toList()
                     if (inIds.size == outIds.size && inIds.isNotEmpty()) {
-                        inIds.zip(outIds).forEach { (pIn, pOut) ->
-                            onSubstitute(pIn, pOut)
-                        }
+                        onSubstitute(inIds.zip(outIds))
                         pendingIn.clear()
                         pendingOut.clear()
                     }

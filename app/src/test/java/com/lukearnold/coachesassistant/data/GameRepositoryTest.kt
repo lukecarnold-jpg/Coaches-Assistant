@@ -480,4 +480,94 @@ class GameRepositoryTest {
         assertEquals(setOf(finished), lineups.keys)
         assertEquals(setOf(hoops), lineups.getValue(finished).absentIds)
     }
+
+    @Test
+    fun undoEvents_reversesAScoreAndRestoresTheTotal() = runBlocking {
+        val playerIds = addPlayers(1)
+        val game = newGame()
+        repository.addTeamScore(game.id, playerIds[0], 2)
+        val mistake = repository.addTeamScore(game.id, playerIds[0], 3)!!
+
+        assertTrue(repository.undoEvents(listOf(mistake)))
+
+        assertEquals(2, database.gameDao().getById(game.id)!!.teamScore)
+        assertEquals(1, database.gameEventDao().getByGame(game.id).size)
+    }
+
+    @Test
+    fun undoEvents_reversesAnMvpVote() = runBlocking {
+        val playerIds = addPlayers(1)
+        val game = newGame()
+        val vote = repository.addMvpVote(game.id, playerIds[0])!!
+
+        assertTrue(repository.undoEvents(listOf(vote)))
+
+        assertTrue(MvpVotes.parse(database.gameDao().getById(game.id)!!.mvpVotesJson).isEmpty())
+    }
+
+    @Test
+    fun undoEvents_swapsASubstitutionBack() = runBlocking {
+        val playerIds = addPlayers(6)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
+        val sub = repository.substitute(game.id, playerInId = playerIds[5], playerOutId = playerIds[0])!!
+
+        assertTrue(repository.undoEvents(listOf(sub)))
+
+        assertEquals(playerIds.take(5).toSet(), repository.getLineup(game.id).onCourtIds)
+        assertTrue(database.gameEventDao().getByGame(game.id).none { it.type == EventType.SUBSTITUTION.name })
+    }
+
+    @Test
+    fun undoEvents_refusesASubstitutionWhenTheLineupHasMovedOn() = runBlocking {
+        val playerIds = addPlayers(7)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
+        val sub = repository.substitute(game.id, playerInId = playerIds[5], playerOutId = playerIds[0])!!
+        // The player who came on has since gone off again.
+        repository.substitute(game.id, playerInId = playerIds[6], playerOutId = playerIds[5])
+        val lineupBefore = repository.getLineup(game.id)
+
+        assertFalse(repository.undoEvents(listOf(sub)))
+
+        assertEquals(lineupBefore, repository.getLineup(game.id))
+        assertEquals(3, database.gameEventDao().getByGame(game.id).size) // lineup + both subs kept
+    }
+
+    @Test
+    fun undoEvents_isAllOrNothingForABatch() = runBlocking {
+        val playerIds = addPlayers(8)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
+        val first = repository.substitute(game.id, playerInId = playerIds[5], playerOutId = playerIds[0])!!
+        val second = repository.substitute(game.id, playerInId = playerIds[6], playerOutId = playerIds[1])!!
+        repository.substitute(game.id, playerInId = playerIds[7], playerOutId = playerIds[6]) // second's player moves on
+        val lineupBefore = repository.getLineup(game.id)
+
+        assertFalse(repository.undoEvents(listOf(first, second)))
+
+        // The first swap could have been undone on its own, but the batch was rolled back as a whole.
+        assertEquals(lineupBefore, repository.getLineup(game.id))
+        assertEquals(4, database.gameEventDao().getByGame(game.id).size)
+    }
+
+    @Test
+    fun undoEvents_forAnEventThatNoLongerExists_returnsFalse() = runBlocking {
+        val playerIds = addPlayers(1)
+        val game = newGame()
+        val foul = repository.addFoul(game.id, playerIds[0])!!
+        repository.deleteEvent(database.gameEventDao().getById(foul)!!)
+
+        assertFalse(repository.undoEvents(listOf(foul)))
+    }
+
+    @Test
+    fun actionsThatRecordNothing_returnNoEventId() = runBlocking {
+        val playerIds = addPlayers(6)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
+
+        assertEquals(null, repository.substitute(game.id, playerInId = playerIds[0], playerOutId = playerIds[5]))
+        assertEquals(null, repository.addOpponentScore(game.id, -1)) // would go below zero
+    }
 }

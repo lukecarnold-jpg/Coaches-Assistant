@@ -30,6 +30,9 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/** A message for the snackbar, optionally with an Undo action for the change it reports. */
+data class UiMessage(val text: String, val undo: (() -> Unit)? = null)
+
 data class PlayerGameStat(
     val player: PlayerEntity,
     val points: Int,
@@ -63,7 +66,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     private val csvIo = GameCsvIo(AppDatabase.getInstance(application))
 
     private val selectedGameId = MutableStateFlow<Long?>(null)
-    private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 1)
     val messages = _messages.asSharedFlow()
 
     val players = repository.playersForSport(sport).stateIn(
@@ -155,7 +158,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
                 val remaining = game.remainingPeriodTimeMillis() ?: return@collectLatest
                 delay(remaining)
                 repository.stopTimer(game.id)
-                _messages.emit("End of period — clock stopped.")
+                _messages.emit(UiMessage("End of period — clock stopped."))
             }
         }
     }
@@ -167,60 +170,60 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     fun addPlayer(name: String, jerseyNumberText: String, position: String? = null) {
         val trimmedName = name.trim()
         if (trimmedName.isBlank()) {
-            _messages.tryEmit("Enter a player name.")
+            _messages.tryEmit(UiMessage("Enter a player name."))
             return
         }
 
         val jerseyNumber = jerseyNumberText.trim().toIntOrNull()
         // Jersey number is now optional, only error if they entered something that isn't a number
         if ((jerseyNumberText.trim().isNotEmpty()) && (jerseyNumber == null)) {
-            _messages.tryEmit("Jersey number must be numeric.")
+            _messages.tryEmit(UiMessage("Jersey number must be numeric."))
             return
         }
 
         viewModelScope.launch {
             repository.addPlayer(sport, trimmedName, jerseyNumber, position)
-            _messages.emit("Player added.")
+            _messages.emit(UiMessage("Player added."))
         }
     }
 
     fun updatePlayer(player: PlayerEntity, newName: String, newJerseyNumberText: String, newPosition: String? = player.position) {
         val trimmedName = newName.trim()
         if (trimmedName.isBlank()) {
-            _messages.tryEmit("Name cannot be empty.")
+            _messages.tryEmit(UiMessage("Name cannot be empty."))
             return
         }
 
         val jerseyNumber = newJerseyNumberText.trim().toIntOrNull()
         if ((newJerseyNumberText.trim().isNotEmpty()) && (jerseyNumber == null)) {
-            _messages.tryEmit("Jersey number must be numeric.")
+            _messages.tryEmit(UiMessage("Jersey number must be numeric."))
             return
         }
 
         viewModelScope.launch {
             repository.updatePlayer(player.copy(name = trimmedName, jerseyNumber = jerseyNumber, position = newPosition))
-            _messages.emit("Player updated.")
+            _messages.emit(UiMessage("Player updated."))
         }
     }
 
     fun deletePlayer(playerId: Long) {
         viewModelScope.launch {
             repository.deletePlayer(playerId)
-            _messages.emit("Player removed.")
+            _messages.emit(UiMessage("Player removed."))
         }
     }
 
     fun clearAllData() {
         viewModelScope.launch {
             repository.clearAllData()
-            _messages.emit("All data cleared.")
+            _messages.emit(UiMessage("All data cleared."))
         }
     }
 
     fun clearSelectedData(players: Boolean, games: Boolean, events: Boolean) {
         viewModelScope.launch {
             repository.clearSelectedData(sport, players, games, events)
-            _messages.emit("Selected data cleared.")
+            _messages.emit(UiMessage("Selected data cleared."))
         }
     }
 
@@ -238,7 +241,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
                 onCourtSize = sport.config.onCourtSize,
             )
             selectedGameId.value = gameId
-            _messages.emit("Game created.")
+            _messages.emit(UiMessage("Game created."))
         }
     }
 
@@ -246,7 +249,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         val gameId = selectedGame.value?.id ?: return
         viewModelScope.launch {
             repository.advancePeriod(gameId)
-            _messages.emit("Advanced to next period.")
+            _messages.emit(UiMessage("Advanced to next period."))
         }
     }
 
@@ -254,7 +257,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         val gameId = selectedGame.value?.id ?: return
         viewModelScope.launch {
             repository.endGame(gameId)
-            _messages.emit("Game finalized and court reset.")
+            _messages.emit(UiMessage("Game finalized and court reset."))
         }
     }
 
@@ -262,7 +265,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         val gameId = selectedGame.value?.id ?: return
         viewModelScope.launch {
             repository.updateAbsentPlayers(gameId, playerIds)
-            _messages.emit("Attendance updated.")
+            _messages.emit(UiMessage("Attendance updated."))
         }
     }
 
@@ -276,60 +279,69 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     fun updateEvent(event: GameEventEntity) {
         viewModelScope.launch {
             repository.updateEvent(event)
-            _messages.emit("Event updated.")
+            _messages.emit(UiMessage("Event updated."))
         }
     }
 
     fun deleteEvent(event: GameEventEntity) {
         viewModelScope.launch {
             repository.deleteEvent(event)
-            _messages.emit("Event removed.")
+            _messages.emit(UiMessage("Event removed."))
         }
     }
 
     fun deleteGame(gameId: Long) {
         viewModelScope.launch {
             repository.deleteGame(gameId)
-            _messages.emit("Game and related events deleted.")
+            _messages.emit(UiMessage("Game and related events deleted."))
         }
     }
 
     fun setStartingLineup(playerIds: List<Long>) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {
-            _messages.tryEmit("Create or select a game first.")
+            _messages.tryEmit(UiMessage("Create or select a game first."))
             return
         }
         val requiredSize = sport.config.onCourtSize
         if (playerIds.distinct().size != requiredSize) {
-            _messages.tryEmit("Select exactly $requiredSize players for the starting lineup.")
+            _messages.tryEmit(UiMessage("Select exactly $requiredSize players for the starting lineup."))
             return
         }
 
         viewModelScope.launch {
             repository.selectStartingLineup(gameId, playerIds, requiredSize)
-            _messages.emit("Starting lineup saved.")
+            _messages.emit(UiMessage("Starting lineup saved."))
         }
     }
 
-    fun substitute(playerInId: Long?, playerOutId: Long?) {
+    /** Makes each (player in, player out) swap in [pairs], offering one Undo for the whole batch. */
+    fun substitute(pairs: List<Pair<Long, Long>>) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {
-            _messages.tryEmit("Create or select a game first.")
+            _messages.tryEmit(UiMessage("Create or select a game first."))
             return
         }
-        if ((playerInId == null) || (playerOutId == null)) {
-            _messages.tryEmit("Pick one player in and one player out.")
+        if (pairs.isEmpty()) {
+            _messages.tryEmit(UiMessage("Pick one player in and one player out."))
             return
         }
-        if (playerInId == playerOutId) {
-            _messages.tryEmit("Player in and player out must be different.")
+        if (pairs.any { (playerIn, playerOut) -> playerIn == playerOut }) {
+            _messages.tryEmit(UiMessage("Player in and player out must be different."))
             return
         }
 
         viewModelScope.launch {
-            repository.substitute(gameId, playerInId, playerOutId)
-            _messages.emit("Substitution recorded.")
+            val eventIds = pairs.mapNotNull { (playerIn, playerOut) -> repository.substitute(gameId, playerIn, playerOut) }
+            when {
+                eventIds.isEmpty() -> _messages.emit(UiMessage("Substitution not recorded: the lineup has changed."))
+                eventIds.size < pairs.size -> announceUndoable(
+                    eventIds,
+                    text = "${eventIds.size} of ${pairs.size} substitutions recorded; the rest no longer matched the lineup.",
+                )
+                eventIds.size == 1 -> announceUndoable(eventIds)
+                else -> announceUndoable(eventIds, text = "${eventIds.size} substitutions recorded.")
+            }
         }
     }
 
@@ -337,12 +349,12 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     fun addPlayerScore(playerId: Long, points: Int) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {
-            _messages.tryEmit("Create or select a game first.")
+            _messages.tryEmit(UiMessage("Create or select a game first."))
             return
         }
 
         viewModelScope.launch {
-            repository.addTeamScore(gameId, playerId, points)
+            repository.addTeamScore(gameId, playerId, points)?.let { announceUndoable(listOf(it)) }
         }
     }
 
@@ -350,44 +362,68 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     fun adjustTeamScore(points: Int) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {
-            _messages.tryEmit("Create or select a game first.")
+            _messages.tryEmit(UiMessage("Create or select a game first."))
             return
         }
 
         viewModelScope.launch {
-            repository.addTeamScore(gameId, playerId = null, points = points)
+            repository.addTeamScore(gameId, playerId = null, points = points)?.let { announceUndoable(listOf(it)) }
         }
     }
 
     fun addOpponentScore(points: Int) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {
-            _messages.tryEmit("Create or select a game first.")
+            _messages.tryEmit(UiMessage("Create or select a game first."))
             return
         }
 
         viewModelScope.launch {
-            repository.addOpponentScore(gameId, points)
+            repository.addOpponentScore(gameId, points)?.let { announceUndoable(listOf(it)) }
         }
     }
 
     fun addFoul(playerId: Long, adjustment: Int = 1) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {
-            _messages.tryEmit("Create or select a game first.")
+            _messages.tryEmit(UiMessage("Create or select a game first."))
             return
         }
 
         viewModelScope.launch {
-            repository.addFoul(gameId, playerId, adjustment)
+            repository.addFoul(gameId, playerId, adjustment)?.let { announceUndoable(listOf(it)) }
         }
+    }
+
+    /**
+     * Reports the action that recorded [eventIds] with an Undo that reverses exactly those events
+     * (see GameRepository.undoEvents). [text] defaults to the event log's description of the one event.
+     */
+    private suspend fun announceUndoable(eventIds: List<Long>, text: String? = null) {
+        val message = text ?: repository.getEvent(eventIds.single())?.let { event ->
+            val description = eventDescription(
+                event,
+                players.value.associateBy { it.id },
+                opponentName = selectedGame.value?.opponent.orEmpty(),
+                infractionLabel = sport.config.infractionLabel,
+            )
+            if (event.type == EventType.FOUL.name && event.points < 0) "$description removed" else description
+        } ?: return
+        _messages.emit(
+            UiMessage(message) {
+                viewModelScope.launch {
+                    val undone = repository.undoEvents(eventIds)
+                    _messages.emit(UiMessage(if (undone) "Undone." else "Couldn't undo: that's already been changed."))
+                }
+            },
+        )
     }
 
     fun toggleTimer() {
         val game = selectedGame.value ?: return
         val gameId = game.id
         if (game.timerLastStartedAt == null && game.remainingPeriodTimeMillis() == 0L) {
-            _messages.tryEmit("This period's time is up. Move to the next period or adjust the clock.")
+            _messages.tryEmit(UiMessage("This period's time is up. Move to the next period or adjust the clock."))
             return
         }
         viewModelScope.launch {
@@ -399,15 +435,14 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         val gameId = selectedGame.value?.id ?: return
         viewModelScope.launch {
             repository.resetTimer(gameId)
-            _messages.emit("Timer reset to 0:00.")
+            _messages.emit(UiMessage("Timer reset to 0:00."))
         }
     }
 
     fun addMvpVote(playerId: Long) {
         val gameId = selectedGame.value?.id ?: return
         viewModelScope.launch {
-            repository.addMvpVote(gameId, playerId)
-            _messages.emit("MVP vote recorded.")
+            repository.addMvpVote(gameId, playerId)?.let { announceUndoable(listOf(it)) }
         }
     }
 
@@ -423,9 +458,9 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             runCatching {
                 csvIo.exportPlayersCsv(getApplication<Application>().contentResolver, uri, sport)
             }.onSuccess {
-                _messages.emit("Roster CSV exported.")
+                _messages.emit(UiMessage("Roster CSV exported."))
             }.onFailure {
-                _messages.emit(it.message ?: "Export failed.")
+                _messages.emit(UiMessage(it.message ?: "Export failed."))
             }
         }
     }
@@ -435,9 +470,9 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             runCatching {
                 csvIo.importPlayersCsv(getApplication<Application>().contentResolver, uri, sport)
             }.onSuccess {
-                _messages.emit("Roster CSV imported.")
+                _messages.emit(UiMessage("Roster CSV imported."))
             }.onFailure {
-                _messages.emit(it.message ?: "Import failed.")
+                _messages.emit(UiMessage(it.message ?: "Import failed."))
             }
         }
     }
@@ -447,9 +482,9 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             runCatching {
                 csvIo.exportGameNotesTxt(getApplication<Application>().contentResolver, gameId, uri)
             }.onSuccess {
-                _messages.emit("Coaching notes exported.")
+                _messages.emit(UiMessage("Coaching notes exported."))
             }.onFailure {
-                _messages.emit(it.message ?: "Export failed.")
+                _messages.emit(UiMessage(it.message ?: "Export failed."))
             }
         }
     }
@@ -459,9 +494,9 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             runCatching {
                 csvIo.exportGameCsv(getApplication<Application>().contentResolver, gameId, uri)
             }.onSuccess {
-                _messages.emit("Game CSV exported.")
+                _messages.emit(UiMessage("Game CSV exported."))
             }.onFailure {
-                _messages.emit(it.message ?: "Export failed.")
+                _messages.emit(UiMessage(it.message ?: "Export failed."))
             }
         }
     }
