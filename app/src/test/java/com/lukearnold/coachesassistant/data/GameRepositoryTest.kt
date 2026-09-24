@@ -70,7 +70,7 @@ class GameRepositoryTest {
         val playerIds = addPlayers(2)
         val game = newGame()
         repository.selectStartingLineup(game.id, playerIds, maxSize = 2)
-        repository.addScore(game.id, playerIds[0], 2)
+        repository.addTeamScore(game.id, playerIds[0], 2)
         repository.substitute(game.id, playerInId = playerIds[1], playerOutId = playerIds[0])
         val eventsBefore = database.gameEventDao().getByGame(game.id)
         // Sanity check: the events we're about to verify actually reference the deleted player.
@@ -139,11 +139,11 @@ class GameRepositoryTest {
     }
 
     @Test
-    fun addScore_forPlayer_incrementsTeamScoreOnly() = runBlocking {
+    fun addTeamScore_forPlayer_incrementsTeamScoreOnly() = runBlocking {
         val playerIds = addPlayers(1)
         val game = newGame()
 
-        repository.addScore(game.id, playerIds[0], 2)
+        repository.addTeamScore(game.id, playerIds[0], 2)
 
         val updated = database.gameDao().getById(game.id)!!
         assertEquals(2, updated.teamScore)
@@ -151,10 +151,10 @@ class GameRepositoryTest {
     }
 
     @Test
-    fun addScore_withNullPlayer_incrementsOpponentScore() = runBlocking {
+    fun addOpponentScore_incrementsOpponentScoreOnly() = runBlocking {
         val game = newGame()
 
-        repository.addScore(game.id, playerId = null, points = 3)
+        repository.addOpponentScore(game.id, points = 3)
 
         val updated = database.gameDao().getById(game.id)!!
         assertEquals(0, updated.teamScore)
@@ -162,11 +162,11 @@ class GameRepositoryTest {
     }
 
     @Test
-    fun addScore_neverDropsTeamScoreBelowZero() = runBlocking {
+    fun addTeamScore_neverDropsTeamScoreBelowZero() = runBlocking {
         val playerIds = addPlayers(1)
         val game = newGame()
 
-        repository.addScore(game.id, playerIds[0], -5)
+        repository.addTeamScore(game.id, playerIds[0], -5)
 
         val updated = database.gameDao().getById(game.id)!!
         assertEquals(0, updated.teamScore)
@@ -178,7 +178,7 @@ class GameRepositoryTest {
     fun updateEvent_adjustsTeamScoreByTheDifference() = runBlocking {
         val playerIds = addPlayers(1)
         val game = newGame()
-        repository.addScore(game.id, playerIds[0], 2)
+        repository.addTeamScore(game.id, playerIds[0], 2)
         val event = database.gameEventDao().getByGame(game.id).single { it.type == EventType.SCORE.name }
 
         repository.updateEvent(event.copy(points = 3))
@@ -191,8 +191,8 @@ class GameRepositoryTest {
     fun deleteEvent_reversesItsScoreContribution() = runBlocking {
         val playerIds = addPlayers(1)
         val game = newGame()
-        repository.addScore(game.id, playerIds[0], 2)
-        repository.addScore(game.id, playerIds[0], 3)
+        repository.addTeamScore(game.id, playerIds[0], 2)
+        repository.addTeamScore(game.id, playerIds[0], 3)
         val events = database.gameEventDao().getByGame(game.id).filter { it.type == EventType.SCORE.name }
 
         repository.deleteEvent(events.first())
@@ -245,7 +245,7 @@ class GameRepositoryTest {
     fun deleteGame_alsoDeletesItsEvents() = runBlocking {
         val playerIds = addPlayers(1)
         val game = newGame()
-        repository.addScore(game.id, playerIds[0], 2)
+        repository.addTeamScore(game.id, playerIds[0], 2)
 
         repository.deleteGame(game.id)
 
@@ -320,7 +320,7 @@ class GameRepositoryTest {
         val game = newGame()
         startClockAgo(game, millisAgo = 15 * 60_000L)
 
-        repository.addScore(game.id, playerIds[0], 2)
+        repository.addTeamScore(game.id, playerIds[0], 2)
 
         val event = database.gameEventDao().getByGame(game.id).single()
         assertEquals(game.periodDurationMillis, event.gameTimeMillis)
@@ -352,8 +352,8 @@ class GameRepositoryTest {
     fun clearSelectedData_eventsOnly_alsoResetsScoresAndMvpVotes() = runBlocking {
         val playerIds = addPlayers(1)
         val game = newGame()
-        repository.addScore(game.id, playerIds[0], 2)
-        repository.addScore(game.id, playerId = null, points = 3)
+        repository.addTeamScore(game.id, playerIds[0], 2)
+        repository.addOpponentScore(game.id, points = 3)
         repository.addMvpVote(game.id, playerIds[0])
 
         repository.clearSelectedData(Sport.BASKETBALL, players = false, games = false, events = true)
@@ -370,8 +370,8 @@ class GameRepositoryTest {
         val netballPlayer = repository.addPlayer(Sport.NETBALL, "Shooter", 2)
         val basketballGame = repository.createGame(Sport.BASKETBALL, "B", "Rivals")
         val netballGame = repository.createGame(Sport.NETBALL, "N", "Rivals", onCourtSize = 7)
-        repository.addScore(basketballGame, basketballPlayer, 2)
-        repository.addScore(netballGame, netballPlayer, 1)
+        repository.addTeamScore(basketballGame, basketballPlayer, 2)
+        repository.addTeamScore(netballGame, netballPlayer, 1)
 
         repository.clearSelectedData(Sport.BASKETBALL, players = true, games = false, events = true)
 
@@ -422,5 +422,39 @@ class GameRepositoryTest {
         repository.deleteGame(game.id)
 
         assertTrue(database.gamePlayerDao().getByGame(game.id).isEmpty())
+    }
+
+    @Test
+    fun addTeamScore_withNoPlayer_adjustsOnlyTheTeamTotal() = runBlocking {
+        val playerIds = addPlayers(5)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds, maxSize = 5)
+        repository.addTeamScore(game.id, playerIds[0], 3)
+        repository.addOpponentScore(game.id, 2)
+
+        // The "Us" -1 button: a team-level correction, not a debit from whoever is first on court.
+        repository.addTeamScore(game.id, playerId = null, points = -1)
+
+        val updated = database.gameDao().getById(game.id)!!
+        assertEquals(2, updated.teamScore)
+        assertEquals(2, updated.opponentScore)
+        val adjustment = database.gameEventDao().getByGame(game.id).last()
+        assertEquals(EventType.SCORE.name, adjustment.type)
+        assertEquals(null, adjustment.playerId)
+        assertEquals(TEAM_ADJUSTMENT_NOTE, adjustment.note)
+    }
+
+    @Test
+    fun addTeamScore_withNoPlayerAndAnEmptyCourt_neverTouchesTheOpponent() = runBlocking {
+        val playerIds = addPlayers(1)
+        val game = newGame()
+        repository.addTeamScore(game.id, playerIds[0], 2)
+        repository.addOpponentScore(game.id, 4)
+
+        repository.addTeamScore(game.id, playerId = null, points = -1)
+
+        val updated = database.gameDao().getById(game.id)!!
+        assertEquals(1, updated.teamScore)
+        assertEquals(4, updated.opponentScore)
     }
 }

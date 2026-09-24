@@ -303,7 +303,8 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         }
     }
 
-    fun addScore(playerId: Long?, points: Int) {
+    /** Scores for a player on our team. */
+    fun addPlayerScore(playerId: Long, points: Int) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {
             _messages.tryEmit("Create or select a game first.")
@@ -311,7 +312,32 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         }
 
         viewModelScope.launch {
-            repository.addScore(gameId, playerId, points)
+            repository.addTeamScore(gameId, playerId, points)
+        }
+    }
+
+    /** Corrects our team's score without crediting or debiting any player. */
+    fun adjustTeamScore(points: Int) {
+        val gameId = selectedGame.value?.id
+        if (gameId == null) {
+            _messages.tryEmit("Create or select a game first.")
+            return
+        }
+
+        viewModelScope.launch {
+            repository.addTeamScore(gameId, playerId = null, points = points)
+        }
+    }
+
+    fun addOpponentScore(points: Int) {
+        val gameId = selectedGame.value?.id
+        if (gameId == null) {
+            _messages.tryEmit("Create or select a game first.")
+            return
+        }
+
+        viewModelScope.launch {
+            repository.addOpponentScore(gameId, points)
         }
     }
 

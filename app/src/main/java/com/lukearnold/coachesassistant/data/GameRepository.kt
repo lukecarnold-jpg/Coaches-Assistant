@@ -194,20 +194,40 @@ class GameRepository(
         }
     }
 
-    suspend fun addScore(gameId: Long, playerId: Long?, points: Int) {
+    /**
+     * Adds [points] (negative to correct) to our team's score, credited to [playerId]. A null
+     * player is a team-level adjustment that changes the team total without touching any
+     * player's stats.
+     */
+    suspend fun addTeamScore(gameId: Long, playerId: Long?, points: Int) {
+        insertScore(
+            gameId = gameId,
+            type = EventType.SCORE,
+            playerId = playerId,
+            points = points,
+            note = if (playerId == null) TEAM_ADJUSTMENT_NOTE else "",
+        )
+    }
+
+    /** Adds [points] (negative to correct) to the opponent's score. */
+    suspend fun addOpponentScore(gameId: Long, points: Int) {
+        insertScore(gameId, EventType.OPPONENT_SCORE, playerId = null, points = points, note = "")
+    }
+
+    private suspend fun insertScore(gameId: Long, type: EventType, playerId: Long?, points: Int, note: String) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
-            // A null player means the points are the opponent's.
-            val currentScore = if (playerId == null) game.opponentScore else game.teamScore
+            val currentScore = if (type == EventType.OPPONENT_SCORE) game.opponentScore else game.teamScore
             if (currentScore + points < 0) return@withTransaction
 
             gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
                     timestamp = System.currentTimeMillis(),
-                    type = if (playerId == null) EventType.OPPONENT_SCORE.name else EventType.SCORE.name,
+                    type = type.name,
                     playerId = playerId,
                     points = points,
+                    note = note,
                     gameTimeMillis = calculateCurrentGameTime(game),
                 ),
             )
