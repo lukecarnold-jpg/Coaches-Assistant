@@ -50,7 +50,7 @@ class BasketballRepository(
         sport: Sport,
         title: String,
         opponent: String,
-        useQuarters: Boolean = false,
+        periodCount: Int = 2,
         periodDurationMillis: Long = 10 * 60 * 1000L,
         onCourtSize: Int = 5,
     ): Long {
@@ -59,7 +59,7 @@ class BasketballRepository(
                 title = title.trim(),
                 opponent = opponent.trim(),
                 createdAt = System.currentTimeMillis(),
-                useQuarters = useQuarters,
+                periodCount = periodCount,
                 periodDurationMillis = periodDurationMillis,
                 sport = sport.name,
                 onCourtSize = onCourtSize,
@@ -70,9 +70,7 @@ class BasketballRepository(
     suspend fun advancePeriod(gameId: Long) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
-            val maxPeriods = if (game.useQuarters) 4 else 2
-            
-            if (game.currentPeriod < maxPeriods) {
+            if (game.currentPeriod < game.periodCount) {
                 // Record the end of the previous period
                 gameEventDao.insert(
                     GameEventEntity(

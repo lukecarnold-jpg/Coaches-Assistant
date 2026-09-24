@@ -64,3 +64,16 @@ fun formatDuration(millis: Long): String {
     val seconds = totalSeconds % 60
     return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
 }
+
+/** The period counts a new game can be set up with, and how each is labelled. */
+val PERIOD_COUNT_OPTIONS = listOf(2 to "2 halves", 3 to "3 periods", 4 to "4 quarters")
+
+/** Short label for the game's current period: "H1" for halves, "Q3" for quarters, "P2" otherwise. */
+fun GameEntity.periodLabel(): String {
+    val prefix = when (periodCount) {
+        2 -> "H"
+        4 -> "Q"
+        else -> "P"
+    }
+    return "$prefix$currentPeriod"
+}

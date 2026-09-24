@@ -222,7 +222,7 @@ class BasketballRepositoryTest {
     @Test
     fun advancePeriod_doesNothingOncePastTheSportsMaxPeriods() = runBlocking {
         val game = newGame()
-        // Halves by default (useQuarters = false) -> max 2 periods.
+        // Halves by default (periodCount = 2).
         repository.advancePeriod(game.id)
         assertEquals(2, database.gameDao().getById(game.id)!!.currentPeriod)
 
@@ -327,5 +327,14 @@ class BasketballRepositoryTest {
 
         val event = database.gameEventDao().getByGame(game.id).single()
         assertEquals(game.periodDurationMillis, event.gameTimeMillis)
+    }
+
+    @Test
+    fun advancePeriod_allowsAThirdPeriodForThreePeriodGames() = runBlocking {
+        val gameId = repository.createGame(Sport.ICE_HOCKEY, "Faceoff", "Rivals", periodCount = 3, onCourtSize = 6)
+
+        repeat(3) { repository.advancePeriod(gameId) }
+
+        assertEquals(3, database.gameDao().getById(gameId)!!.currentPeriod)
     }
 }

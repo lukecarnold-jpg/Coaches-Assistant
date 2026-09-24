@@ -190,7 +190,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         }
     }
 
-    fun createGame(title: String, opponent: String, useQuarters: Boolean, periodMins: Int) {
+    fun createGame(title: String, opponent: String, periodCount: Int, periodMins: Int) {
         val finalTitle = title.trim().ifBlank { "Game ${games.value.size + 1}" }
         val durationMillis = periodMins * 60 * 1000L
 
@@ -199,7 +199,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
                 sport = sport,
                 title = finalTitle,
                 opponent = opponent,
-                useQuarters = useQuarters,
+                periodCount = periodCount,
                 periodDurationMillis = durationMillis,
                 onCourtSize = sport.config.onCourtSize,
             )

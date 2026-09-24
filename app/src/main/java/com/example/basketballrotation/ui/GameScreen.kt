@@ -23,7 +23,7 @@ fun GameScreen(
     selectedGame: GameEntity?,
     stats: List<PlayerGameStat>,
     events: List<GameEventEntity>,
-    onCreateGame: (String, String, Boolean, Int) -> Unit,
+    onCreateGame: (title: String, opponent: String, periodCount: Int, periodMins: Int) -> Unit,
     onSelectGame: (Long) -> Unit,
     onSetLineup: (List<Long>) -> Unit,
     onSubstitute: (Long?, Long?) -> Unit,
@@ -49,7 +49,7 @@ fun GameScreen(
 
     var gameTitle by rememberSaveable { mutableStateOf("") }
     var opponent by rememberSaveable { mutableStateOf("") }
-    var useQuarters by rememberSaveable(sport) { mutableStateOf(sportConfig.useQuartersDefault) }
+    var periodCount by rememberSaveable(sport) { mutableIntStateOf(sportConfig.defaultPeriodCount) }
     var periodMins by rememberSaveable(sport) { mutableStateOf(sportConfig.defaultPeriodMinutes.toString()) }
     var showAttendanceDialog by remember { mutableStateOf(false) }
     var showNotesDialog by remember { mutableStateOf(false) }
@@ -159,12 +159,12 @@ fun GameScreen(
                     onGameTitleChange = { gameTitle = it },
                     opponent = opponent,
                     onOpponentChange = { opponent = it },
-                    useQuarters = useQuarters,
-                    onUseQuartersChange = { useQuarters = it },
+                    periodCount = periodCount,
+                    onPeriodCountChange = { periodCount = it },
                     periodMins = periodMins,
                     onPeriodMinsChange = { periodMins = it },
                     onCreateGame = {
-                        onCreateGame(gameTitle, opponent, useQuarters, periodMins.toIntOrNull() ?: 10)
+                        onCreateGame(gameTitle, opponent, periodCount, periodMins.toIntOrNull() ?: 10)
                         gameTitle = ""
                         opponent = ""
                     },
@@ -204,12 +204,12 @@ fun GameScreen(
                 onGameTitleChange = { gameTitle = it },
                 opponent = opponent,
                 onOpponentChange = { opponent = it },
-                useQuarters = useQuarters,
-                onUseQuartersChange = { useQuarters = it },
+                periodCount = periodCount,
+                onPeriodCountChange = { periodCount = it },
                 periodMins = periodMins,
                 onPeriodMinsChange = { periodMins = it },
                 onCreateGame = {
-                    onCreateGame(gameTitle, opponent, useQuarters, periodMins.toIntOrNull() ?: 10)
+                    onCreateGame(gameTitle, opponent, periodCount, periodMins.toIntOrNull() ?: 10)
                     gameTitle = ""
                     opponent = ""
                 },
