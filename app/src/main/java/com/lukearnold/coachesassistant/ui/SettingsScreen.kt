@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.lukearnold.coachesassistant.ai.AiProvider
 import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
+import com.lukearnold.coachesassistant.ai.endpointUrlProblem
 import com.lukearnold.coachesassistant.data.Sport
 
 @Composable
@@ -66,6 +67,7 @@ fun SettingsScreen(
     var endpointUrlInput by remember(customEndpoint.endpointUrl) { mutableStateOf(customEndpoint.endpointUrl) }
     var modelInput by remember(customEndpoint.model) { mutableStateOf(customEndpoint.model) }
     val isOther = selectedProvider == AiProvider.OTHER
+    val endpointProblem = if (isOther) endpointUrlProblem(endpointUrlInput) else null
 
     Column(
         modifier = modifier
@@ -113,6 +115,8 @@ fun SettingsScreen(
                         "Your saved ${selectedProvider.displayName} API key is active. AI drill generation is enabled."
                     (selectedProvider == AiProvider.GEMINI) && hasBuiltInApiKey ->
                         "Using the GEMINI_API_KEY built into this app. AI drill generation is enabled."
+                    isOther ->
+                        "No API key saved. Hosted providers need one; a local server (such as Ollama) usually doesn't."
                     else ->
                         "No ${selectedProvider.displayName} API key configured. Add one below to enable AI drill generation on the Training tab."
                 }
@@ -126,6 +130,8 @@ fun SettingsScreen(
                     label = { Text("Endpoint URL") },
                     placeholder = { Text("https://.../v1/chat/completions") },
                     singleLine = true,
+                    isError = endpointProblem != null,
+                    supportingText = endpointProblem?.let { problem -> { Text(problem) } },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(layout.smallGap))
@@ -166,7 +172,7 @@ fun SettingsScreen(
                             onSaveCustomEndpoint(CustomEndpointConfig(endpointUrlInput.trim(), modelInput.trim()))
                         }
                     },
-                    enabled = (apiKeyInput.trim() != savedKey) || endpointChanged,
+                    enabled = ((apiKeyInput.trim() != savedKey) || endpointChanged) && (endpointProblem == null),
                 ) {
                     Text("Save")
                 }
