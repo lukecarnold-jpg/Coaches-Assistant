@@ -10,7 +10,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Application ID `com.lukearnold.coachesassistant` (the Kotlin package is still `com.example.basketballrotation`)
 - Multi-sport: a landing screen lets the user pick from 16 supported team sports (categorized into Court, Field, and Ice & Water sports); each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
 - UI: Jetpack Compose + Material 3
-- Persistence: Room database (schema version 12)
+- Persistence: Room database (schema version 13)
 - AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash`), Anthropic Claude (`claude-sonnet-5`), OpenAI ChatGPT (`gpt-5.5`), or "Other" (any OpenAI-compatible endpoint the user configures, e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server) — and supplies that provider's API key (Gemini also falls back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests, lint, and a minified release build on every push/PR to `master`
 
@@ -180,7 +180,8 @@ The unit test suite covers the core game-stat calculation logic, CSV/event parsi
 ## Data model summary
 
 - `players`: roster entries (`id`, `name`, optional `jerseyNumber`, `sport`, optional `position`)
-- `games`: game metadata and state (score, timer, period configuration, absence list, notes, `isFinished` flag and `finishedAt` timestamp, `sport`, `onCourtSize`)
+- `games`: game metadata and state (score and MVP totals derived from events, timer, `periodCount` and period length, notes, `isFinished` flag and `finishedAt` timestamp, `sport`, `onCourtSize`)
+- `game_players`: each game's on-court and absent players, one row per player; rows cascade-delete with their game or player
 - `game_events`: event timeline entries (lineup, substitutions, team score, opponent score, per-player infractions, MVP votes, period changes, game end) — the `FOUL` event type is shared across sports and relabeled per sport in the UI (Foul/Penalty/Card/Free Kick)
 
 ## CSV and TXT notes

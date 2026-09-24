@@ -131,6 +131,7 @@ private fun SportApp(
     val players by appViewModel.players.collectAsState()
     val games by appViewModel.games.collectAsState()
     val selectedGame by appViewModel.selectedGame.collectAsState()
+    val lineup by appViewModel.selectedGameLineup.collectAsState()
     val events by appViewModel.selectedGameEvents.collectAsState()
     val stats by appViewModel.selectedGameStats.collectAsState()
     val apiKeys by trainingViewModel.apiKeys.collectAsState()
@@ -207,6 +208,7 @@ private fun SportApp(
                         players = players,
                         games = games,
                         selectedGame = selectedGame,
+                        lineup = lineup,
                         stats = stats,
                         events = events,
                         onCreateGame = appViewModel::createGame,

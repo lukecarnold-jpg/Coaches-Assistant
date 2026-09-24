@@ -233,4 +233,62 @@ class AppDatabaseMigrationTest {
             assertEquals(2, cursor.getInt(1))
         }
     }
+
+    @Test
+    fun migrate12To13_movesLineupsIntoGamePlayersAndDropsUnknownPlayerIds() {
+        val dbName = "migration-test-12-to-13"
+
+        helper.createDatabase(dbName, 12).apply {
+            (1..3).forEach { id ->
+                execSQL("INSERT INTO players (id, name, jerseyNumber, sport, position) VALUES ($id, 'P$id', $id, 'BASKETBALL', NULL)")
+            }
+            execSQL(
+                """
+                INSERT INTO games (
+                    id, title, opponent, createdAt, teamScore, opponentScore, mvpVotesJson,
+                    onCourtCsv, runningTimeMillis, timerLastStartedAt, isFinished, finishedAt,
+                    currentPeriod, periodDurationMillis, absentPlayerIdsCsv, notes,
+                    sport, onCourtSize, periodCount
+                ) VALUES (
+                    1, 'Final', 'Rivals', 3000, 4, 1, '{}',
+                    '1, 2,99', 0, NULL, 0, NULL,
+                    3, 720000, '2,3', 'Keep me', 'BASKETBALL', 5, 4
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO game_events (
+                    id, gameId, timestamp, type, playerId, relatedPlayerId, points, note, gameTimeMillis
+                ) VALUES (
+                    1, 1, 3000, 'SCORE', 1, NULL, 2, '', 15000
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate(dbName, 13, true, MIGRATION_12_13)
+
+        val rows = mutableMapOf<Long, Pair<Boolean, Boolean>>()
+        migrated.query("SELECT playerId, onCourt, absent FROM game_players WHERE gameId = 1").use { cursor ->
+            while (cursor.moveToNext()) rows[cursor.getLong(0)] = (cursor.getInt(1) == 1) to (cursor.getInt(2) == 1)
+        }
+        // Player 99 doesn't exist, so it's dropped; player 2 was both on court and marked absent.
+        assertEquals(mapOf(1L to (true to false), 2L to (true to true), 3L to (false to true)), rows)
+
+        migrated.query("SELECT title, teamScore, currentPeriod, notes, periodCount FROM games WHERE id = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Final", cursor.getString(0))
+            assertEquals(4, cursor.getInt(1))
+            assertEquals(3, cursor.getInt(2))
+            assertEquals("Keep me", cursor.getString(3))
+            assertEquals(4, cursor.getInt(4))
+        }
+
+        migrated.query("SELECT COUNT(*) FROM game_events WHERE gameId = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(0))
+        }
+    }
 }

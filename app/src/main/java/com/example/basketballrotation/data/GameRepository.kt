@@ -2,6 +2,7 @@ package com.example.basketballrotation.data
 
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class GameRepository(
     private val database: AppDatabase,
@@ -9,6 +10,7 @@ class GameRepository(
     private val playerDao = database.playerDao()
     private val gameDao = database.gameDao()
     private val gameEventDao = database.gameEventDao()
+    private val gamePlayerDao = database.gamePlayerDao()
 
     val players: Flow<List<PlayerEntity>> = playerDao.observeAll()
     val games: Flow<List<GameEntity>> = gameDao.observeAll()
@@ -18,6 +20,11 @@ class GameRepository(
 
     fun observeEvents(gameId: Long): Flow<List<GameEventEntity>> =
         gameEventDao.observeByGame(gameId)
+
+    fun observeLineup(gameId: Long): Flow<GameLineup> =
+        gamePlayerDao.observeByGame(gameId).map(GameLineup::from)
+
+    suspend fun getLineup(gameId: Long): GameLineup = GameLineup.from(gamePlayerDao.getByGame(gameId))
 
     suspend fun addPlayer(sport: Sport, name: String, jerseyNumber: Int?, position: String? = null): Long {
         return playerDao.insert(
@@ -34,16 +41,10 @@ class GameRepository(
         playerDao.update(player)
     }
 
+    // game_players rows cascade-delete with the player, freeing any on-court slot they held, and
+    // their past events keep the record with the player reference nulled (SET_NULL).
     suspend fun deletePlayer(playerId: Long) {
-        database.withTransaction {
-            gameDao.getAll().forEach { game ->
-                val cleaned = game.withoutPlayer(playerId)
-                if (cleaned !== game) {
-                    gameDao.update(cleaned)
-                }
-            }
-            playerDao.deleteById(playerId)
-        }
+        playerDao.deleteById(playerId)
     }
 
     suspend fun createGame(
@@ -87,9 +88,9 @@ class GameRepository(
                         currentPeriod = game.currentPeriod + 1,
                         runningTimeMillis = 0L,
                         timerLastStartedAt = null,
-                        onCourtCsv = "", // Reset court to force new lineup
                     ),
                 )
+                clearCourt(gameId) // forces a new lineup for the next period
             }
         }
     }
@@ -103,9 +104,9 @@ class GameRepository(
                     isFinished = true,
                     finishedAt = endedAt,
                     timerLastStartedAt = null,
-                    onCourtCsv = "", // Reset player on court status
                 ),
             )
+            clearCourt(gameId)
             gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
@@ -120,8 +121,8 @@ class GameRepository(
 
     suspend fun updateAbsentPlayers(gameId: Long, playerIds: List<Long>) {
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction
-            gameDao.update(game.copy(absentPlayerIdsCsv = idsToCsv(playerIds)))
+            if (gameDao.getById(gameId) == null) return@withTransaction
+            saveLineup(gameId, getLineup(gameId).copy(absentIds = playerIds.toSet()))
         }
     }
 
@@ -157,7 +158,7 @@ class GameRepository(
             val game = gameDao.getById(gameId) ?: return@withTransaction
             val normalizedIds = playerIds.asSequence().distinct().take(maxSize).toList()
 
-            gameDao.update(game.copy(onCourtCsv = idsToCsv(normalizedIds)))
+            saveLineup(gameId, getLineup(gameId).copy(onCourtIds = normalizedIds.toSet()))
             gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
@@ -173,17 +174,13 @@ class GameRepository(
     suspend fun substitute(gameId: Long, playerInId: Long, playerOutId: Long) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
-            val onCourt = game.onCourtIds().toMutableList()
+            val lineup = getLineup(gameId)
 
-            if (!onCourt.contains(playerOutId) || onCourt.contains(playerInId)) {
+            if (!lineup.onCourtIds.contains(playerOutId) || lineup.onCourtIds.contains(playerInId)) {
                 return@withTransaction
             }
 
-            val updated = onCourt.map { currentId ->
-                if (currentId == playerOutId) playerInId else currentId
-            }
-
-            gameDao.update(game.copy(onCourtCsv = idsToCsv(updated)))
+            saveLineup(gameId, lineup.copy(onCourtIds = lineup.onCourtIds - playerOutId + playerInId))
             gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
@@ -303,19 +300,7 @@ class GameRepository(
                 gameDao.getAllBySport(sport.name).forEach { recalculateTotals(it.id) }
             }
             if (players) {
-                if (!games) {
-                    // Every player is about to disappear. Without this, every surviving game keeps
-                    // referencing the now-deleted player ids in onCourtCsv/absentPlayerIdsCsv —
-                    // the same ghost-slot problem deletePlayer() guards against, just for every
-                    // game at once (games.onCourtCsv isn't a real foreign key, so it isn't covered
-                    // by the player -> game_events SET_NULL constraint).
-                    gameDao.getAllBySport(sport.name).forEach { game ->
-                        if (game.onCourtCsv.isNotEmpty() || game.absentPlayerIdsCsv.isNotEmpty()) {
-                            gameDao.update(game.copy(onCourtCsv = "", absentPlayerIdsCsv = ""))
-                        }
-                    }
-                }
-                playerDao.deleteAllBySport(sport.name)
+                playerDao.deleteAllBySport(sport.name) // game_players.playerId is ON DELETE CASCADE
             }
         }
     }
@@ -341,6 +326,17 @@ class GameRepository(
             )
             recalculateTotals(gameId)
         }
+    }
+
+    /** Replaces the game's on-court/absent rows with [lineup]; call inside a transaction. */
+    private suspend fun saveLineup(gameId: Long, lineup: GameLineup) {
+        gamePlayerDao.deleteByGame(gameId)
+        gamePlayerDao.insertAll(lineup.toEntities(gameId))
+    }
+
+    /** Takes everyone off the court, keeping attendance; call inside a transaction. */
+    private suspend fun clearCourt(gameId: Long) {
+        saveLineup(gameId, getLineup(gameId).copy(onCourtIds = emptySet()))
     }
 
     /** Re-derives the game's stored score and MVP totals from its events; call inside a transaction. */

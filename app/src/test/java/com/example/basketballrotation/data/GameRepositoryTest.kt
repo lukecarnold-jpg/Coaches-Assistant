@@ -61,9 +61,8 @@ class GameRepositoryTest {
 
         repository.deletePlayer(playerIds[2])
 
-        val updated = database.gameDao().getById(game.id)!!
-        assertEquals(4, updated.onCourtIds().size)
-        assertFalse(updated.onCourtIds().contains(playerIds[2]))
+        assertEquals(4, repository.getLineup(game.id).onCourtIds.size)
+        assertFalse(repository.getLineup(game.id).onCourtIds.contains(playerIds[2]))
     }
 
     @Test
@@ -94,9 +93,8 @@ class GameRepositoryTest {
 
         repository.clearSelectedData(Sport.BASKETBALL, players = true, games = false, events = false)
 
-        val updated = database.gameDao().getById(game.id)!!
-        assertTrue(updated.onCourtIds().isEmpty())
-        assertTrue(updated.absentPlayerIds().isEmpty())
+        assertTrue(repository.getLineup(game.id).onCourtIds.isEmpty())
+        assertTrue(repository.getLineup(game.id).absentIds.isEmpty())
     }
 
     @Test
@@ -107,8 +105,7 @@ class GameRepositoryTest {
 
         repository.deletePlayer(playerIds[5])
 
-        val updated = database.gameDao().getById(game.id)!!
-        assertTrue(updated.absentPlayerIds().isEmpty())
+        assertTrue(repository.getLineup(game.id).absentIds.isEmpty())
     }
 
     @Test
@@ -121,8 +118,7 @@ class GameRepositoryTest {
 
         repository.substitute(game.id, playerInId = bench, playerOutId = onCourt[0])
 
-        val updated = database.gameDao().getById(game.id)!!
-        val newOnCourt = updated.onCourtIds()
+        val newOnCourt = repository.getLineup(game.id).onCourtIds
         assertEquals(5, newOnCourt.size)
         assertTrue(newOnCourt.contains(bench))
         assertFalse(newOnCourt.contains(onCourt[0]))
@@ -139,8 +135,7 @@ class GameRepositoryTest {
         // bench player is not on court, so this swap request is invalid and should change nothing.
         repository.substitute(game.id, playerInId = onCourt[0], playerOutId = bench)
 
-        val updated = database.gameDao().getById(game.id)!!
-        assertEquals(onCourt.toSet(), updated.onCourtIds().toSet())
+        assertEquals(onCourt.toSet(), repository.getLineup(game.id).onCourtIds.toSet())
     }
 
     @Test
@@ -218,7 +213,7 @@ class GameRepositoryTest {
         val updated = database.gameDao().getById(game.id)!!
         assertEquals(2, updated.currentPeriod)
         assertEquals(0L, updated.runningTimeMillis)
-        assertTrue(updated.onCourtIds().isEmpty())
+        assertTrue(repository.getLineup(game.id).onCourtIds.isEmpty())
     }
 
     @Test
@@ -243,7 +238,7 @@ class GameRepositoryTest {
 
         val updated = database.gameDao().getById(game.id)!!
         assertTrue(updated.isFinished)
-        assertTrue(updated.onCourtIds().isEmpty())
+        assertTrue(repository.getLineup(game.id).onCourtIds.isEmpty())
     }
 
     @Test
@@ -388,5 +383,44 @@ class GameRepositoryTest {
         repository.clearSelectedData(Sport.BASKETBALL, players = false, games = true, events = false)
 
         assertEquals(listOf(netballGame), database.gameDao().getAll().map { it.id })
+    }
+
+    @Test
+    fun advancePeriod_clearsTheCourtButKeepsAttendance() = runBlocking {
+        val playerIds = addPlayers(6)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
+        repository.updateAbsentPlayers(game.id, listOf(playerIds[5]))
+
+        repository.advancePeriod(game.id)
+
+        val lineup = repository.getLineup(game.id)
+        assertTrue(lineup.onCourtIds.isEmpty())
+        assertEquals(setOf(playerIds[5]), lineup.absentIds)
+    }
+
+    @Test
+    fun updateAbsentPlayers_leavesTheCourtAlone() = runBlocking {
+        val playerIds = addPlayers(6)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
+
+        repository.updateAbsentPlayers(game.id, listOf(playerIds[5]))
+        repository.updateAbsentPlayers(game.id, emptyList())
+
+        val lineup = repository.getLineup(game.id)
+        assertEquals(playerIds.take(5).toSet(), lineup.onCourtIds)
+        assertTrue(lineup.absentIds.isEmpty())
+    }
+
+    @Test
+    fun deleteGame_alsoDeletesItsLineup() = runBlocking {
+        val playerIds = addPlayers(5)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds, maxSize = 5)
+
+        repository.deleteGame(game.id)
+
+        assertTrue(database.gamePlayerDao().getByGame(game.id).isEmpty())
     }
 }

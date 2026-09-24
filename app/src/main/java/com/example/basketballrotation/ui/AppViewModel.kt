@@ -15,8 +15,7 @@ import com.example.basketballrotation.data.GameEventEntity
 import com.example.basketballrotation.data.MvpVotes
 import com.example.basketballrotation.data.PlayerEntity
 import com.example.basketballrotation.data.Sport
-import com.example.basketballrotation.data.absentPlayerIds
-import com.example.basketballrotation.data.onCourtIds
+import com.example.basketballrotation.data.GameLineup
 import com.example.basketballrotation.data.remainingPeriodTimeMillis
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -83,9 +82,18 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         emptyList(),
     )
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val selectedGameLineup = selectedGame.flatMapLatest { game ->
+        if (game == null) flowOf(GameLineup()) else repository.observeLineup(game.id)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        GameLineup(),
+    )
+
     val selectedGameStats =
-        combine(players, selectedGame, selectedGameEvents) { playerList, game, events ->
-            calculatePlayerGameStats(playerList, game, events)
+        combine(players, selectedGame, selectedGameLineup, selectedGameEvents) { playerList, game, lineup, events ->
+            calculatePlayerGameStats(playerList, game, lineup, events)
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
@@ -422,17 +430,19 @@ class AppViewModelFactory(
 
 /**
  * Replays [events] in chronological order to derive each roster player's current on-court/bench
- * status, shift and bench durations, and per-game totals as of [game]'s current running time.
+ * status (from [lineup]), shift and bench durations, and per-game totals as of [game]'s current
+ * running time.
  *
  * A pure function (no Android/coroutine dependencies) so it can be unit tested directly.
  */
 fun calculatePlayerGameStats(
     playerList: List<PlayerEntity>,
     game: GameEntity?,
+    lineup: GameLineup,
     events: List<GameEventEntity>,
 ): List<PlayerGameStat> {
-    val onCourt = game?.onCourtIds()?.toSet().orEmpty()
-    val absent = game?.absentPlayerIds()?.toSet().orEmpty()
+    val onCourt = lineup.onCourtIds
+    val absent = lineup.absentIds
 
     val totalTimeByPlayer = mutableMapOf<Long, Long>()
     val lastEnteredAt = mutableMapOf<Long, Long>()

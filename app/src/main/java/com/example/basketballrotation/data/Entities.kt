@@ -41,15 +41,12 @@ data class GameEntity(
     val teamScore: Int = 0,
     val opponentScore: Int = 0,
     val mvpVotesJson: String = "{}", // Map<Long, Int> serialized
-    val onCourtCsv: String = "",
     val runningTimeMillis: Long = 0, // Elapsed time in current period
     val timerLastStartedAt: Long? = null,
     val isFinished: Boolean = false,
     val finishedAt: Long? = null,
     val currentPeriod: Int = 1,
     val periodDurationMillis: Long = 10 * 60 * 1000L, // Default 10 mins
-    @ColumnInfo(defaultValue = "")
-    val absentPlayerIdsCsv: String = "",
     @ColumnInfo(defaultValue = "")
     val notes: String = "",
     @ColumnInfo(defaultValue = "BASKETBALL")
@@ -104,13 +101,54 @@ data class GameEventEntity(
     val gameTimeMillis: Long = 0,
 )
 
-fun GameEntity.onCourtIds(): List<Long> =
-    onCourtCsv.split(',')
-        .mapNotNull { value -> value.trim().takeIf { it.isNotEmpty() }?.toLongOrNull() }
+/**
+ * A player's status in one game: on court, marked absent, or (in principle) both. Players with
+ * neither status have no row. The foreign keys mean deleting a game or a player removes their rows,
+ * so a deleted player can never be left occupying an on-court slot.
+ */
+@Entity(
+    tableName = "game_players",
+    primaryKeys = ["gameId", "playerId"],
+    indices = [Index("playerId")],
+    foreignKeys = [
+        ForeignKey(
+            entity = GameEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["gameId"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+        ForeignKey(
+            entity = PlayerEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["playerId"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+)
+data class GamePlayerEntity(
+    val gameId: Long,
+    val playerId: Long,
+    val onCourt: Boolean = false,
+    val absent: Boolean = false,
+)
 
-fun GameEntity.absentPlayerIds(): List<Long> =
-    absentPlayerIdsCsv.split(',')
-        .mapNotNull { value -> value.trim().takeIf { it.isNotEmpty() }?.toLongOrNull() }
+/** Who is on court and who is absent in one game, built from its [GamePlayerEntity] rows. */
+data class GameLineup(
+    val onCourtIds: Set<Long> = emptySet(),
+    val absentIds: Set<Long> = emptySet(),
+) {
+    fun toEntities(gameId: Long): List<GamePlayerEntity> =
+        (onCourtIds + absentIds).map { playerId ->
+            GamePlayerEntity(gameId, playerId, onCourt = playerId in onCourtIds, absent = playerId in absentIds)
+        }
+
+    companion object {
+        fun from(rows: List<GamePlayerEntity>) = GameLineup(
+            onCourtIds = rows.filter { it.onCourt }.map { it.playerId }.toSet(),
+            absentIds = rows.filter { it.absent }.map { it.playerId }.toSet(),
+        )
+    }
+}
 
 fun idsToCsv(ids: Collection<Long>): String = ids.joinToString(",")
 
@@ -127,24 +165,6 @@ fun GameEntity.currentGameTimeMillis(now: Long = System.currentTimeMillis()): Lo
 /** Time until the period's clock runs out as of [now], or null if the period has no set length. */
 fun GameEntity.remainingPeriodTimeMillis(now: Long = System.currentTimeMillis()): Long? =
     if (periodDurationMillis > 0) periodDurationMillis - currentGameTimeMillis(now) else null
-
-/**
- * Strips [playerId] from this game's on-court and absent lists, e.g. when the player is deleted
- * from the roster. Without this, a deleted player's id lingers in [GameEntity.onCourtCsv] forever:
- * the on-court count still matches the sport's required size, so the game never re-prompts for a
- * starting lineup, but the player has no card in the UI (it's filtered by current roster) — leaving
- * a slot that looks occupied but can never be subbed into.
- */
-fun GameEntity.withoutPlayer(playerId: Long): GameEntity {
-    val onCourt = onCourtIds()
-    val absent = absentPlayerIds()
-    if (!onCourt.contains(playerId) && !absent.contains(playerId)) return this
-
-    return copy(
-        onCourtCsv = idsToCsv(onCourt - playerId),
-        absentPlayerIdsCsv = idsToCsv(absent - playerId),
-    )
-}
 
 /**
  * Recomputes the game's running totals (team score, opponent score, MVP tally) from its [events],

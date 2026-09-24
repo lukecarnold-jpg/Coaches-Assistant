@@ -21,6 +21,7 @@ fun GameScreen(
     players: List<PlayerEntity>,
     games: List<GameEntity>,
     selectedGame: GameEntity?,
+    lineup: GameLineup,
     stats: List<PlayerGameStat>,
     events: List<GameEventEntity>,
     onCreateGame: (title: String, opponent: String, periodCount: Int, periodMins: Int) -> Unit,
@@ -71,7 +72,7 @@ fun GameScreen(
 
     val onCourtStats = stats.filter { it.onCourt }
     val benchStats = stats.filter { !it.onCourt }
-    val onCourtIds = selectedGame?.onCourtIds()?.toSet().orEmpty()
+    val onCourtIds = lineup.onCourtIds
     val playerById = players.associateBy { it.id }
     val activeGames = games.filter { !it.isFinished }
 
@@ -299,7 +300,7 @@ fun GameScreen(
     if (showAttendanceDialog && selectedGame != null) {
         AttendanceDialog(
             players = players,
-            absentPlayerIds = selectedGame.absentPlayerIds(),
+            absentPlayerIds = lineup.absentIds.toList(),
             onDismiss = { showAttendanceDialog = false },
             onConfirm = { ids ->
                 onUpdateAbsentPlayers(ids)
