@@ -12,6 +12,25 @@ if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
 
+/**
+ * versionCode must increase with every release (Google Play rejects an upload that doesn't), so
+ * it's the number of commits in the current history, which only grows because master is linear
+ * (PRs are rebase-merged). Pass -PversionCode=N to set it explicitly. It needs the full history:
+ * in a shallow clone the count is too low, so that's warned about (CI checks out full history).
+ */
+fun gitOutput(vararg args: String): String? = runCatching {
+    providers.exec { commandLine("git", *args) }.standardOutput.asText.get().trim()
+}.getOrNull()
+
+val appVersionCode: Int = providers.gradleProperty("versionCode").orNull?.toInt()
+    ?: run {
+        if (gitOutput("rev-parse", "--is-shallow-repository") == "true") {
+            logger.warn("Shallow git clone: versionCode is derived from the commit count and will be too low.")
+        }
+        gitOutput("rev-list", "--count", "HEAD")?.toIntOrNull()
+            ?: 1.also { logger.warn("Couldn't count git commits; using versionCode 1. Pass -PversionCode=N.") }
+    }
+
 android {
     namespace = "com.lukearnold.coachesassistant"
     compileSdk = 37
@@ -20,7 +39,7 @@ android {
         applicationId = "com.lukearnold.coachesassistant"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
+        versionCode = appVersionCode
         versionName = "1.0"
 
         val apiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
