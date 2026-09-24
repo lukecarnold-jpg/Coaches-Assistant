@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <!--
+    Cleartext is permitted at the platform level only so the "Other" AI provider can reach a
+    server on the local network over plain http (e.g. Ollama on a laptop). Android can't scope
+    this to private IP ranges, so the app enforces that itself: the shared OkHttp client refuses
+    any plain-http request, including redirects, to a host that isn't on the local network (see
+    isLocalNetworkHost in ai/CustomEndpointConfig.kt). Every built-in endpoint is https.
+    -->
+    <base-config
+        cleartextTrafficPermitted="true"
+        tools:ignore="InsecureBaseConfiguration" />
+</network-security-config>

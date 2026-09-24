@@ -61,6 +61,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
   - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic, OpenAI, and the "Other" provider have no build-time fallback
   - "Other" also requires an endpoint URL and model name, since it can point at any OpenAI-compatible service
+  - "Other" endpoints must use `https://`, except servers on the local network (localhost, private IP ranges including Tailscale's `100.64.0.0/10`, and `.local`/`.lan`/single-label hostnames), which may use plain `http://` and can be used without an API key — e.g. `http://192.168.1.20:11434/v1/chat/completions` for Ollama
   - Selectively delete the current sport's players, games, or events (other sports are untouched), or delete everything across every sport
 
 ## Tech stack

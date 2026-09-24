@@ -28,6 +28,7 @@ enum class AiProvider(val storageKey: String, val displayName: String, val getKe
         displayName = "Other (OpenAI-compatible)",
         getKeyHint = "Works with any provider that speaks the OpenAI chat-completions API " +
             "(e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted server such as Ollama). " +
-            "Also set its endpoint URL and model name below.",
+            "Also set its endpoint URL and model name above. Hosted providers need https:// and a key; " +
+            "a server on your local network can use http:// and may not need a key.",
     ),
 }

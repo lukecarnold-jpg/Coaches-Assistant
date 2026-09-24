@@ -30,6 +30,16 @@ fun textGeneratorFor(provider: AiProvider, customEndpoint: CustomEndpointConfig 
 private val httpClient = OkHttpClient.Builder()
     .connectTimeout(30, TimeUnit.SECONDS)
     .readTimeout(60, TimeUnit.SECONDS)
+    // The platform allows cleartext so the Other provider can reach local servers (see
+    // network_security_config.xml); this enforces the local-only part on every request actually
+    // sent, including redirects, so an https endpoint can't be redirected to plain http.
+    .addNetworkInterceptor { chain ->
+        val url = chain.request().url
+        if (!url.isHttps && !isLocalNetworkHost(url.host)) {
+            throw IOException("Refusing to send a request over plain http to ${url.host}, which isn't on the local network.")
+        }
+        chain.proceed(chain.request())
+    }
     .build()
 
 private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
@@ -106,6 +116,7 @@ class CustomTextGenerator(private val config: CustomEndpointConfig) : DrillTextG
         if (config.endpointUrl.isBlank() || config.model.isBlank()) {
             throw IOException("Set an endpoint URL and model name for the Other provider in Settings.")
         }
+        endpointUrlProblem(config.endpointUrl)?.let { throw IOException(it) }
         return openAiCompatibleRequest(
             url = config.endpointUrl,
             apiKey = apiKey,
@@ -133,7 +144,8 @@ private suspend fun openAiCompatibleRequest(url: String, apiKey: String, model: 
 
         val request = Request.Builder()
             .url(url)
-            .addHeader("Authorization", "Bearer $apiKey")
+            // Local servers such as Ollama usually don't take a key, so the header is optional.
+            .apply { if (apiKey.isNotBlank()) addHeader("Authorization", "Bearer $apiKey") }
             .post(body.toString().toRequestBody(jsonMediaType))
             .build()
 

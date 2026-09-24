@@ -78,7 +78,8 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
     fun generateDrills(ageGroup: String) {
         val provider = _selectedProvider.value
         val apiKey = effectiveApiKey(provider)
-        if (apiKey.isBlank()) {
+        // The Other provider may be a local server that doesn't need a key.
+        if (apiKey.isBlank() && provider != AiProvider.OTHER) {
             _uiState.value = TrainingUiState.Error(
                 "Add your ${provider.displayName} API key in Settings to generate drills.",
             )
