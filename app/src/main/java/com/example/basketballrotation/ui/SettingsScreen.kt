@@ -189,7 +189,10 @@ fun SettingsScreen(
         }
 
         SectionCard(title = "Data management") {
-            Text("Choose which local data to remove, or delete everything at once. These actions cannot be undone.")
+            Text(
+                "Delete ${currentSport?.displayName ?: "this sport"}'s players, games, or events, or delete " +
+                    "everything for every sport at once. These actions cannot be undone.",
+            )
             Spacer(Modifier.height(layout.smallGap))
             Button(
                 onClick = { showDeleteOptions = true },
@@ -207,7 +210,9 @@ fun SettingsScreen(
             AlertDialog(
                 onDismissRequest = { showConfirm = false },
                 title = { Text("Confirm deletion") },
-                text = { Text("Are you sure you want to delete all data? This will remove all players and games.") },
+                text = {
+                    Text("Are you sure you want to delete all data? This removes every player and game for every sport, not just ${currentSport?.displayName ?: "this one"}.")
+                },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -234,7 +239,7 @@ fun SettingsScreen(
                 title = { Text("Delete local data") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
-                        Text("Select the data categories to delete.")
+                        Text("Select the ${currentSport?.displayName ?: "current sport"} data to delete. Other sports are not affected.")
                         DataDeletionOption(
                             label = "Players",
                             checked = deletePlayers,
@@ -260,7 +265,7 @@ fun SettingsScreen(
                                 showConfirm = true
                             },
                         ) {
-                            Text("Delete all data", color = MaterialTheme.colorScheme.error)
+                            Text("Delete all data (every sport)", color = MaterialTheme.colorScheme.error)
                         }
                         TextButton(
                             onClick = {

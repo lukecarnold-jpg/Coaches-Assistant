@@ -146,4 +146,25 @@ fun GameEntity.withoutPlayer(playerId: Long): GameEntity {
     )
 }
 
+/**
+ * Recomputes the game's running totals (team score, opponent score, MVP tally) from its [events],
+ * which are the source of truth; the totals are stored on the game only so lists and exports
+ * don't need to load every event. Scores never drop below zero.
+ */
+fun GameEntity.withTotalsFrom(events: List<GameEventEntity>): GameEntity {
+    fun sumOf(type: EventType) = events.filter { it.type == type.name }.sumOf { it.points }
+
+    val mvpVotes = events
+        .filter { it.type == EventType.MVP_VOTE.name }
+        .mapNotNull { it.playerId }
+        .groupingBy { it }
+        .eachCount()
+
+    return copy(
+        teamScore = sumOf(EventType.SCORE).coerceAtLeast(0),
+        opponentScore = sumOf(EventType.OPPONENT_SCORE).coerceAtLeast(0),
+        mvpVotesJson = MvpVotes.serialize(mvpVotes),
+    )
+}
+
 fun PlayerEntity.displayLabel(): String = if (jerseyNumber != null) "#$jerseyNumber $name" else name

@@ -134,41 +134,15 @@ class BasketballRepository(
 
     suspend fun updateEvent(event: GameEventEntity) {
         database.withTransaction {
-            val oldEvent = gameEventDao.getByGame(event.gameId).find { it.id == event.id } ?: return@withTransaction
             gameEventDao.update(event)
-            
-            val game = gameDao.getById(event.gameId) ?: return@withTransaction
-            when (EventType.fromRaw(event.type)) {
-                EventType.SCORE -> {
-                    val diff = event.points - oldEvent.points
-                    gameDao.update(game.copy(teamScore = (game.teamScore + diff).coerceAtLeast(0)))
-                }
-
-                EventType.OPPONENT_SCORE -> {
-                    val diff = event.points - oldEvent.points
-                    gameDao.update(game.copy(opponentScore = (game.opponentScore + diff).coerceAtLeast(0)))
-                }
-
-                else -> Unit
-            }
+            recalculateTotals(event.gameId)
         }
     }
 
     suspend fun deleteEvent(event: GameEventEntity) {
         database.withTransaction {
             gameEventDao.deleteById(event.id)
-            val game = gameDao.getById(event.gameId) ?: return@withTransaction
-            when (EventType.fromRaw(event.type)) {
-                EventType.SCORE -> {
-                    gameDao.update(game.copy(teamScore = (game.teamScore - event.points).coerceAtLeast(0)))
-                }
-
-                EventType.OPPONENT_SCORE -> {
-                    gameDao.update(game.copy(opponentScore = (game.opponentScore - event.points).coerceAtLeast(0)))
-                }
-
-                else -> Unit
-            }
+            recalculateTotals(event.gameId)
         }
     }
 
@@ -226,32 +200,21 @@ class BasketballRepository(
     suspend fun addScore(gameId: Long, playerId: Long?, points: Int) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
+            // A null player means the points are the opponent's.
+            val currentScore = if (playerId == null) game.opponentScore else game.teamScore
+            if (currentScore + points < 0) return@withTransaction
 
-            if (playerId == null) {
-                // Adjusting opponent score
-                gameDao.update(game.copy(opponentScore = (game.opponentScore + points).coerceAtLeast(0)))
-                gameEventDao.insert(
-                    GameEventEntity(
-                        gameId = gameId,
-                        timestamp = System.currentTimeMillis(),
-                        type = EventType.OPPONENT_SCORE.name,
-                        points = points,
-                        gameTimeMillis = calculateCurrentGameTime(game),
-                    ),
-                )
-            } else {
-                gameDao.update(game.copy(teamScore = (game.teamScore + points).coerceAtLeast(0)))
-                gameEventDao.insert(
-                    GameEventEntity(
-                        gameId = gameId,
-                        timestamp = System.currentTimeMillis(),
-                        type = EventType.SCORE.name,
-                        playerId = playerId,
-                        points = points,
-                        gameTimeMillis = calculateCurrentGameTime(game),
-                    ),
-                )
-            }
+            gameEventDao.insert(
+                GameEventEntity(
+                    gameId = gameId,
+                    timestamp = System.currentTimeMillis(),
+                    type = if (playerId == null) EventType.OPPONENT_SCORE.name else EventType.SCORE.name,
+                    playerId = playerId,
+                    points = points,
+                    gameTimeMillis = calculateCurrentGameTime(game),
+                ),
+            )
+            recalculateTotals(gameId)
         }
     }
 
@@ -325,16 +288,19 @@ class BasketballRepository(
         }
     }
 
+    /** Deletes the chosen categories of [sport]'s data, leaving every other sport's alone. */
     suspend fun clearSelectedData(
+        sport: Sport,
         players: Boolean,
         games: Boolean,
         events: Boolean,
     ) {
         database.withTransaction {
             if (games) {
-                gameDao.deleteAll() // game_events.gameId is ON DELETE CASCADE
+                gameDao.deleteAllBySport(sport.name) // game_events.gameId is ON DELETE CASCADE
             } else if (events) {
-                gameEventDao.deleteAll()
+                gameEventDao.deleteAllBySport(sport.name)
+                gameDao.getAllBySport(sport.name).forEach { recalculateTotals(it.id) }
             }
             if (players) {
                 if (!games) {
@@ -343,13 +309,13 @@ class BasketballRepository(
                     // the same ghost-slot problem deletePlayer() guards against, just for every
                     // game at once (games.onCourtCsv isn't a real foreign key, so it isn't covered
                     // by the player -> game_events SET_NULL constraint).
-                    gameDao.getAll().forEach { game ->
+                    gameDao.getAllBySport(sport.name).forEach { game ->
                         if (game.onCourtCsv.isNotEmpty() || game.absentPlayerIdsCsv.isNotEmpty()) {
                             gameDao.update(game.copy(onCourtCsv = "", absentPlayerIdsCsv = ""))
                         }
                     }
                 }
-                playerDao.deleteAll()
+                playerDao.deleteAllBySport(sport.name)
             }
         }
     }
@@ -364,11 +330,6 @@ class BasketballRepository(
     suspend fun addMvpVote(gameId: Long, playerId: Long) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
-            val currentVotes = MvpVotes.parse(game.mvpVotesJson).toMutableMap()
-            currentVotes[playerId] = (currentVotes[playerId] ?: 0) + 1
-
-            gameDao.update(game.copy(mvpVotesJson = MvpVotes.serialize(currentVotes)))
-
             gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
@@ -378,7 +339,15 @@ class BasketballRepository(
                     gameTimeMillis = calculateCurrentGameTime(game),
                 ),
             )
+            recalculateTotals(gameId)
         }
+    }
+
+    /** Re-derives the game's stored score and MVP totals from its events; call inside a transaction. */
+    private suspend fun recalculateTotals(gameId: Long) {
+        val game = gameDao.getById(gameId) ?: return
+        val updated = game.withTotalsFrom(gameEventDao.getByGame(gameId))
+        if (updated != game) gameDao.update(updated)
     }
 
     private fun calculateCurrentGameTime(game: GameEntity): Long = game.currentGameTimeMillis()

@@ -58,4 +58,36 @@ class GameEntityTest {
         assertEquals(900_000L, running.currentGameTimeMillis(now = 900_000L))
         assertEquals(null, running.remainingPeriodTimeMillis(now = 900_000L))
     }
+
+    @Test
+    fun withTotalsFrom_sumsScoresPerSideAndCountsMvpVotes() {
+        fun event(type: EventType, points: Int = 0, playerId: Long? = null) =
+            GameEventEntity(gameId = 0, timestamp = 0, type = type.name, playerId = playerId, points = points)
+
+        val totals = baseGame.copy(teamScore = 99, opponentScore = 99, mvpVotesJson = "{}").withTotalsFrom(
+            listOf(
+                event(EventType.SCORE, points = 3, playerId = 1),
+                event(EventType.SCORE, points = -1, playerId = 1),
+                event(EventType.OPPONENT_SCORE, points = 2),
+                event(EventType.FOUL, points = 1, playerId = 2),
+                event(EventType.MVP_VOTE, playerId = 2),
+                event(EventType.MVP_VOTE, playerId = 2),
+                // A vote for a since-deleted player (playerId nulled out) no longer counts.
+                event(EventType.MVP_VOTE, playerId = null),
+            ),
+        )
+
+        assertEquals(2, totals.teamScore)
+        assertEquals(2, totals.opponentScore)
+        assertEquals(mapOf(2L to 2), MvpVotes.parse(totals.mvpVotesJson))
+    }
+
+    @Test
+    fun withTotalsFrom_neverReportsANegativeScore() {
+        val totals = baseGame.withTotalsFrom(
+            listOf(GameEventEntity(gameId = 0, timestamp = 0, type = EventType.OPPONENT_SCORE.name, points = -4)),
+        )
+
+        assertEquals(0, totals.opponentScore)
+    }
 }

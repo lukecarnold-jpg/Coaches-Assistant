@@ -32,6 +32,9 @@ interface PlayerDao {
 
     @Query("DELETE FROM players")
     suspend fun deleteAll()
+
+    @Query("DELETE FROM players WHERE sport = :sport")
+    suspend fun deleteAllBySport(sport: String)
 }
 
 @Dao
@@ -44,6 +47,9 @@ interface GameDao {
 
     @Query("SELECT * FROM games WHERE sport = :sport ORDER BY createdAt DESC")
     fun observeAllBySport(sport: String): Flow<List<GameEntity>>
+
+    @Query("SELECT * FROM games WHERE sport = :sport")
+    suspend fun getAllBySport(sport: String): List<GameEntity>
 
     @Query("SELECT * FROM games WHERE id = :gameId LIMIT 1")
     suspend fun getById(gameId: Long): GameEntity?
@@ -59,6 +65,9 @@ interface GameDao {
 
     @Query("DELETE FROM games")
     suspend fun deleteAll()
+
+    @Query("DELETE FROM games WHERE sport = :sport")
+    suspend fun deleteAllBySport(sport: String)
 }
 
 @Dao
@@ -78,6 +87,6 @@ interface GameEventDao {
     @Query("DELETE FROM game_events WHERE id = :eventId")
     suspend fun deleteById(eventId: Long)
 
-    @Query("DELETE FROM game_events")
-    suspend fun deleteAll()
+    @Query("DELETE FROM game_events WHERE gameId IN (SELECT id FROM games WHERE sport = :sport)")
+    suspend fun deleteAllBySport(sport: String)
 }

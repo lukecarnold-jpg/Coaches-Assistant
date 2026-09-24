@@ -92,7 +92,7 @@ class BasketballRepositoryTest {
         repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
         repository.updateAbsentPlayers(game.id, listOf(playerIds[5]))
 
-        repository.clearSelectedData(players = true, games = false, events = false)
+        repository.clearSelectedData(Sport.BASKETBALL, players = true, games = false, events = false)
 
         val updated = database.gameDao().getById(game.id)!!
         assertTrue(updated.onCourtIds().isEmpty())
@@ -175,6 +175,8 @@ class BasketballRepositoryTest {
 
         val updated = database.gameDao().getById(game.id)!!
         assertEquals(0, updated.teamScore)
+        // And no event is logged for it, so the event log still adds up to the score.
+        assertTrue(database.gameEventDao().getByGame(game.id).isEmpty())
     }
 
     @Test
@@ -260,7 +262,7 @@ class BasketballRepositoryTest {
         addPlayers(3)
         newGame()
 
-        repository.clearSelectedData(players = false, games = true, events = true)
+        repository.clearSelectedData(Sport.BASKETBALL, players = false, games = true, events = true)
 
         assertEquals(3, database.playerDao().getAll().size)
         assertTrue(database.gameDao().getAll().isEmpty())
@@ -336,5 +338,55 @@ class BasketballRepositoryTest {
         repeat(3) { repository.advancePeriod(gameId) }
 
         assertEquals(3, database.gameDao().getById(gameId)!!.currentPeriod)
+    }
+
+    @Test
+    fun deleteEvent_forAnMvpVote_removesItFromTheTally() = runBlocking {
+        val playerIds = addPlayers(1)
+        val game = newGame()
+        repository.addMvpVote(game.id, playerIds[0])
+        repository.addMvpVote(game.id, playerIds[0])
+        assertEquals(mapOf(playerIds[0] to 2), MvpVotes.parse(database.gameDao().getById(game.id)!!.mvpVotesJson))
+
+        repository.deleteEvent(database.gameEventDao().getByGame(game.id).first())
+
+        assertEquals(mapOf(playerIds[0] to 1), MvpVotes.parse(database.gameDao().getById(game.id)!!.mvpVotesJson))
+    }
+
+    @Test
+    fun clearSelectedData_eventsOnly_alsoResetsScoresAndMvpVotes() = runBlocking {
+        val playerIds = addPlayers(1)
+        val game = newGame()
+        repository.addScore(game.id, playerIds[0], 2)
+        repository.addScore(game.id, playerId = null, points = 3)
+        repository.addMvpVote(game.id, playerIds[0])
+
+        repository.clearSelectedData(Sport.BASKETBALL, players = false, games = false, events = true)
+
+        val updated = database.gameDao().getById(game.id)!!
+        assertEquals(0, updated.teamScore)
+        assertEquals(0, updated.opponentScore)
+        assertTrue(MvpVotes.parse(updated.mvpVotesJson).isEmpty())
+    }
+
+    @Test
+    fun clearSelectedData_leavesOtherSportsDataAlone() = runBlocking {
+        val basketballPlayer = repository.addPlayer(Sport.BASKETBALL, "Hoops", 1)
+        val netballPlayer = repository.addPlayer(Sport.NETBALL, "Shooter", 2)
+        val basketballGame = repository.createGame(Sport.BASKETBALL, "B", "Rivals")
+        val netballGame = repository.createGame(Sport.NETBALL, "N", "Rivals", onCourtSize = 7)
+        repository.addScore(basketballGame, basketballPlayer, 2)
+        repository.addScore(netballGame, netballPlayer, 1)
+
+        repository.clearSelectedData(Sport.BASKETBALL, players = true, games = false, events = true)
+
+        assertEquals(listOf(netballPlayer), database.playerDao().getAll().map { it.id })
+        assertTrue(database.gameEventDao().getByGame(basketballGame).isEmpty())
+        assertEquals(1, database.gameEventDao().getByGame(netballGame).size)
+        assertEquals(1, database.gameDao().getById(netballGame)!!.teamScore)
+
+        repository.clearSelectedData(Sport.BASKETBALL, players = false, games = true, events = false)
+
+        assertEquals(listOf(netballGame), database.gameDao().getAll().map { it.id })
     }
 }
