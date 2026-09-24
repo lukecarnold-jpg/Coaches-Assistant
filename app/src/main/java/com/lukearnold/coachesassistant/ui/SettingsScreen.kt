@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -54,6 +56,8 @@ fun SettingsScreen(
     onSaveCustomEndpoint: (CustomEndpointConfig) -> Unit = {},
     currentSport: Sport? = null,
     onSwitchSport: () -> Unit = {},
+    keepScreenOnWhileClockRuns: Boolean = true,
+    onKeepScreenOnWhileClockRunsChange: (Boolean) -> Unit = {},
 ) {
     val layout = LocalResponsiveLayout.current
     var showConfirm by remember { mutableStateOf(value = false) }
@@ -88,6 +92,25 @@ fun SettingsScreen(
                 Button(onClick = onSwitchSport) {
                     Text("Switch sport")
                 }
+            }
+        }
+
+        SectionCard(title = "Display") {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Keep screen on while the clock runs")
+                    Text(
+                        "Stops the phone locking mid-game. The normal screen timeout returns when the clock stops.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                Switch(
+                    checked = keepScreenOnWhileClockRuns,
+                    onCheckedChange = onKeepScreenOnWhileClockRunsChange,
+                )
             }
         }
 
