@@ -77,6 +77,11 @@ fun GameScreen(
     val onCourtIds = lineup.onCourtIds
     val liveGameTime = rememberLiveGameTime(selectedGame)
     val gameTimeMillis = { liveGameTime.value }
+    // Each available (non-absent) player's equal share of playing time, as of a given clock time.
+    // `stats` already leaves out absent players, so its size is the number available.
+    val fairShareAt: (Long) -> FairShare? = remember(selectedGame, stats.size, events) {
+        { now -> selectedGame?.let { fairShare(it, stats.size, elapsedGameMillis(events, now)) } }
+    }
     val playerById = players.associateBy { it.id }
     val activeGames = games.filter { !it.isFinished }
 
@@ -95,6 +100,7 @@ fun GameScreen(
                     GameControlPanel(
                         selectedGame = selectedGame,
                         gameTimeMillis = gameTimeMillis,
+                        fairShareAt = fairShareAt,
                         sportConfig = sportConfig,
                         onToggleTimer = onToggleTimer,
                         onResetTimer = onResetTimer,
@@ -157,6 +163,7 @@ fun GameScreen(
                 GameStatsPanel(
                     stats = stats,
                     gameTimeMillis = gameTimeMillis,
+                    fairShareAt = fairShareAt,
                     events = events,
                     playerById = playerById,
                     opponentName = selectedGame?.opponent.orEmpty(),
@@ -237,6 +244,7 @@ fun GameScreen(
                 GameControlPanel(
                     selectedGame = selectedGame,
                     gameTimeMillis = gameTimeMillis,
+                    fairShareAt = fairShareAt,
                     sportConfig = sportConfig,
                     onToggleTimer = onToggleTimer,
                     onResetTimer = onResetTimer,
@@ -282,6 +290,7 @@ fun GameScreen(
                 GameStatsPanel(
                     stats = stats,
                     gameTimeMillis = gameTimeMillis,
+                    fairShareAt = fairShareAt,
                     events = events,
                     playerById = playerById,
                     opponentName = selectedGame.opponent,

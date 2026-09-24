@@ -83,6 +83,8 @@ fun SelectablePlayerRow(
     text: String,
     selected: Boolean,
     badgeNumber: Int? = null,
+    /** Secondary text shown at the end of the row, e.g. how far behind their playing-time share. */
+    trailingText: String? = null,
     onClick: () -> Unit,
 ) {
     val layout = LocalResponsiveLayout.current
@@ -124,7 +126,16 @@ fun SelectablePlayerRow(
             Text(
                 text = text,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                modifier = Modifier.weight(1f),
             )
+            if (trailingText != null) {
+                Spacer(Modifier.width(layout.tinyGap))
+                Text(
+                    text = trailingText,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

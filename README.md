@@ -34,6 +34,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Countdown timer with start, stop, reset, and manual adjustment; it stops itself when the period runs out, and game time is never counted past the end of a period
   - Per-player on-court shift timer that starts from 0 the moment a player is subbed on and freezes when they're subbed off, tracked against the game clock rather than wall-clock time
   - Game stats cards lead with an ON COURT/BENCH status badge and a live time (current shift length while on court, elapsed bench time since their last sub-off while benched)
+  - Equal-share playing-time targets: each available (non-absent) player's share of the game's on-court time, shown on player cards and game stats with how far they are behind or ahead of an even share so far; the substitution list puts the bench player furthest behind first
   - Team and opponent score tracking, with the sport's scoring buttons available for both sides, and opponent-score events in the event log labeled with the actual opponent team name (falling back to "Opponent" only when no name was entered)
   - Per-player infraction logging (labeled Foul/Penalty/Card/Free Kick per sport) and MVP vote tracking
   - Per-game attendance management

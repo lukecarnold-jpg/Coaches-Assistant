@@ -17,6 +17,7 @@ import com.lukearnold.coachesassistant.data.*
 fun GameControlPanel(
     selectedGame: GameEntity,
     gameTimeMillis: () -> Long,
+    fairShareAt: (gameTimeMillis: Long) -> FairShare?,
     sportConfig: SportConfig,
     onToggleTimer: () -> Unit,
     onResetTimer: () -> Unit,
@@ -221,6 +222,7 @@ fun GameControlPanel(
                             onAddFoul = onAddFoul,
                             onAddMvpVote = onAddMvpVote,
                             gameTimeMillis = gameTimeMillis,
+                            fairShareAt = fairShareAt,
                             enabled = !selectedGame.isFinished
                         )
                     }
@@ -249,10 +251,12 @@ fun GameControlPanel(
                     Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
                         onCourtStats.forEach { stat ->
                             val outIndex = pendingOut.indexOf(stat.player.id)
+                            val now = gameTimeMillis()
                             SelectablePlayerRow(
                                 text = stat.player.displayLabel(),
                                 selected = outIndex >= 0,
-                                badgeNumber = if (outIndex >= 0) outIndex + 1 else null
+                                badgeNumber = if (outIndex >= 0) outIndex + 1 else null,
+                                trailingText = fairShareAt(now)?.let { paceLabel(it.behindMillis(stat.totalTimeAt(now))) },
                             ) {
                                 onPlayerOutClick(stat.player.id)
                             }
@@ -262,7 +266,7 @@ fun GameControlPanel(
                     Spacer(Modifier.height(layout.sectionGap))
 
                     Text(
-                        text = "Players coming in (${pendingIn.size})",
+                        text = "Players coming in (${pendingIn.size}) · furthest behind first",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -272,12 +276,14 @@ fun GameControlPanel(
                         EmptyMessage("No bench players available.")
                     } else {
                         Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
-                            benchStats.forEach { stat ->
+                            benchSubOrder(benchStats).forEach { stat ->
                                 val inIndex = pendingIn.indexOf(stat.player.id)
+                                val now = gameTimeMillis()
                                 SelectablePlayerRow(
                                     text = stat.player.displayLabel(),
                                     selected = inIndex >= 0,
-                                    badgeNumber = if (inIndex >= 0) inIndex + 1 else null
+                                    badgeNumber = if (inIndex >= 0) inIndex + 1 else null,
+                                    trailingText = fairShareAt(now)?.let { paceLabel(it.behindMillis(stat.totalTimeAt(now))) },
                                 ) {
                                     onPlayerInClick(stat.player.id)
                                 }
