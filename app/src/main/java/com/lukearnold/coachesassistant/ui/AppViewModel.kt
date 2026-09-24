@@ -106,6 +106,21 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         GameLineup(),
     )
 
+    /** Season totals across this sport's finished games; only computed while something observes it. */
+    val seasonStats: StateFlow<SeasonSummary> =
+        combine(
+            players,
+            games,
+            repository.observeFinishedGameEvents(sport),
+            repository.observeFinishedGameLineups(sport),
+        ) { playerList, gameList, events, lineups ->
+            calculateSeasonStats(playerList, gameList, events, lineups)
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            SeasonSummary(),
+        )
+
     val selectedGameStats =
         combine(players, selectedGame, selectedGameLineup, selectedGameEvents) { playerList, game, lineup, events ->
             calculatePlayerGameStats(playerList, game, lineup, events)

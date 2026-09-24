@@ -66,7 +66,8 @@ presentation helpers:
 - `GameFormatting.kt` - event descriptions, period labels, and time formatting.
 - `LiveGameClock.kt` - the Game screen's single live clock ticker, shared by the game clock, player cards, and stats.
 - `PlayingTime.kt` - equal-share playing-time targets, pace labels, and the bench substitution order.
-- `GameHistoryScreen.kt` - finished-game history, viewing, exporting, and deletion.
+- `GameHistoryScreen.kt` - finished-game history, viewing, exporting, and deletion, with the season summary on top.
+- `SeasonStats.kt` - season totals (team record and per-player totals) across a sport's finished games.
 - `TrainingScreen.kt` - basketball-only AI training assistant UI.
 - `SettingsScreen.kt` - sport switching, AI provider settings, and data clearing.
 - `Components.kt` - shared Compose components, including game list cards.

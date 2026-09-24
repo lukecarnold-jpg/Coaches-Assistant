@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -16,11 +17,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.lukearnold.coachesassistant.data.GameEntity
+import com.lukearnold.coachesassistant.data.displayLabel
+import java.util.Locale
 
 @Composable
 fun GameHistoryScreen(
     modifier: Modifier = Modifier,
     games: List<GameEntity>,
+    season: SeasonSummary,
+    infractionLabelPlural: String,
     onViewGame: (Long) -> Unit,
     onDeleteGame: (Long) -> Unit,
     onExportGame: (Long, Uri) -> Unit,
@@ -47,6 +52,8 @@ fun GameHistoryScreen(
         if (finishedGames.isEmpty()) {
             EmptyMessage("No completed games yet. Games appear here once you end them.")
         } else {
+            SeasonSummaryCard(season = season, infractionLabelPlural = infractionLabelPlural)
+
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 finishedGames.forEach { game ->
                     val result = when {
@@ -97,3 +104,46 @@ fun GameHistoryScreen(
         }
     }
 }
+
+/** Team record and per-player totals across every finished game of the current sport. */
+@Composable
+private fun SeasonSummaryCard(season: SeasonSummary, infractionLabelPlural: String) {
+    val layout = LocalResponsiveLayout.current
+
+    SectionCard(title = "Season (${season.games} ${if (season.games == 1) "game" else "games"})") {
+        Text(
+            text = "W ${season.wins} · L ${season.losses} · T ${season.ties}",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            "Points: ${season.pointsFor} for, ${season.pointsAgainst} against " +
+                "(avg ${perGame(season.pointsFor, season.games)}–${perGame(season.pointsAgainst, season.games)})",
+        )
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = layout.smallGap))
+
+        Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+            season.players.forEach { stat ->
+                Column {
+                    Text(
+                        text = stat.player.displayLabel(),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = "${stat.gamesPlayed} GP · ${formatDuration(stat.totalTimeMillis)} played " +
+                            "(${formatDuration(stat.averageTimeMillis)} avg) · ${stat.points} pts · " +
+                            "${stat.fouls} ${infractionLabelPlural.lowercase()} · ${stat.mvpVotes} MVP",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** [total] averaged over [games], to one decimal place. */
+private fun perGame(total: Int, games: Int): String =
+    if (games == 0) "0" else String.format(Locale.getDefault(), "%.1f", total.toDouble() / games)
+

@@ -45,6 +45,7 @@ import com.lukearnold.coachesassistant.ui.SportPreferences
 import com.lukearnold.coachesassistant.ui.SportSelectionScreen
 import com.lukearnold.coachesassistant.ui.TrainingScreen
 import com.lukearnold.coachesassistant.ui.TrainingViewModel
+import com.lukearnold.coachesassistant.ui.config
 import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : ComponentActivity() {
@@ -241,16 +242,23 @@ private fun SportApp(
                         trainingViewModel = trainingViewModel,
                     )
 
-                    AppTab.HISTORY -> GameHistoryScreen(
-                        modifier = Modifier.fillMaxSize(),
-                        games = games,
-                        onViewGame = { gameId ->
-                            appViewModel.selectGame(gameId)
-                            currentTab = AppTab.GAME.name
-                        },
-                        onDeleteGame = appViewModel::deleteGame,
-                        onExportGame = appViewModel::exportGameCsv,
-                    )
+                    AppTab.HISTORY -> {
+                        // Collected here rather than with the other state above, so season totals
+                        // are only computed while the History tab is showing.
+                        val season by appViewModel.seasonStats.collectAsState()
+                        GameHistoryScreen(
+                            modifier = Modifier.fillMaxSize(),
+                            games = games,
+                            season = season,
+                            infractionLabelPlural = sport.config.infractionLabelPlural,
+                            onViewGame = { gameId ->
+                                appViewModel.selectGame(gameId)
+                                currentTab = AppTab.GAME.name
+                            },
+                            onDeleteGame = appViewModel::deleteGame,
+                            onExportGame = appViewModel::exportGameCsv,
+                        )
+                    }
 
                     AppTab.SETTINGS -> SettingsScreen(
                         modifier = Modifier.fillMaxSize(),
