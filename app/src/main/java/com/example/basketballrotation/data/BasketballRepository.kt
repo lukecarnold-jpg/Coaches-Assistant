@@ -279,14 +279,14 @@ class BasketballRepository(
             val now = System.currentTimeMillis()
 
             if (game.timerLastStartedAt == null) {
-                // Start
+                // Start, unless the period's time has already run out
+                if (game.remainingPeriodTimeMillis(now) == 0L) return@withTransaction
                 gameDao.update(game.copy(timerLastStartedAt = now))
             } else {
                 // Stop
-                val elapsed = now - game.timerLastStartedAt
                 gameDao.update(
                     game.copy(
-                        runningTimeMillis = game.runningTimeMillis + elapsed,
+                        runningTimeMillis = game.currentGameTimeMillis(now),
                         timerLastStartedAt = null,
                     ),
                 )
@@ -294,10 +294,29 @@ class BasketballRepository(
         }
     }
 
+    /** Stops the clock if it's running; unlike [toggleTimer], never starts it. */
+    suspend fun stopTimer(gameId: Long) {
+        database.withTransaction {
+            val game = gameDao.getById(gameId) ?: return@withTransaction
+            if (game.timerLastStartedAt == null) return@withTransaction
+            gameDao.update(
+                game.copy(
+                    runningTimeMillis = game.currentGameTimeMillis(),
+                    timerLastStartedAt = null,
+                ),
+            )
+        }
+    }
+
     suspend fun setGameTime(gameId: Long, timeMillis: Long) {
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction
-            gameDao.update(game.copy(runningTimeMillis = timeMillis, timerLastStartedAt = null))
+            val capped = if (game.periodDurationMillis > 0) {
+                timeMillis.coerceIn(0L, game.periodDurationMillis)
+            } else {
+                maxOf(0L, timeMillis)
+            }
+            gameDao.update(game.copy(runningTimeMillis = capped, timerLastStartedAt = null))
         }
     }
 
@@ -364,9 +383,5 @@ class BasketballRepository(
         }
     }
 
-    private fun calculateCurrentGameTime(game: GameEntity): Long {
-        val base = game.runningTimeMillis
-        val start = game.timerLastStartedAt ?: return base
-        return base + (System.currentTimeMillis() - start)
-    }
+    private fun calculateCurrentGameTime(game: GameEntity): Long = game.currentGameTimeMillis()
 }

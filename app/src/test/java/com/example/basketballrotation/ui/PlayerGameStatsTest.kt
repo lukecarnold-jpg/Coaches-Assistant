@@ -148,6 +148,53 @@ class PlayerGameStatsTest {
     }
 
     @Test
+    fun periodChange_restartsBenchTimeForPlayersBenchedInAnEarlierPeriod() {
+        val stats = calculatePlayerGameStats(
+            playerList = listOf(player1, player2),
+            // Period 2, 3:00 in, with player 2 on court.
+            game = game(onCourtCsv = "2", runningTimeMillis = 180_000L),
+            events = listOf(
+                GameEventEntity(
+                    gameId = 1,
+                    timestamp = 0,
+                    type = EventType.START_LINEUP.name,
+                    note = "1",
+                    gameTimeMillis = 0,
+                ),
+                // Player 1 subbed off at 8:00 of period 1...
+                GameEventEntity(
+                    gameId = 1,
+                    timestamp = 1,
+                    type = EventType.SUBSTITUTION.name,
+                    playerId = 2,
+                    relatedPlayerId = 1,
+                    gameTimeMillis = 480_000,
+                ),
+                GameEventEntity(
+                    gameId = 1,
+                    timestamp = 2,
+                    type = EventType.PERIOD_CHANGE.name,
+                    note = "Finished Period 1",
+                    gameTimeMillis = 600_000,
+                ),
+                GameEventEntity(
+                    gameId = 1,
+                    timestamp = 3,
+                    type = EventType.START_LINEUP.name,
+                    note = "2",
+                    gameTimeMillis = 0,
+                ),
+            ),
+        )
+
+        // ...so 3:00 into period 2 they've been on the bench all period, not max(0, 3:00 - 8:00).
+        val benched = stats.associateBy { it.player.id }.getValue(1)
+        assertFalse(benched.onCourt)
+        assertEquals(180_000L, benched.currentBenchTimeMillis)
+        assertEquals(480_000L, benched.totalTimeMillis)
+    }
+
+    @Test
     fun mvpVotes_areReadFromGameJson() {
         val stats = calculatePlayerGameStats(
             playerList = listOf(player1, player2),

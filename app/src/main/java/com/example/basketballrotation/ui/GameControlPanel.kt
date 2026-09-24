@@ -217,8 +217,7 @@ fun GameControlPanel(
                             onAddScore = onAddScore,
                             onAddFoul = onAddFoul,
                             onAddMvpVote = onAddMvpVote,
-                            gameTimerLastStartedAt = selectedGame.timerLastStartedAt,
-                            gameRunningTimeMillis = selectedGame.runningTimeMillis,
+                            game = selectedGame,
                             enabled = !selectedGame.isFinished
                         )
                     }
@@ -311,19 +310,20 @@ fun GameClock(
     val duration = game.periodDurationMillis
 
     var elapsedDisplay by remember(runningTimeMillis, timerLastStartedAt) {
-        mutableLongStateOf(runningTimeMillis)
+        mutableLongStateOf(game.currentGameTimeMillis())
     }
 
     var isEditing by remember { mutableStateOf(value = false) }
 
-    LaunchedEffect(timerLastStartedAt) {
+    LaunchedEffect(runningTimeMillis, timerLastStartedAt, duration) {
         if (timerLastStartedAt != null) {
+            // Holds at the period length once reached; AppViewModel stops the clock itself.
             while (true) {
-                elapsedDisplay = runningTimeMillis + (System.currentTimeMillis() - timerLastStartedAt)
+                elapsedDisplay = game.currentGameTimeMillis()
                 delay(100)
             }
         } else {
-            elapsedDisplay = runningTimeMillis
+            elapsedDisplay = game.currentGameTimeMillis()
         }
     }
 

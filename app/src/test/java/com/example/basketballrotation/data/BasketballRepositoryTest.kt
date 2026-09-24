@@ -265,4 +265,67 @@ class BasketballRepositoryTest {
         assertEquals(3, database.playerDao().getAll().size)
         assertTrue(database.gameDao().getAll().isEmpty())
     }
+
+    /** Starts [game]'s clock [millisAgo] in the past, as if it had been running unattended. */
+    private suspend fun startClockAgo(game: GameEntity, millisAgo: Long) {
+        database.gameDao().update(game.copy(timerLastStartedAt = System.currentTimeMillis() - millisAgo))
+    }
+
+    @Test
+    fun toggleTimer_stoppingAfterThePeriodEnds_capsTimeAtThePeriodLength() = runBlocking {
+        val game = newGame() // 10-minute periods by default
+        startClockAgo(game, millisAgo = 15 * 60_000L)
+
+        repository.toggleTimer(game.id)
+
+        val updated = database.gameDao().getById(game.id)!!
+        assertEquals(null, updated.timerLastStartedAt)
+        assertEquals(game.periodDurationMillis, updated.runningTimeMillis)
+    }
+
+    @Test
+    fun toggleTimer_doesNotStartOnceThePeriodsTimeIsUp() = runBlocking {
+        val game = newGame()
+        repository.setGameTime(game.id, game.periodDurationMillis)
+
+        repository.toggleTimer(game.id)
+
+        assertEquals(null, database.gameDao().getById(game.id)!!.timerLastStartedAt)
+    }
+
+    @Test
+    fun stopTimer_stopsARunningClockButNeverStartsOne() = runBlocking {
+        val game = newGame()
+
+        repository.stopTimer(game.id)
+        assertEquals(null, database.gameDao().getById(game.id)!!.timerLastStartedAt)
+
+        startClockAgo(game, millisAgo = 60_000L)
+        repository.stopTimer(game.id)
+
+        val updated = database.gameDao().getById(game.id)!!
+        assertEquals(null, updated.timerLastStartedAt)
+        assertTrue(updated.runningTimeMillis in 60_000L until game.periodDurationMillis)
+    }
+
+    @Test
+    fun setGameTime_isClampedToThePeriodLength() = runBlocking {
+        val game = newGame()
+
+        repository.setGameTime(game.id, game.periodDurationMillis + 5 * 60_000L)
+
+        assertEquals(game.periodDurationMillis, database.gameDao().getById(game.id)!!.runningTimeMillis)
+    }
+
+    @Test
+    fun eventsLoggedAfterThePeriodEnds_areStampedAtThePeriodLength() = runBlocking {
+        val playerIds = addPlayers(1)
+        val game = newGame()
+        startClockAgo(game, millisAgo = 15 * 60_000L)
+
+        repository.addScore(game.id, playerIds[0], 2)
+
+        val event = database.gameEventDao().getByGame(game.id).single()
+        assertEquals(game.periodDurationMillis, event.gameTimeMillis)
+    }
 }
