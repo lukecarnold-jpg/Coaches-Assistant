@@ -10,6 +10,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.example.basketballrotation.BuildConfig
 import com.example.basketballrotation.ai.AiProvider
+import com.example.basketballrotation.ai.AiRequestException
 import com.example.basketballrotation.ai.BasketballDrill
 import com.example.basketballrotation.ai.CustomEndpointConfig
 import com.example.basketballrotation.ai.buildDrillPrompt
@@ -133,9 +134,8 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun describeError(provider: AiProvider, e: Exception): String {
-        val message = e.message.orEmpty()
         return when {
-            provider == AiProvider.GEMINI && message.contains("NOT_FOUND") ->
+            provider == AiProvider.GEMINI && e is AiRequestException && e.httpCode == 404 ->
                 "The selected Gemini model was not found. It may have been retired; please check for an app update."
             else -> e.localizedMessage ?: "Unknown error occurred"
         }
