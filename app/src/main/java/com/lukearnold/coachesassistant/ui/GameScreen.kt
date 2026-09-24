@@ -75,6 +75,8 @@ fun GameScreen(
     val onCourtStats = stats.filter { it.onCourt }
     val benchStats = stats.filter { !it.onCourt }
     val onCourtIds = lineup.onCourtIds
+    val liveGameTime = rememberLiveGameTime(selectedGame)
+    val gameTimeMillis = { liveGameTime.value }
     val playerById = players.associateBy { it.id }
     val activeGames = games.filter { !it.isFinished }
 
@@ -92,6 +94,7 @@ fun GameScreen(
                 if (selectedGame != null) {
                     GameControlPanel(
                         selectedGame = selectedGame,
+                        gameTimeMillis = gameTimeMillis,
                         sportConfig = sportConfig,
                         onToggleTimer = onToggleTimer,
                         onResetTimer = onResetTimer,
@@ -153,6 +156,7 @@ fun GameScreen(
 
                 GameStatsPanel(
                     stats = stats,
+                    gameTimeMillis = gameTimeMillis,
                     events = events,
                     playerById = playerById,
                     opponentName = selectedGame?.opponent.orEmpty(),
@@ -232,6 +236,7 @@ fun GameScreen(
 
                 GameControlPanel(
                     selectedGame = selectedGame,
+                    gameTimeMillis = gameTimeMillis,
                     sportConfig = sportConfig,
                     onToggleTimer = onToggleTimer,
                     onResetTimer = onResetTimer,
@@ -276,6 +281,7 @@ fun GameScreen(
 
                 GameStatsPanel(
                     stats = stats,
+                    gameTimeMillis = gameTimeMillis,
                     events = events,
                     playerById = playerById,
                     opponentName = selectedGame.opponent,

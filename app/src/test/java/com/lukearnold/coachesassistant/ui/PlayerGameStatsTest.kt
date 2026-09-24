@@ -224,4 +224,48 @@ class PlayerGameStatsTest {
         assertEquals(0L, stat.currentShiftTimeMillis)
         assertEquals(0L, stat.totalTimeMillis)
     }
+
+    @Test
+    fun liveTimes_advanceFromTheStoredClockToTheLiveOne() {
+        // Stored clock at 3:00 (e.g. when it was last started); player 1 subbed off for player 2 at 2:00.
+        val stats = calculatePlayerGameStats(
+            playerList = listOf(player1, player2),
+            game = game(runningTimeMillis = 180_000L),
+            lineup = GameLineup(onCourtIds = setOf(2)),
+            events = listOf(
+                GameEventEntity(gameId = 1, timestamp = 0, type = EventType.START_LINEUP.name, note = "1", gameTimeMillis = 0),
+                GameEventEntity(
+                    gameId = 1,
+                    timestamp = 1,
+                    type = EventType.SUBSTITUTION.name,
+                    playerId = 2,
+                    relatedPlayerId = 1,
+                    gameTimeMillis = 120_000,
+                ),
+            ),
+        ).associateBy { it.player.id }
+        val benched = stats.getValue(1)
+        val onCourt = stats.getValue(2)
+        val liveClock = 240_000L // the clock has since run on to 4:00
+
+        assertEquals(120_000L, onCourt.shiftTimeAt(liveClock))
+        assertEquals(120_000L, onCourt.totalTimeAt(liveClock))
+        assertEquals(0L, onCourt.benchTimeAt(liveClock))
+
+        assertEquals(120_000L, benched.benchTimeAt(liveClock))
+        assertEquals(0L, benched.shiftTimeAt(liveClock))
+        assertEquals(120_000L, benched.totalTimeAt(liveClock)) // unchanged while on the bench
+
+        // At the stored clock itself, the live figures match the stored ones.
+        assertEquals(onCourt.currentShiftTimeMillis, onCourt.shiftTimeAt(180_000L))
+        assertEquals(benched.currentBenchTimeMillis, benched.benchTimeAt(180_000L))
+    }
+
+    @Test
+    fun millisUntilNextSecond_landsOnTheNextWholeSecond() {
+        assertEquals(1000L, millisUntilNextSecond(0L))
+        assertEquals(1000L, millisUntilNextSecond(5_000L))
+        assertEquals(1L, millisUntilNextSecond(5_999L))
+        assertEquals(750L, millisUntilNextSecond(62_250L))
+    }
 }
