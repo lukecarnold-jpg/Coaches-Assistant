@@ -43,6 +43,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - End-game workflow
 - Game history
   - Dedicated History tab listing all finished games, newest first
+  - Season summary at the top: win/loss/tie record, points for and against (with per-game averages), and each roster player's games played, total and average minutes, points, infractions, and MVP votes across every finished game for the sport
   - Win/loss/tie badge, final score, and end date/time per game
   - View (jumps to the read-only game on the Game tab), export, and delete actions
   - Finished games are removed from the active "Games" list on the Game tab once ended

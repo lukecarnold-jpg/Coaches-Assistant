@@ -75,6 +75,12 @@ interface GameEventDao {
     @Query("SELECT * FROM game_events WHERE gameId = :gameId ORDER BY timestamp DESC, id DESC")
     fun observeByGame(gameId: Long): Flow<List<GameEventEntity>>
 
+    @Query(
+        "SELECT e.* FROM game_events e INNER JOIN games g ON g.id = e.gameId " +
+            "WHERE g.sport = :sport AND g.isFinished = 1",
+    )
+    fun observeForFinishedGames(sport: String): Flow<List<GameEventEntity>>
+
     @Query("SELECT * FROM game_events WHERE gameId = :gameId ORDER BY timestamp ASC, id ASC")
     suspend fun getByGame(gameId: Long): List<GameEventEntity>
 
@@ -98,6 +104,12 @@ interface GamePlayerDao {
 
     @Query("SELECT * FROM game_players WHERE gameId = :gameId")
     suspend fun getByGame(gameId: Long): List<GamePlayerEntity>
+
+    @Query(
+        "SELECT gp.* FROM game_players gp INNER JOIN games g ON g.id = gp.gameId " +
+            "WHERE g.sport = :sport AND g.isFinished = 1",
+    )
+    fun observeForFinishedGames(sport: String): Flow<List<GamePlayerEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(rows: List<GamePlayerEntity>)

@@ -2,6 +2,7 @@ package com.lukearnold.coachesassistant.data
 
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -456,5 +457,27 @@ class GameRepositoryTest {
         val updated = database.gameDao().getById(game.id)!!
         assertEquals(1, updated.teamScore)
         assertEquals(4, updated.opponentScore)
+    }
+
+    @Test
+    fun finishedGameQueries_onlyReturnTheSportsFinishedGames() = runBlocking {
+        val hoops = repository.addPlayer(Sport.BASKETBALL, "Hoops", 1)
+        val shooter = repository.addPlayer(Sport.NETBALL, "Shooter", 2)
+        val finished = repository.createGame(Sport.BASKETBALL, "Done", "Rivals")
+        val live = repository.createGame(Sport.BASKETBALL, "Live", "Rivals")
+        val otherSport = repository.createGame(Sport.NETBALL, "Netball", "Rivals", onCourtSize = 7)
+        listOf(finished to hoops, live to hoops, otherSport to shooter).forEach { (gameId, playerId) ->
+            repository.addTeamScore(gameId, playerId, 2)
+            repository.updateAbsentPlayers(gameId, listOf(playerId))
+        }
+        repository.endGame(finished)
+        repository.endGame(otherSport)
+
+        val events = repository.observeFinishedGameEvents(Sport.BASKETBALL).first()
+        val lineups = repository.observeFinishedGameLineups(Sport.BASKETBALL).first()
+
+        assertEquals(setOf(finished), events.map { it.gameId }.toSet())
+        assertEquals(setOf(finished), lineups.keys)
+        assertEquals(setOf(hoops), lineups.getValue(finished).absentIds)
     }
 }

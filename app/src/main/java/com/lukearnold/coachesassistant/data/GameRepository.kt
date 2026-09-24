@@ -26,6 +26,16 @@ class GameRepository(
 
     suspend fun getLineup(gameId: Long): GameLineup = GameLineup.from(gamePlayerDao.getByGame(gameId))
 
+    /** Every event from [sport]'s finished games, for season totals. */
+    fun observeFinishedGameEvents(sport: Sport): Flow<List<GameEventEntity>> =
+        gameEventDao.observeForFinishedGames(sport.name)
+
+    /** Each of [sport]'s finished games' lineup (for attendance), keyed by game id. */
+    fun observeFinishedGameLineups(sport: Sport): Flow<Map<Long, GameLineup>> =
+        gamePlayerDao.observeForFinishedGames(sport.name).map { rows ->
+            rows.groupBy { it.gameId }.mapValues { (_, gameRows) -> GameLineup.from(gameRows) }
+        }
+
     suspend fun addPlayer(sport: Sport, name: String, jerseyNumber: Int?, position: String? = null): Long {
         return playerDao.insert(
             PlayerEntity(
