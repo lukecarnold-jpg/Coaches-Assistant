@@ -2,6 +2,7 @@ package com.example.basketballrotation.ui
 
 import com.example.basketballrotation.data.EventType
 import com.example.basketballrotation.data.GameEntity
+import com.example.basketballrotation.data.GameLineup
 import com.example.basketballrotation.data.GameEventEntity
 import com.example.basketballrotation.data.MvpVotes
 import com.example.basketballrotation.data.PlayerEntity
@@ -17,8 +18,6 @@ class PlayerGameStatsTest {
     private val player2 = PlayerEntity(id = 2, name = "Sam")
 
     private fun game(
-        onCourtCsv: String = "",
-        absentPlayerIdsCsv: String = "",
         runningTimeMillis: Long = 0L,
         mvpVotesJson: String = "{}",
     ) = GameEntity(
@@ -26,8 +25,6 @@ class PlayerGameStatsTest {
         title = "Test game",
         opponent = "Rivals",
         createdAt = 0L,
-        onCourtCsv = onCourtCsv,
-        absentPlayerIdsCsv = absentPlayerIdsCsv,
         runningTimeMillis = runningTimeMillis,
         mvpVotesJson = mvpVotesJson,
     )
@@ -36,7 +33,8 @@ class PlayerGameStatsTest {
     fun playerOnCourtSinceLineup_accruesShiftAndTotalTime() {
         val stats = calculatePlayerGameStats(
             playerList = listOf(player1),
-            game = game(onCourtCsv = "1", runningTimeMillis = 300_000L),
+            game = game(runningTimeMillis = 300_000L),
+            lineup = GameLineup(onCourtIds = setOf(1)),
             events = listOf(
                 GameEventEntity(
                     gameId = 1,
@@ -70,7 +68,8 @@ class PlayerGameStatsTest {
         val stats = calculatePlayerGameStats(
             playerList = listOf(player1, player2),
             // Player 2 is now on court after subbing in for player 1 at the 2:00 mark.
-            game = game(onCourtCsv = "2", runningTimeMillis = 180_000L),
+            game = game(runningTimeMillis = 180_000L),
+            lineup = GameLineup(onCourtIds = setOf(2)),
             events = listOf(
                 GameEventEntity(
                     gameId = 1,
@@ -111,7 +110,8 @@ class PlayerGameStatsTest {
     fun absentPlayer_isExcludedFromStats() {
         val stats = calculatePlayerGameStats(
             playerList = listOf(player1, player2),
-            game = game(absentPlayerIdsCsv = "2"),
+            game = game(),
+            lineup = GameLineup(absentIds = setOf(2)),
             events = emptyList(),
         )
 
@@ -123,7 +123,8 @@ class PlayerGameStatsTest {
         val stats = calculatePlayerGameStats(
             playerList = listOf(player1),
             // Period reset: court cleared and clock zeroed, as GameRepository.advancePeriod does.
-            game = game(onCourtCsv = "", runningTimeMillis = 0L),
+            game = game(runningTimeMillis = 0L),
+            lineup = GameLineup(),
             events = listOf(
                 GameEventEntity(
                     gameId = 1,
@@ -152,7 +153,8 @@ class PlayerGameStatsTest {
         val stats = calculatePlayerGameStats(
             playerList = listOf(player1, player2),
             // Period 2, 3:00 in, with player 2 on court.
-            game = game(onCourtCsv = "2", runningTimeMillis = 180_000L),
+            game = game(runningTimeMillis = 180_000L),
+            lineup = GameLineup(onCourtIds = setOf(2)),
             events = listOf(
                 GameEventEntity(
                     gameId = 1,
@@ -199,6 +201,7 @@ class PlayerGameStatsTest {
         val stats = calculatePlayerGameStats(
             playerList = listOf(player1, player2),
             game = game(mvpVotesJson = MvpVotes.serialize(mapOf(2L to 3))),
+            lineup = GameLineup(),
             events = emptyList(),
         )
 
@@ -212,6 +215,7 @@ class PlayerGameStatsTest {
         val stats = calculatePlayerGameStats(
             playerList = listOf(player1),
             game = null,
+            lineup = GameLineup(),
             events = emptyList(),
         )
 

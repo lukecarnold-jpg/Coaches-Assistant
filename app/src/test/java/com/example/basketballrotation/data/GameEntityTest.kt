@@ -1,7 +1,6 @@
 package com.example.basketballrotation.data
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertSame
 import org.junit.Test
 
 class GameEntityTest {
@@ -10,29 +9,17 @@ class GameEntityTest {
         title = "Test Game",
         opponent = "Rivals",
         createdAt = 0L,
-        onCourtCsv = "1,2,3,4,5",
-        absentPlayerIdsCsv = "6,7",
     )
 
     @Test
-    fun withoutPlayer_removesIdFromOnCourtList() {
-        val cleaned = baseGame.withoutPlayer(3L)
+    fun gameLineup_roundTripsThroughRows_withOneRowPerPlayer() {
+        val lineup = GameLineup(onCourtIds = setOf(1L, 2L), absentIds = setOf(2L, 3L))
 
-        assertEquals(listOf(1L, 2L, 4L, 5L), cleaned.onCourtIds())
-    }
+        val rows = lineup.toEntities(gameId = 9L)
 
-    @Test
-    fun withoutPlayer_removesIdFromAbsentList() {
-        val cleaned = baseGame.withoutPlayer(6L)
-
-        assertEquals(listOf(7L), cleaned.absentPlayerIds())
-    }
-
-    @Test
-    fun withoutPlayer_leavesOtherGamesIntactWhenPlayerNotReferenced() {
-        val cleaned = baseGame.withoutPlayer(999L)
-
-        assertSame(baseGame, cleaned)
+        assertEquals(3, rows.size)
+        assertEquals(GamePlayerEntity(9L, 2L, onCourt = true, absent = true), rows.single { it.playerId == 2L })
+        assertEquals(lineup, GameLineup.from(rows))
     }
 
     @Test

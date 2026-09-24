@@ -90,3 +90,18 @@ interface GameEventDao {
     @Query("DELETE FROM game_events WHERE gameId IN (SELECT id FROM games WHERE sport = :sport)")
     suspend fun deleteAllBySport(sport: String)
 }
+
+@Dao
+interface GamePlayerDao {
+    @Query("SELECT * FROM game_players WHERE gameId = :gameId")
+    fun observeByGame(gameId: Long): Flow<List<GamePlayerEntity>>
+
+    @Query("SELECT * FROM game_players WHERE gameId = :gameId")
+    suspend fun getByGame(gameId: Long): List<GamePlayerEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(rows: List<GamePlayerEntity>)
+
+    @Query("DELETE FROM game_players WHERE gameId = :gameId")
+    suspend fun deleteByGame(gameId: Long)
+}
