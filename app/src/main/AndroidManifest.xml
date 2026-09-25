@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 17+: needed to reach a local AI server (the Other provider); requested at runtime,
+         only when the configured endpoint is on the local network. See ai/LocalNetworkAccess.kt. -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
     <application
         android:allowBackup="true"

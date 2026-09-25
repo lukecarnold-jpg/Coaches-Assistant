@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lukearnold.coachesassistant.ai.ACCESS_LOCAL_NETWORK
 import com.lukearnold.coachesassistant.ai.BasketballDrill
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,6 +38,20 @@ fun TrainingScreen(
     
     var expanded by remember { mutableStateOf(value = false) }
     var selectedAgeGroup by rememberSaveable { mutableStateOf(ageGroups.first()) }
+
+    // A local AI server needs local network access on Android 17+; ask for it first if needed.
+    val localNetworkPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) trainingViewModel.generateDrills(selectedAgeGroup) else trainingViewModel.reportLocalNetworkDenied()
+    }
+    val generate = {
+        if (trainingViewModel.localNetworkPermissionNeeded()) {
+            localNetworkPermissionLauncher.launch(ACCESS_LOCAL_NETWORK)
+        } else {
+            trainingViewModel.generateDrills(selectedAgeGroup)
+        }
+    }
 
     if (isExpanded) {
         Column(modifier = modifier.padding(layout.screenPadding)) {
@@ -88,7 +105,7 @@ fun TrainingScreen(
                             selectedAgeGroup = it
                             expanded = false
                         },
-                        onGenerateClick = { trainingViewModel.generateDrills(selectedAgeGroup) },
+                        onGenerateClick = generate,
                         isLoading = uiState is TrainingUiState.Loading,
                     )
                 }
@@ -144,7 +161,7 @@ fun TrainingScreen(
                     selectedAgeGroup = it
                     expanded = false
                 },
-                onGenerateClick = { trainingViewModel.generateDrills(selectedAgeGroup) },
+                onGenerateClick = generate,
                 isLoading = uiState is TrainingUiState.Loading,
             )
 
