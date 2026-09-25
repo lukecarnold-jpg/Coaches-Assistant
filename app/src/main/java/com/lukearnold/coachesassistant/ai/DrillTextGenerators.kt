@@ -29,7 +29,9 @@ fun textGeneratorFor(provider: AiProvider, customEndpoint: CustomEndpointConfig 
 
 private val httpClient = OkHttpClient.Builder()
     .connectTimeout(30, TimeUnit.SECONDS)
-    .readTimeout(60, TimeUnit.SECONDS)
+    // Generous, because a local server (e.g. Ollama) loads its model on the first request after
+    // being idle, which can take a minute on its own before any text comes back.
+    .readTimeout(120, TimeUnit.SECONDS)
     // The platform allows cleartext so the Other provider can reach local servers (see
     // network_security_config.xml); this enforces the local-only part on every request actually
     // sent, including redirects, so an https endpoint can't be redirected to plain http.

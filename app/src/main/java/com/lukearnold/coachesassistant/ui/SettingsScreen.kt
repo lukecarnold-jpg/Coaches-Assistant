@@ -1,6 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -43,7 +45,10 @@ import androidx.compose.ui.unit.dp
 import com.lukearnold.coachesassistant.BuildConfig
 import com.lukearnold.coachesassistant.ai.AiProvider
 import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
+import com.lukearnold.coachesassistant.ai.ACCESS_LOCAL_NETWORK
 import com.lukearnold.coachesassistant.ai.endpointUrlProblem
+import com.lukearnold.coachesassistant.ai.hasLocalNetworkPermission
+import com.lukearnold.coachesassistant.ai.needsLocalNetworkPermission
 import java.time.LocalDate
 import com.lukearnold.coachesassistant.data.Sport
 
@@ -89,6 +94,16 @@ fun SettingsScreen(
     var modelInput by remember(customEndpoint.model) { mutableStateOf(customEndpoint.model) }
     val isOther = selectedProvider == AiProvider.OTHER
     val endpointProblem = if (isOther) endpointUrlProblem(endpointUrlInput) else null
+    val context = LocalContext.current
+    val endpointNeedsLocalNetwork = endpointProblem == null && needsLocalNetworkPermission(
+        selectedProvider,
+        CustomEndpointConfig(endpointUrlInput, modelInput),
+        Build.VERSION.SDK_INT,
+    )
+    // The result needs no handling here: Generate on the Training tab asks again if it's still needed.
+    val localNetworkPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { }
 
     Column(
         modifier = modifier
@@ -171,7 +186,13 @@ fun SettingsScreen(
                     placeholder = { Text("https://.../v1/chat/completions") },
                     singleLine = true,
                     isError = endpointProblem != null,
-                    supportingText = endpointProblem?.let { problem -> { Text(problem) } },
+                    supportingText = when {
+                        endpointProblem != null -> { { Text(endpointProblem) } }
+                        endpointNeedsLocalNetwork -> {
+                            { Text("This server is on your local network, so Android will ask to allow local network access.") }
+                        }
+                        else -> null
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(layout.smallGap))
@@ -210,6 +231,10 @@ fun SettingsScreen(
                         onSaveApiKey(selectedProvider, apiKeyInput.trim())
                         if (isOther) {
                             onSaveCustomEndpoint(CustomEndpointConfig(endpointUrlInput.trim(), modelInput.trim()))
+                            // Ask now, while the user is setting it up, rather than on first use.
+                            if (endpointNeedsLocalNetwork && !context.hasLocalNetworkPermission()) {
+                                localNetworkPermissionLauncher.launch(ACCESS_LOCAL_NETWORK)
+                            }
                         }
                     },
                     enabled = ((apiKeyInput.trim() != savedKey) || endpointChanged) && (endpointProblem == null),

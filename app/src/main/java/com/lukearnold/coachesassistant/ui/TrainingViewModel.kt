@@ -1,6 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
 import android.app.Application
+import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.lukearnold.coachesassistant.BuildConfig
@@ -10,6 +11,8 @@ import com.lukearnold.coachesassistant.ai.AiSettingsStore
 import com.lukearnold.coachesassistant.ai.BasketballDrill
 import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
 import com.lukearnold.coachesassistant.ai.buildDrillPrompt
+import com.lukearnold.coachesassistant.ai.hasLocalNetworkPermission
+import com.lukearnold.coachesassistant.ai.needsLocalNetworkPermission
 import com.lukearnold.coachesassistant.ai.parseDrills
 import com.lukearnold.coachesassistant.ai.textGeneratorFor
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,6 +76,19 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
             provider == AiProvider.GEMINI -> BuildConfig.GEMINI_API_KEY
             else -> ""
         }
+    }
+
+    /** Whether the Other provider's local server can't be reached until the user grants local network access. */
+    fun localNetworkPermissionNeeded(): Boolean =
+        needsLocalNetworkPermission(_selectedProvider.value, _customEndpoint.value, Build.VERSION.SDK_INT) &&
+            !getApplication<Application>().hasLocalNetworkPermission()
+
+    /** Explains why drills can't be generated after the user declines local network access. */
+    fun reportLocalNetworkDenied() {
+        _uiState.value = TrainingUiState.Error(
+            "Coaches Assistant needs local network access to reach your server. Allow it for the app " +
+                "in your phone's Settings (Apps → Coaches Assistant → Permissions), then try again.",
+        )
     }
 
     fun generateDrills(ageGroup: String) {
