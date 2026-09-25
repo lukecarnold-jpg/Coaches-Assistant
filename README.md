@@ -66,6 +66,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic, OpenAI, and the "Other" provider have no build-time fallback
   - "Other" also requires an endpoint URL and model name, since it can point at any OpenAI-compatible service
   - "Other" endpoints must use `https://`, except servers on the local network (localhost, private IP ranges including Tailscale's `100.64.0.0/10`, and `.local`/`.lan`/single-label hostnames), which may use plain `http://` and can be used without an API key — e.g. `http://192.168.1.20:11434/v1/chat/completions` for Ollama
+  - Back up all data (every sport's players, games, events, and lineups) to a JSON file, and restore it on this or another device; a restore replaces all current data after a confirmation, and a file that can't be read leaves everything unchanged. API keys aren't included
   - Selectively delete the current sport's players, games, or events (other sports are untouched), or delete everything across every sport
 
 ## Tech stack

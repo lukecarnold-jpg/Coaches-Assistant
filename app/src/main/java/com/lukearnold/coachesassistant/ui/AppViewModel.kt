@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.lukearnold.coachesassistant.data.AppDatabase
+import com.lukearnold.coachesassistant.data.BackupIo
 import com.lukearnold.coachesassistant.data.GameRepository
 import com.lukearnold.coachesassistant.data.EventType
 import com.lukearnold.coachesassistant.data.GameCsvIo
@@ -64,6 +65,7 @@ data class PlayerGameStat(
 class AppViewModel(application: Application, private val sport: Sport) : AndroidViewModel(application) {
     private val repository = GameRepository(AppDatabase.getInstance(application))
     private val csvIo = GameCsvIo(AppDatabase.getInstance(application))
+    private val backupIo = BackupIo(AppDatabase.getInstance(application))
 
     private val selectedGameId = MutableStateFlow<Long?>(null)
     private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 1)
@@ -450,6 +452,32 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         val gameId = selectedGame.value?.id ?: return
         viewModelScope.launch {
             repository.setGameTime(gameId, timeMillis)
+        }
+    }
+
+    /** Saves every sport's data (not just this one's) to [uri]; see BackupIo. */
+    fun exportBackup(uri: Uri) {
+        viewModelScope.launch {
+            runCatching {
+                backupIo.export(getApplication<Application>().contentResolver, uri)
+            }.onSuccess { counts ->
+                _messages.emit(UiMessage("Backup saved: ${counts.players} players and ${counts.games} games across all sports."))
+            }.onFailure {
+                _messages.emit(UiMessage(it.message ?: "Backup failed."))
+            }
+        }
+    }
+
+    /** Replaces all data, for every sport, with the backup at [uri]; nothing changes if it can't be read. */
+    fun restoreBackup(uri: Uri) {
+        viewModelScope.launch {
+            runCatching {
+                backupIo.restore(getApplication<Application>().contentResolver, uri)
+            }.onSuccess { counts ->
+                _messages.emit(UiMessage("Restored ${counts.players} players and ${counts.games} games."))
+            }.onFailure {
+                _messages.emit(UiMessage(it.message ?: "Restore failed. Nothing was changed."))
+            }
         }
     }
 

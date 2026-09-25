@@ -289,6 +289,8 @@ private fun SportApp(
                         onSaveCustomEndpoint = trainingViewModel::updateCustomEndpoint,
                         currentSport = sport,
                         onSwitchSport = onSwitchSport,
+                        onBackup = appViewModel::exportBackup,
+                        onRestore = appViewModel::restoreBackup,
                         keepScreenOnWhileClockRuns = keepScreenOnWhileClockRuns,
                         onKeepScreenOnWhileClockRunsChange = { enabled ->
                             DisplayPreferences.setKeepScreenOnWhileClockRuns(context, enabled)

@@ -91,6 +91,7 @@ The data package defines the multi-sport domain model and local Room database:
 - `Dao.kt` - Room data access objects.
 - `AppDatabase.kt` - Room database, version 10, and migrations.
 - `GameRepository.kt` - repository operations used by the view models.
+- `Backup.kt` / `BackupIo.kt` - the whole-app backup file format, and backing up to / restoring from a file the user picks.
 - `MvpVotes.kt` - serialization and parsing for MVP vote data.
 
 The database is local-first and is stored in a Room database named
