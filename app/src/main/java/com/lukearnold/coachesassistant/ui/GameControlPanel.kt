@@ -45,6 +45,18 @@ fun GameControlPanel(
     onSubstitute: () -> Unit,
 ) {
     val layout = LocalResponsiveLayout.current
+    var showEndGameConfirm by remember(selectedGame.id) { mutableStateOf(false) }
+
+    if (showEndGameConfirm) {
+        EndGameConfirmDialog(
+            game = selectedGame,
+            onConfirm = {
+                showEndGameConfirm = false
+                onEndGame()
+            },
+            onDismiss = { showEndGameConfirm = false },
+        )
+    }
 
     SectionCard(title = "Game clock & score") {
         Text(
@@ -72,7 +84,7 @@ fun GameControlPanel(
                     }
                 }
                 Button(
-                    onClick = onEndGame,
+                    onClick = { showEndGameConfirm = true },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
@@ -403,3 +415,36 @@ fun GameClock(
         }
     }
 }
+
+/**
+ * Asks before ending [game]: ending can't be undone (the game moves to History), and End Game sits
+ * right beside Next Period, so it's easy to hit by mistake mid-game.
+ */
+@Composable
+private fun EndGameConfirmDialog(game: GameEntity, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("End this game?") },
+        text = { Text(endGameConfirmMessage(game)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("End game", color = MaterialTheme.colorScheme.error)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Keep playing")
+            }
+        },
+    )
+}
+
+/** The End Game confirmation's message: the score, a warning if periods remain, and what happens next. */
+fun endGameConfirmMessage(game: GameEntity): String = buildString {
+    append("Final score: Us ${game.teamScore} – ${game.opponentScore} ${game.opponent.ifBlank { "Them" }}.")
+    if (game.currentPeriod < game.periodCount) {
+        append(" You're only in ${game.periodLabel()} of ${game.periodCount}.")
+    }
+    append(" The game will move to History and can't be resumed.")
+}
+
