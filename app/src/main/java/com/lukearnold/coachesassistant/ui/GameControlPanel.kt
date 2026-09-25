@@ -47,14 +47,31 @@ fun GameControlPanel(
     val layout = LocalResponsiveLayout.current
     var showEndGameConfirm by remember(selectedGame.id) { mutableStateOf(false) }
 
+    var showNextPeriodConfirm by remember(selectedGame.id) { mutableStateOf(false) }
+
     if (showEndGameConfirm) {
-        EndGameConfirmDialog(
-            game = selectedGame,
+        ConfirmDialog(
+            title = "End this game?",
+            message = endGameConfirmMessage(selectedGame),
+            confirmLabel = "End game",
+            dismissLabel = "Keep playing",
             onConfirm = {
                 showEndGameConfirm = false
                 onEndGame()
             },
             onDismiss = { showEndGameConfirm = false },
+        )
+    }
+    if (showNextPeriodConfirm) {
+        ConfirmDialog(
+            title = "Next period?",
+            message = nextPeriodConfirmMessage(selectedGame),
+            confirmLabel = "Next period",
+            onConfirm = {
+                showNextPeriodConfirm = false
+                onAdvancePeriod()
+            },
+            onDismiss = { showNextPeriodConfirm = false },
         )
     }
 
@@ -79,7 +96,7 @@ fun GameControlPanel(
                 horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
             ) {
                 if (selectedGame.currentPeriod < selectedGame.periodCount) {
-                    OutlinedButton(onClick = onAdvancePeriod, modifier = Modifier.weight(1f)) {
+                    OutlinedButton(onClick = { showNextPeriodConfirm = true }, modifier = Modifier.weight(1f)) {
                         Text("Next Period")
                     }
                 }
@@ -332,6 +349,20 @@ fun GameClock(
     val remainingTime = maxOf(0L, game.periodDurationMillis - elapsed)
 
     var isEditing by remember { mutableStateOf(value = false) }
+    var showResetConfirm by remember(game.id) { mutableStateOf(false) }
+
+    if (showResetConfirm) {
+        ConfirmDialog(
+            title = "Reset the clock?",
+            message = resetClockConfirmMessage(game),
+            confirmLabel = "Reset",
+            onConfirm = {
+                showResetConfirm = false
+                onResetTimer()
+            },
+            onDismiss = { showResetConfirm = false },
+        )
+    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -352,7 +383,7 @@ fun GameClock(
                     IconButton(onClick = { isEditing = !isEditing }) {
                         Icon(Icons.Default.Settings, contentDescription = "Edit time")
                     }
-                    IconButton(onClick = onResetTimer) {
+                    IconButton(onClick = { showResetConfirm = true }) {
                         Text("🔄", style = MaterialTheme.typography.titleLarge)
                     }
                     Button(
@@ -415,36 +446,3 @@ fun GameClock(
         }
     }
 }
-
-/**
- * Asks before ending [game]: ending can't be undone (the game moves to History), and End Game sits
- * right beside Next Period, so it's easy to hit by mistake mid-game.
- */
-@Composable
-private fun EndGameConfirmDialog(game: GameEntity, onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("End this game?") },
-        text = { Text(endGameConfirmMessage(game)) },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text("End game", color = MaterialTheme.colorScheme.error)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Keep playing")
-            }
-        },
-    )
-}
-
-/** The End Game confirmation's message: the score, a warning if periods remain, and what happens next. */
-fun endGameConfirmMessage(game: GameEntity): String = buildString {
-    append("Final score: Us ${game.teamScore} – ${game.opponentScore} ${game.opponent.ifBlank { "Them" }}.")
-    if (game.currentPeriod < game.periodCount) {
-        append(" You're only in ${game.periodLabel()} of ${game.periodCount}.")
-    }
-    append(" The game will move to History and can't be resumed.")
-}
-

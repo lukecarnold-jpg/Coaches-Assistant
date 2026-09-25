@@ -40,6 +40,20 @@ fun GameStatsPanel(
     onlyStats: Boolean = false,
 ) {
     val layout = LocalResponsiveLayout.current
+    var pendingDelete by remember { mutableStateOf<GameEntity?>(null) }
+
+    pendingDelete?.let { game ->
+        ConfirmDialog(
+            title = "Delete this game?",
+            message = deleteGameConfirmMessage(game),
+            confirmLabel = "Delete",
+            onConfirm = {
+                pendingDelete = null
+                onDeleteGame(game.id)
+            },
+            onDismiss = { pendingDelete = null },
+        )
+    }
 
     if (!onlyStats) {
         SectionCard(title = "Create a game") {
@@ -117,7 +131,7 @@ fun GameStatsPanel(
                                     Text("Export")
                                 }
                                 TextButton(
-                                    onClick = { onDeleteGame(game.id) },
+                                    onClick = { pendingDelete = game },
                                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                                 ) {
                                     Text("Delete")
