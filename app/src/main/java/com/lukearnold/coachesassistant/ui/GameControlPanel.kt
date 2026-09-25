@@ -410,8 +410,9 @@ fun GameClock(
         }
 
         if (isEditing) {
-            var minutesText by remember { mutableStateOf((elapsed / 60000).toString()) }
-            var secondsText by remember { mutableStateOf(((elapsed % 60000) / 1000).toString()) }
+            // Edited as time remaining, matching the countdown shown above.
+            var minutesText by remember { mutableStateOf((remainingTime / 60000).toString()) }
+            var secondsText by remember { mutableStateOf(((remainingTime % 60000) / 1000).toString()) }
 
             Row(
                 modifier = Modifier
@@ -423,20 +424,20 @@ fun GameClock(
                 OutlinedTextField(
                     value = minutesText,
                     onValueChange = { minutesText = it.filter { c -> c.isDigit() } },
-                    label = { Text("Min") },
+                    label = { Text("Min left") },
                     modifier = Modifier.weight(1f)
                 )
                 OutlinedTextField(
                     value = secondsText,
                     onValueChange = { secondsText = it.filter { c -> c.isDigit() } },
-                    label = { Text("Sec") },
+                    label = { Text("Sec left") },
                     modifier = Modifier.weight(1f)
                 )
                 Button(
                     onClick = {
                         val mins = minutesText.toLongOrNull() ?: 0L
                         val secs = secondsText.toLongOrNull() ?: 0L
-                        onSetGameTime(((mins * 60) + secs) * 1000)
+                        onSetGameTime(elapsedFromRemaining(((mins * 60) + secs) * 1000, game.periodDurationMillis))
                         isEditing = false
                     }
                 ) {
@@ -446,3 +447,13 @@ fun GameClock(
         }
     }
 }
+
+/**
+ * The elapsed period time for a clock showing [remainingMillis] left, since the clock counts down
+ * but the game stores elapsed time. A period with no set length has no countdown, so the entry is
+ * taken as elapsed time.
+ */
+fun elapsedFromRemaining(remainingMillis: Long, periodDurationMillis: Long): Long =
+    if (periodDurationMillis > 0) (periodDurationMillis - remainingMillis).coerceIn(0L, periodDurationMillis)
+    else maxOf(0L, remainingMillis)
+

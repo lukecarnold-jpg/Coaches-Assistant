@@ -435,10 +435,18 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     }
 
     fun resetTimer() {
-        val gameId = selectedGame.value?.id ?: return
+        val game = selectedGame.value ?: return
         viewModelScope.launch {
-            repository.resetTimer(gameId)
-            _messages.emit(UiMessage("Timer reset to 0:00."))
+            val earliest = repository.resetTimer(game.id)
+            _messages.emit(
+                UiMessage(
+                    if (earliest == null) {
+                        "Clock reset to ${formatDuration(game.periodDurationMillis)}."
+                    } else {
+                        clockTooEarlyMessage(game.periodDurationMillis, earliest)
+                    },
+                ),
+            )
         }
     }
 
@@ -450,9 +458,11 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     }
 
     fun setGameTime(timeMillis: Long) {
-        val gameId = selectedGame.value?.id ?: return
+        val game = selectedGame.value ?: return
         viewModelScope.launch {
-            repository.setGameTime(gameId, timeMillis)
+            repository.setGameTime(game.id, timeMillis)?.let { earliest ->
+                _messages.emit(UiMessage(clockTooEarlyMessage(game.periodDurationMillis, earliest)))
+            }
         }
     }
 
@@ -546,6 +556,16 @@ class AppViewModelFactory(
         @Suppress("UNCHECKED_CAST")
         return AppViewModel(application, sport) as T
     }
+}
+
+/**
+ * Why the clock can't go back that far. The clock counts down, so times are shown as time
+ * remaining, the same as the game clock.
+ */
+fun clockTooEarlyMessage(periodDurationMillis: Long, earliestElapsedMillis: Long): String {
+    val latest = formatDuration(maxOf(0L, periodDurationMillis - earliestElapsedMillis))
+    return "Can't set the clock back past $latest: something was already recorded then this period, " +
+        "and moving before it would lose playing time."
 }
 
 /**

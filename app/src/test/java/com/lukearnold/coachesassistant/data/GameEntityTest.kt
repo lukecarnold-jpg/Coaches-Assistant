@@ -85,4 +85,21 @@ class GameEntityTest {
         assertEquals(300_000L, capToPeriod(300_000L, periodDurationMillis = 600_000L))
         assertEquals(78_414_000L, capToPeriod(78_414_000L, periodDurationMillis = 0L)) // no set length
     }
+
+    @Test
+    fun latestEventTimeThisPeriod_onlyLooksAtEventsSinceTheLastPeriodChange() {
+        fun event(type: EventType, at: Long) = GameEventEntity(gameId = 1, timestamp = 0, type = type.name, gameTimeMillis = at)
+
+        val events = listOf(
+            event(EventType.START_LINEUP, 0),
+            event(EventType.SCORE, 300_000),
+            event(EventType.PERIOD_CHANGE, 600_000),
+            event(EventType.START_LINEUP, 0),
+            event(EventType.SUBSTITUTION, 120_000),
+        )
+
+        assertEquals(120_000L, latestEventTimeThisPeriod(events, periodDurationMillis = 600_000L))
+        assertEquals(0L, latestEventTimeThisPeriod(events.take(3), periodDurationMillis = 600_000L)) // new period, nothing yet
+        assertEquals(0L, latestEventTimeThisPeriod(emptyList(), periodDurationMillis = 600_000L))
+    }
 }
