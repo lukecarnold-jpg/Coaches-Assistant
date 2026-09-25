@@ -31,12 +31,23 @@ val appVersionCode: Int = providers.gradleProperty("versionCode").orNull?.toInt(
             ?: 1.also { logger.warn("Couldn't count git commits; using versionCode 1. Pass -PversionCode=N.") }
     }
 
+/**
+ * The app used to be installed as com.example.basketballrotation. Android can't update that install
+ * to the new ID, and apps can't read each other's data, so moving to the new app goes through a
+ * transition build: `./gradlew installDebug -PlegacyAppId` installs this code *over* the old app
+ * (migrating its data like any update), labelled "Coaches Assistant (old)", with a note in
+ * Settings → Backup. Back up there, then restore in the new app. See README, "Moving from the old app".
+ */
+val legacyTransitionBuild: Boolean = providers.gradleProperty("legacyAppId").isPresent
+
 android {
     namespace = "com.lukearnold.coachesassistant"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.lukearnold.coachesassistant"
+        applicationId = if (legacyTransitionBuild) "com.example.basketballrotation" else "com.lukearnold.coachesassistant"
+        buildConfigField("boolean", "LEGACY_TRANSITION_BUILD", legacyTransitionBuild.toString())
+        manifestPlaceholders["appLabel"] = if (legacyTransitionBuild) "@string/app_name_legacy" else "@string/app_name"
         minSdk = 26
         targetSdk = 37
         versionCode = appVersionCode
