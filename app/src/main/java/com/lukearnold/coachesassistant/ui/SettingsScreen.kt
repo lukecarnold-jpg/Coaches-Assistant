@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.lukearnold.coachesassistant.BuildConfig
 import com.lukearnold.coachesassistant.ai.AiProvider
 import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
 import com.lukearnold.coachesassistant.ai.endpointUrlProblem
@@ -234,6 +235,15 @@ fun SettingsScreen(
         }
 
         SectionCard(title = "Backup") {
+            if (BuildConfig.LEGACY_TRANSITION_BUILD) {
+                Text(
+                    "This is the old app, updated so you can move your data to the new Coaches Assistant " +
+                        "app: tap \"Back up all data\" below, then open the new app and use \"Restore from " +
+                        "backup\" in its Settings. Re-enter your AI API keys there afterwards.",
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(Modifier.height(layout.smallGap))
+            }
             Text(
                 "Save every sport's players and games to a file, e.g. to move to a new phone. " +
                     "API keys aren't included; add them again after restoring.",

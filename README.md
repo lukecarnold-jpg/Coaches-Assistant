@@ -105,6 +105,15 @@ GEMINI_API_KEY=your_key_here
 
 If no key is set for the selected provider, the app still builds, but the Training tab will show an error when generating AI drills.
 
+## Moving from the old app
+
+Before the rename, the app was installed as `com.example.basketballrotation`. Android can't update that install to the new app ID (`com.lukearnold.coachesassistant`), and one app can't read another's data, so the two install side by side. To move your data across:
+
+1. With the device connected, install the transition build over the old app: `./gradlew.bat installDebug -PlegacyAppId`. It's today's code under the old app ID, so it installs as an update: your data is migrated and kept. It shows up as "Coaches Assistant (old)".
+2. Open it and go to **Settings → Backup → Back up all data**.
+3. Open the new Coaches Assistant app, go to **Settings → Restore from backup**, and pick that file.
+4. Re-enter your AI API keys in the new app (backups never include them), then uninstall "Coaches Assistant (old)".
+
 ## AI provider access
 
 The app requires each user's own API key per provider (entered in Settings) rather than a "log in with your Gemini/Claude/ChatGPT account" option. This is deliberate: as of the time this was implemented, Google and Anthropic have both made it a Terms of Service violation for a third-party app to use a consumer subscription's login (Gemini Advanced/Ultra, Claude Pro/Max) instead of billed API access, with real account suspensions enforced — including paying subscribers. OpenAI's "Sign in with ChatGPT" is scoped to its own Codex tooling, not general third-party apps. API keys are the only supported, ToS-compliant path for a third-party app like this one.
