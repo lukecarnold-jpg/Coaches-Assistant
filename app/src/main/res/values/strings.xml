@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Coaches Assistant</string>
     <!-- Launcher label for the transition build installed over the old app (see app/build.gradle.kts). -->
-    <string name="app_name_legacy">Coaches Assistant (old)</string>
+    <string name="app_name_legacy">Old Coaches Assistant</string>
 </resources>
