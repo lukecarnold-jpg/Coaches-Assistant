@@ -570,4 +570,42 @@ class GameRepositoryTest {
         assertEquals(null, repository.substitute(game.id, playerInId = playerIds[0], playerOutId = playerIds[5]))
         assertEquals(null, repository.addOpponentScore(game.id, -1)) // would go below zero
     }
+
+    @Test
+    fun setGameTime_refusesToGoEarlierThanAnEventThisPeriod_butMovesForward() = runBlocking {
+        val playerIds = addPlayers(6)
+        val game = newGame() // 10-minute periods
+        repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
+        repository.setGameTime(game.id, 300_000L)
+        repository.substitute(game.id, playerInId = playerIds[5], playerOutId = playerIds[0]) // at 5:00
+
+        assertEquals(300_000L, repository.setGameTime(game.id, 120_000L)) // refused: earliest allowed is 5:00
+        assertEquals(300_000L, database.gameDao().getById(game.id)!!.runningTimeMillis) // clock untouched
+
+        assertEquals(null, repository.setGameTime(game.id, 420_000L))
+        assertEquals(420_000L, database.gameDao().getById(game.id)!!.runningTimeMillis)
+    }
+
+    @Test
+    fun resetTimer_isAllowedWhileNothingButTheLineupHasBeenRecorded() = runBlocking {
+        val playerIds = addPlayers(5)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds, maxSize = 5) // recorded at 0:00
+        repository.setGameTime(game.id, 90_000L)
+
+        assertEquals(null, repository.resetTimer(game.id))
+        assertEquals(0L, database.gameDao().getById(game.id)!!.runningTimeMillis)
+    }
+
+    @Test
+    fun resetTimer_isRefusedOnceSomethingWasRecordedLaterInThePeriod() = runBlocking {
+        val playerIds = addPlayers(5)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds, maxSize = 5)
+        repository.setGameTime(game.id, 90_000L)
+        repository.addTeamScore(game.id, playerIds[0], 2) // at 1:30
+
+        assertEquals(90_000L, repository.resetTimer(game.id))
+        assertEquals(90_000L, database.gameDao().getById(game.id)!!.runningTimeMillis)
+    }
 }

@@ -172,6 +172,15 @@ fun GameEntity.currentGameTimeMillis(now: Long = System.currentTimeMillis()): Lo
  * has no set length). New games can't record time past the end of a period, but games from before
  * the clock stopped itself can: a clock left running for hours stamped its events with that time.
  */
+/**
+ * The latest clock time recorded by an event in the current period, given a game's [events] in
+ * the order they happened (0 if none). The clock can't be moved earlier than this: events would
+ * then sit "in the future", and shifts that started at them would count as zero.
+ */
+fun latestEventTimeThisPeriod(events: List<GameEventEntity>, periodDurationMillis: Long): Long =
+    events.takeLastWhile { it.type != EventType.PERIOD_CHANGE.name }
+        .maxOfOrNull { capToPeriod(it.gameTimeMillis, periodDurationMillis) } ?: 0L
+
 fun capToPeriod(timeMillis: Long, periodDurationMillis: Long): Long =
     if (periodDurationMillis > 0) timeMillis.coerceIn(0L, periodDurationMillis) else maxOf(0L, timeMillis)
 

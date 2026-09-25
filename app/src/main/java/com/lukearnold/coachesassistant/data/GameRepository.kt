@@ -294,17 +294,20 @@ class GameRepository(
         }
     }
 
-    suspend fun setGameTime(gameId: Long, timeMillis: Long) {
+    /**
+     * Sets (and stops) the clock at [timeMillis] into the period. Returns null if it was set, or,
+     * if [timeMillis] is earlier than an event already recorded this period, leaves the clock alone
+     * and returns that event's time: the earliest the clock can go (see latestEventTimeThisPeriod).
+     */
+    suspend fun setGameTime(gameId: Long, timeMillis: Long): Long? =
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction
-            val capped = if (game.periodDurationMillis > 0) {
-                timeMillis.coerceIn(0L, game.periodDurationMillis)
-            } else {
-                maxOf(0L, timeMillis)
-            }
-            gameDao.update(game.copy(runningTimeMillis = capped, timerLastStartedAt = null))
+            val game = gameDao.getById(gameId) ?: return@withTransaction null
+            val target = capToPeriod(timeMillis, game.periodDurationMillis)
+            val earliest = latestEventTimeThisPeriod(gameEventDao.getByGame(gameId), game.periodDurationMillis)
+            if (target < earliest) return@withTransaction earliest
+            gameDao.update(game.copy(runningTimeMillis = target, timerLastStartedAt = null))
+            null
         }
-    }
 
     suspend fun clearAllData() {
         database.withTransaction {
@@ -333,12 +336,8 @@ class GameRepository(
         }
     }
 
-    suspend fun resetTimer(gameId: Long) {
-        database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction
-            gameDao.update(game.copy(runningTimeMillis = 0L, timerLastStartedAt = null))
-        }
-    }
+    /** Resets the clock to the start of the period; see [setGameTime] for when it refuses. */
+    suspend fun resetTimer(gameId: Long): Long? = setGameTime(gameId, 0L)
 
     /** Returns the event's id, or null if the game doesn't exist. */
     suspend fun addMvpVote(gameId: Long, playerId: Long): Long? =
