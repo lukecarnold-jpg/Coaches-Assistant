@@ -268,4 +268,30 @@ class PlayerGameStatsTest {
         assertEquals(1L, millisUntilNextSecond(5_999L))
         assertEquals(750L, millisUntilNextSecond(62_250L))
     }
+
+    @Test
+    fun legacyEventsStampedPastThePeriodEnd_countNoMoreThanThePeriod() {
+        // A game from before the clock stopped itself: 20-minute period, the clock left running,
+        // and the game ended 1306.9 minutes "in", closing everyone's shift at that time.
+        val stats = calculatePlayerGameStats(
+            playerList = listOf(player1, player2),
+            game = game(runningTimeMillis = 0L).copy(periodDurationMillis = 1_200_000L, isFinished = true),
+            lineup = GameLineup(),
+            events = listOf(
+                GameEventEntity(gameId = 1, timestamp = 0, type = EventType.START_LINEUP.name, note = "1", gameTimeMillis = 0),
+                GameEventEntity(
+                    gameId = 1,
+                    timestamp = 1,
+                    type = EventType.SUBSTITUTION.name,
+                    playerId = 2,
+                    relatedPlayerId = 1,
+                    gameTimeMillis = 1_100_000,
+                ),
+                GameEventEntity(gameId = 1, timestamp = 2, type = EventType.GAME_END.name, gameTimeMillis = 78_414_000),
+            ),
+        ).associateBy { it.player.id }
+
+        assertEquals(1_100_000L, stats.getValue(1).totalTimeMillis) // 0:00-18:20, unaffected
+        assertEquals(100_000L, stats.getValue(2).totalTimeMillis) // 18:20 to the 20:00 cap, not ~22 hours
+    }
 }

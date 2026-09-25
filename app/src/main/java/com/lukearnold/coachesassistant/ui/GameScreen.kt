@@ -80,7 +80,7 @@ fun GameScreen(
     // Each available (non-absent) player's equal share of playing time, as of a given clock time.
     // `stats` already leaves out absent players, so its size is the number available.
     val fairShareAt: (Long) -> FairShare? = remember(selectedGame, stats.size, events) {
-        { now -> selectedGame?.let { fairShare(it, stats.size, elapsedGameMillis(events, now)) } }
+        { now -> selectedGame?.let { fairShare(it, stats.size, elapsedGameMillis(events, now, it.periodDurationMillis)) } }
     }
     val playerById = players.associateBy { it.id }
     val activeGames = games.filter { !it.isFinished }

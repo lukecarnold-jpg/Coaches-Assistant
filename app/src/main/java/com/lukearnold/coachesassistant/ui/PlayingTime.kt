@@ -3,6 +3,7 @@ package com.lukearnold.coachesassistant.ui
 import com.lukearnold.coachesassistant.data.EventType
 import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.GameEventEntity
+import com.lukearnold.coachesassistant.data.capToPeriod
 import kotlin.math.abs
 
 /**
@@ -37,9 +38,12 @@ fun fairShare(game: GameEntity, availablePlayers: Int, elapsedGameMillis: Long):
 /**
  * Game time played so far: each completed period's length, as recorded when it ended (so a period
  * cut short counts only what was played), plus [currentPeriodMillis] on the current period's clock.
+ * Each is capped at [periodDurationMillis] (if set), for games recorded before the clock stopped
+ * itself (see capToPeriod).
  */
-fun elapsedGameMillis(events: List<GameEventEntity>, currentPeriodMillis: Long): Long =
-    events.filter { it.type == EventType.PERIOD_CHANGE.name }.sumOf { it.gameTimeMillis } + currentPeriodMillis
+fun elapsedGameMillis(events: List<GameEventEntity>, currentPeriodMillis: Long, periodDurationMillis: Long = 0L): Long =
+    events.filter { it.type == EventType.PERIOD_CHANGE.name }.sumOf { capToPeriod(it.gameTimeMillis, periodDurationMillis) } +
+        capToPeriod(currentPeriodMillis, periodDurationMillis)
 
 /**
  * Bench players in the order to bring them on: whoever is furthest behind their share first.

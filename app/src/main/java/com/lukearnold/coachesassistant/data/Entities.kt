@@ -164,10 +164,16 @@ fun idsToCsv(ids: Collection<Long>): String = ids.joinToString(",")
  * The cap is what keeps a clock nobody stopped (app backgrounded, coach distracted) from running
  * past the end of the period and crediting on-court players with minutes that were never played.
  */
-fun GameEntity.currentGameTimeMillis(now: Long = System.currentTimeMillis()): Long {
-    val elapsed = runningTimeMillis + (timerLastStartedAt?.let { now - it } ?: 0L)
-    return if (periodDurationMillis > 0) elapsed.coerceIn(0L, periodDurationMillis) else maxOf(0L, elapsed)
-}
+fun GameEntity.currentGameTimeMillis(now: Long = System.currentTimeMillis()): Long =
+    capToPeriod(runningTimeMillis + (timerLastStartedAt?.let { now - it } ?: 0L), periodDurationMillis)
+
+/**
+ * [timeMillis] kept within a period of [periodDurationMillis] (or just non-negative if the period
+ * has no set length). New games can't record time past the end of a period, but games from before
+ * the clock stopped itself can: a clock left running for hours stamped its events with that time.
+ */
+fun capToPeriod(timeMillis: Long, periodDurationMillis: Long): Long =
+    if (periodDurationMillis > 0) timeMillis.coerceIn(0L, periodDurationMillis) else maxOf(0L, timeMillis)
 
 /** Time until the period's clock runs out as of [now], or null if the period has no set length. */
 fun GameEntity.remainingPeriodTimeMillis(now: Long = System.currentTimeMillis()): Long? =
