@@ -35,7 +35,7 @@ val appVersionCode: Int = providers.gradleProperty("versionCode").orNull?.toInt(
  * The app used to be installed as com.example.basketballrotation. Android can't update that install
  * to the new ID, and apps can't read each other's data, so moving to the new app goes through a
  * transition build: `./gradlew installDebug -PlegacyAppId` installs this code *over* the old app
- * (migrating its data like any update), labelled "Coaches Assistant (old)", with a note in
+ * (migrating its data like any update), labelled "Old Coaches Assistant", with a note in
  * Settings → Backup. Back up there, then restore in the new app. See README, "Moving from the old app".
  */
 val legacyTransitionBuild: Boolean = providers.gradleProperty("legacyAppId").isPresent
