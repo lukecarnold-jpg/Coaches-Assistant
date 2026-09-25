@@ -57,6 +57,21 @@ fun RosterScreen(
     var showError by rememberSaveable { mutableStateOf(value = false) }
 
     var editingPlayer by remember { mutableStateOf<PlayerEntity?>(null) }
+    var pendingRemoval by remember { mutableStateOf<PlayerEntity?>(null) }
+    val requestRemove: (Long) -> Unit = { id -> pendingRemoval = players.firstOrNull { it.id == id } }
+
+    pendingRemoval?.let { player ->
+        ConfirmDialog(
+            title = "Remove this player?",
+            message = removePlayerConfirmMessage(player),
+            confirmLabel = "Remove",
+            onConfirm = {
+                pendingRemoval = null
+                onDeletePlayer(player.id)
+            },
+            onDismiss = { pendingRemoval = null },
+        )
+    }
     var editName by remember { mutableStateOf("") }
     var editJerseyNumber by remember { mutableStateOf("") }
     var editPosition by remember { mutableStateOf<String?>(null) }
@@ -153,7 +168,7 @@ fun RosterScreen(
                             editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
                             editPosition = player.position
                         },
-                        onDeletePlayer = onDeletePlayer,
+                        onDeletePlayer = requestRemove,
                     )
                 }
             }
@@ -212,7 +227,7 @@ fun RosterScreen(
                     editJerseyNumber = player.jerseyNumber?.toString().orEmpty()
                     editPosition = player.position
                 },
-                onDeletePlayer = onDeletePlayer,
+                onDeletePlayer = requestRemove,
             )
         }
     }
