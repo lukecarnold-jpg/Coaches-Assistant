@@ -2,7 +2,7 @@ package com.lukearnold.coachesassistant.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -396,7 +396,7 @@ fun GameClock(
                     ) {
                         Icon(
                             if (timerLastStartedAt != null) {
-                                Icons.Default.Info
+                                Icons.Default.Pause
                             } else {
                                 Icons.Default.PlayArrow
                             },
