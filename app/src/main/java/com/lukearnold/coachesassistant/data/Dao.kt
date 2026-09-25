@@ -24,6 +24,10 @@ interface PlayerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(player: PlayerEntity): Long
 
+    /** For restoring a backup: keeps each row's id, and fails (rather than overwriting) on a clash. */
+    @Insert
+    suspend fun insertAll(players: List<PlayerEntity>)
+
     @Update
     suspend fun update(player: PlayerEntity)
 
@@ -56,6 +60,10 @@ interface GameDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(game: GameEntity): Long
+
+    /** For restoring a backup: keeps each row's id, and fails (rather than overwriting) on a clash. */
+    @Insert
+    suspend fun insertAll(games: List<GameEntity>)
 
     @Update
     suspend fun update(game: GameEntity)
@@ -90,6 +98,13 @@ interface GameEventDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(event: GameEventEntity): Long
 
+    /** For restoring a backup: keeps each row's id, and fails (rather than overwriting) on a clash. */
+    @Insert
+    suspend fun insertAll(events: List<GameEventEntity>)
+
+    @Query("SELECT * FROM game_events")
+    suspend fun getAll(): List<GameEventEntity>
+
     @Update
     suspend fun update(event: GameEventEntity)
 
@@ -116,6 +131,9 @@ interface GamePlayerDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(rows: List<GamePlayerEntity>)
+
+    @Query("SELECT * FROM game_players")
+    suspend fun getAll(): List<GamePlayerEntity>
 
     @Query("DELETE FROM game_players WHERE gameId = :gameId")
     suspend fun deleteByGame(gameId: Long)

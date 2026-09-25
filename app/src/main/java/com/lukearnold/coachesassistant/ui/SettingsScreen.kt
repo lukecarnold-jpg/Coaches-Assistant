@@ -1,5 +1,8 @@
 package com.lukearnold.coachesassistant.ui
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -21,6 +24,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -39,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.lukearnold.coachesassistant.ai.AiProvider
 import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
 import com.lukearnold.coachesassistant.ai.endpointUrlProblem
+import java.time.LocalDate
 import com.lukearnold.coachesassistant.data.Sport
 
 @Composable
@@ -56,11 +61,22 @@ fun SettingsScreen(
     onSaveCustomEndpoint: (CustomEndpointConfig) -> Unit = {},
     currentSport: Sport? = null,
     onSwitchSport: () -> Unit = {},
+    onBackup: (Uri) -> Unit = {},
+    onRestore: (Uri) -> Unit = {},
     keepScreenOnWhileClockRuns: Boolean = true,
     onKeepScreenOnWhileClockRunsChange: (Boolean) -> Unit = {},
 ) {
     val layout = LocalResponsiveLayout.current
     var showConfirm by remember { mutableStateOf(value = false) }
+    var showRestoreConfirm by remember { mutableStateOf(value = false) }
+    val backupLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri -> uri?.let(onBackup) }
+    // Any file type: backups saved to cloud drives or downloads don't always keep a JSON type,
+    // and the contents are checked before anything is restored.
+    val restoreLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri -> uri?.let(onRestore) }
     var showDeleteOptions by remember { mutableStateOf(value = false) }
     var deletePlayers by remember { mutableStateOf(value = true) }
     var deleteGames by remember { mutableStateOf(value = true) }
@@ -217,6 +233,22 @@ fun SettingsScreen(
             )
         }
 
+        SectionCard(title = "Backup") {
+            Text(
+                "Save every sport's players and games to a file, e.g. to move to a new phone. " +
+                    "API keys aren't included; add them again after restoring.",
+            )
+            Spacer(Modifier.height(layout.smallGap))
+            Row(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+                Button(onClick = { backupLauncher.launch("coaches-assistant-backup-${LocalDate.now()}.json") }) {
+                    Text("Back up all data")
+                }
+                OutlinedButton(onClick = { showRestoreConfirm = true }) {
+                    Text("Restore from backup")
+                }
+            }
+        }
+
         SectionCard(title = "Data management") {
             Text(
                 "Delete ${currentSport?.displayName ?: "this sport"}'s players, games, or events, or delete " +
@@ -233,6 +265,34 @@ fun SettingsScreen(
 
         SectionCard(title = "Exports") {
             Text("To view exported CSV files, use your device's file manager (e.g., Files or Downloads app).")
+        }
+
+        if (showRestoreConfirm) {
+            AlertDialog(
+                onDismissRequest = { showRestoreConfirm = false },
+                title = { Text("Restore from backup?") },
+                text = {
+                    Text(
+                        "The backup replaces all current players, games, and events for every sport. " +
+                            "This can't be undone, so back up first if you might want today's data.",
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showRestoreConfirm = false
+                            restoreLauncher.launch(arrayOf("*/*"))
+                        },
+                    ) {
+                        Text("Choose backup file", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showRestoreConfirm = false }) {
+                        Text("Cancel")
+                    }
+                },
+            )
         }
 
         if (showConfirm) {
