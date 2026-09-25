@@ -77,4 +77,12 @@ class GameEntityTest {
 
         assertEquals(0, totals.opponentScore)
     }
+
+    @Test
+    fun capToPeriod_keepsTimesWithinThePeriod() {
+        assertEquals(600_000L, capToPeriod(78_414_000L, periodDurationMillis = 600_000L))
+        assertEquals(0L, capToPeriod(-5L, periodDurationMillis = 600_000L))
+        assertEquals(300_000L, capToPeriod(300_000L, periodDurationMillis = 600_000L))
+        assertEquals(78_414_000L, capToPeriod(78_414_000L, periodDurationMillis = 0L)) // no set length
+    }
 }

@@ -17,6 +17,7 @@ import com.lukearnold.coachesassistant.data.MvpVotes
 import com.lukearnold.coachesassistant.data.PlayerEntity
 import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.data.GameLineup
+import com.lukearnold.coachesassistant.data.capToPeriod
 import com.lukearnold.coachesassistant.data.remainingPeriodTimeMillis
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -560,6 +561,12 @@ fun calculatePlayerGameStats(
     lineup: GameLineup,
     events: List<GameEventEntity>,
 ): List<PlayerGameStat> {
+    // Times are read capped at the period length: games recorded before the clock stopped itself
+    // can have events stamped hours past the end of a period (see capToPeriod).
+    val periodLength = game?.periodDurationMillis ?: 0L
+    fun GameEventEntity.at(): Long = capToPeriod(gameTimeMillis, periodLength)
+    val runningTime = capToPeriod(game?.runningTimeMillis ?: 0L, periodLength)
+
     val onCourt = lineup.onCourtIds
     val absent = lineup.absentIds
 
@@ -580,24 +587,24 @@ fun calculatePlayerGameStats(
                 event.note.split(',')
                     .mapNotNull { it.trim().toLongOrNull() }
                     .forEach { id ->
-                        lastEnteredAt[id] = event.gameTimeMillis
+                        lastEnteredAt[id] = event.at()
                         lastBenchedAt.remove(id)
                     }
             }
 
             EventType.SUBSTITUTION -> {
                 event.playerId?.let { playerInId ->
-                    lastEnteredAt[playerInId] = event.gameTimeMillis
+                    lastEnteredAt[playerInId] = event.at()
                     lastBenchedAt.remove(playerInId)
                 }
                 event.relatedPlayerId?.let { playerOutId ->
                     timesSubbedOffByPlayer[playerOutId] = (timesSubbedOffByPlayer[playerOutId] ?: 0) + 1
                     val entered = lastEnteredAt.remove(playerOutId)
                     if (entered != null) {
-                        val duration = maxOf(0L, event.gameTimeMillis - entered)
+                        val duration = maxOf(0L, event.at() - entered)
                         totalTimeByPlayer[playerOutId] = (totalTimeByPlayer[playerOutId] ?: 0L) + duration
                     }
-                    lastBenchedAt[playerOutId] = event.gameTimeMillis
+                    lastBenchedAt[playerOutId] = event.at()
                 }
             }
 
@@ -612,7 +619,7 @@ fun calculatePlayerGameStats(
             EventType.PERIOD_CHANGE -> {
                 // Close all active shifts using the event's gameTimeMillis (which is end of period)
                 lastEnteredAt.forEach { (id, entered) ->
-                    val duration = maxOf(0L, event.gameTimeMillis - entered)
+                    val duration = maxOf(0L, event.at() - entered)
                     totalTimeByPlayer[id] = (totalTimeByPlayer[id] ?: 0L) + duration
                 }
                 lastEnteredAt.clear()
@@ -624,7 +631,7 @@ fun calculatePlayerGameStats(
 
             EventType.GAME_END -> {
                 lastEnteredAt.forEach { (id, entered) ->
-                    val duration = maxOf(0L, event.gameTimeMillis - entered)
+                    val duration = maxOf(0L, event.at() - entered)
                     totalTimeByPlayer[id] = (totalTimeByPlayer[id] ?: 0L) + duration
                 }
                 lastEnteredAt.clear()
@@ -643,10 +650,10 @@ fun calculatePlayerGameStats(
         .map { player ->
             val isOnCourt = onCourt.contains(player.id)
             val enteredAt = lastEnteredAt[player.id]
-                ?: (game?.runningTimeMillis ?: 0L)
+                ?: runningTime
 
             val currentShift = if (isOnCourt) {
-                maxOf(0L, (game?.runningTimeMillis ?: 0L) - enteredAt)
+                maxOf(0L, runningTime - enteredAt)
             } else {
                 0L
             }
@@ -655,7 +662,7 @@ fun calculatePlayerGameStats(
             val currentBench = if (isOnCourt) {
                 0L
             } else {
-                maxOf(0L, (game?.runningTimeMillis ?: 0L) - benchedAt)
+                maxOf(0L, runningTime - benchedAt)
             }
 
             val totalTime = (totalTimeByPlayer[player.id] ?: 0L) + currentShift

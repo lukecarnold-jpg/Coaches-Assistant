@@ -93,4 +93,14 @@ class PlayingTimeTest {
         assertEquals("02:15 behind", paceLabel(135_000L))
         assertEquals("00:40 ahead", paceLabel(-40_000L))
     }
+
+    @Test
+    fun elapsedGameMillis_capsEachPeriodAtItsLength() {
+        val events = listOf(
+            GameEventEntity(gameId = 1, timestamp = 0, type = EventType.PERIOD_CHANGE.name, gameTimeMillis = 78_414_000L),
+        )
+
+        // A legacy period "ended" ~22 hours in counts as its 10 minutes; the running clock is capped too.
+        assertEquals(1_200_000L, elapsedGameMillis(events, currentPeriodMillis = 900_000L, periodDurationMillis = 600_000L))
+    }
 }
