@@ -97,7 +97,7 @@ From the current Gradle configuration:
 1. Clone or open the project in Android Studio.
 2. Ensure JDK 17 is configured for Gradle.
 3. Add an optional API key for whichever AI provider you want the Training tab to use, either:
-   - In-app: open the Settings tab, pick a provider chip (Google Gemini, Anthropic Claude, or OpenAI ChatGPT), and paste its key into "AI training assistant" (no rebuild required; for Gemini this takes priority over the build-time key), or
+   - In-app: open the Settings tab, pick a provider chip (Google Gemini, Anthropic Claude, OpenAI ChatGPT, or Other), and paste its key into "AI training assistant" (no rebuild required; for Gemini this takes priority over the build-time key), or
    - At build time, in `local.properties` at the project root (Gemini only):
 
 ```properties
@@ -110,7 +110,7 @@ If no key is set for the selected provider, the app still builds, but the Traini
 
 Before the rename, the app was installed as `com.example.basketballrotation`. Android can't update that install to the new app ID (`com.lukearnold.coachesassistant`), and one app can't read another's data, so the two install side by side. To move your data across:
 
-1. With the device connected, install the transition build over the old app: `./gradlew.bat installDebug -PlegacyAppId`. It's today's code under the old app ID, so it installs as an update: your data is migrated and kept. It shows up as "Old Coaches Assistant".
+1. With the device connected, install the transition build over the old app: `./gradlew installDebug -PlegacyAppId` (Windows: `gradlew.bat installDebug -PlegacyAppId`). It's today's code under the old app ID, so it installs as an update: your data is migrated and kept. It shows up as "Old Coaches Assistant".
 2. Open it and go to **Settings → Backup → Back up all data**.
 3. Open the new Coaches Assistant app, go to **Settings → Restore from backup**, and pick that file.
 4. Re-enter your AI API keys in the new app (backups never include them), then uninstall "Old Coaches Assistant".
@@ -123,36 +123,44 @@ The fourth "Other" provider extends this to any additional service by having the
 
 ## Running locally
 
-Use the Gradle wrapper from the repo root:
+Use the Gradle wrapper from the repo root (on Windows, run `gradlew.bat` instead of `./gradlew`):
 
-```powershell
-./gradlew.bat test
-./gradlew.bat assembleDebug
+```sh
+./gradlew testDebugUnitTest   # unit and Compose UI tests (JVM, via Robolectric; no emulator needed)
+./gradlew lintDebug
+./gradlew assembleDebug
+./gradlew installDebug        # install on a connected device or running emulator
 ```
 
-To deploy directly to a connected device/emulator:
+Release builds have R8 minification and resource shrinking enabled (`./gradlew assembleRelease`). No release signing config is checked in, so the APK is unsigned. To try one on an emulator, sign it with the debug keystore; it then installs over a debug build without losing data:
 
-```powershell
-./gradlew.bat installDebug
+```sh
+./gradlew assembleRelease
+BT=$ANDROID_HOME/build-tools/<version>
+$BT/zipalign -f -p 4 app/build/outputs/apk/release/app-release-unsigned.apk aligned.apk
+$BT/apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android --out release.apk aligned.apk
+adb install -r release.apk
 ```
 
-Release builds have R8 minification and resource shrinking enabled (`./gradlew.bat assembleRelease`). No release signing config is checked in, so the output APK is unsigned; sign it with your own keystore (or a debug keystore, for local testing) before installing it on a device.
+`versionCode` is the number of commits in the checked-out history (`git rev-list --count HEAD`), so it goes up with every commit on `master`, whose history is linear because PRs are rebase-merged. Build from a full clone: a shallow clone gets a too-low code (with a warning), and a copy with no `.git` falls back to `1`. To set it explicitly, pass `-PversionCode=N`, e.g. `./gradlew assembleRelease -PversionCode=150`. `versionName` is still set by hand in `app/build.gradle.kts`.
 
-`versionCode` is the number of commits in the checked-out history (`git rev-list --count HEAD`), so it goes up with every commit on `master`, whose history is linear because PRs are rebase-merged. Build from a full clone: a shallow clone gets a too-low code (with a warning), and a copy with no `.git` falls back to `1`. To set it explicitly, pass `-PversionCode=N`, e.g. `./gradlew.bat assembleRelease -PversionCode=150`. `versionName` is still set by hand in `app/build.gradle.kts`.
+## Testing
 
-## Verified status
+CI (`.github/workflows/android-ci.yml`) runs on every push and PR to `master`: the unit and UI tests, lint, and a minified release build.
 
-The current project state was validated in this workspace with:
+The automated tests cover:
 
-- Clean Kotlin compilation of the main, unit test, and instrumented test source sets, with zero compiler warnings
-- `./gradlew.bat lintDebug` -> `BUILD SUCCESSFUL`, with a single informational finding (a newer Android Gradle Plugin patch/minor version is available)
-- `./gradlew.bat testDebugUnitTest` -> `BUILD SUCCESSFUL`, all unit tests passing, including coverage for the player shift/bench/points calculator and MVP-vote serialization
-- `./gradlew.bat assembleRelease` -> `BUILD SUCCESSFUL` with R8 minification and resource shrinking enabled
-- A signed release build was installed and driven end-to-end on an emulator (roster setup, game creation, starting lineup, live substitution, and API key save/persist-through-restart/remove), with no crashes or logged exceptions
-- The multi-provider Settings UI was device-tested for all four providers, including a real network round-trip for the "Other" provider against a live OpenAI-compatible endpoint (the request correctly reached the server and the app surfaced the server's real error response for an invalid key)
-- Multi-sport support was device-tested on an emulator across all six sports: Basketball and Netball were driven through a full roster (with positions) → game creation → starting lineup → scoring → infraction → substitution cycle; Soccer, AFL, and Rugby Union were spot-checked for correct on-court size, period defaults, and scoring buttons. This testing caught and led to a fix for a real bug where switching sports reused the previous sport's `AppViewModel` instance instead of creating a new one, leaking one sport's roster into another's Roster tab
+- Game logic: the player time/points/bench calculator (including legacy events past the period end), playing-time targets, season totals, clock rules (auto-stop, never moving before recorded events), and confirmation messages
+- Data: `GameRepository`'s transactions and undo against an in-memory Room database, every Room migration against the exported schemas, backup/restore round trips, and CSV import/export
+- AI: request/response parsing for each provider, local-network endpoint rules, and settings storage
+- Screens (Compose UI tests on Robolectric): confirmation dialogs, toggling rows by their label, and the clock editor
 
-The unit test suite covers the core game-stat calculation logic, CSV/event parsing, MVP-vote serialization, `GameRepository`'s transactions against an in-memory Room database (via Robolectric), and the Room migration chain against the exported schemas.
+Last checked by hand on the Pixel 10 Pro emulator (API 37) in September 2026:
+
+- A live game: clock auto-stop and keep-screen-on, playing-time labels, scoring and substitution undo, End Game and other confirmations
+- Backup and restore, including onto a wiped app; the transition build migrating the old app's data and restoring it into the new app
+- The Other provider against a local Ollama server over plain http, including the Android 17 local network permission
+- Light and dark mode, and the minified release build (signed with the debug key) through the flows above
 
 ## High-level project structure
 
