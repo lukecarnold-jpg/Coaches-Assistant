@@ -15,19 +15,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lukearnold.coachesassistant.ai.ACCESS_LOCAL_NETWORK
-import com.lukearnold.coachesassistant.ai.BasketballDrill
+import com.lukearnold.coachesassistant.ai.Drill
+import com.lukearnold.coachesassistant.data.Sport
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrainingScreen(
     modifier: Modifier = Modifier,
     isExpanded: Boolean,
+    sport: Sport,
     trainingViewModel: TrainingViewModel = viewModel(),
 ) {
     val layout = LocalResponsiveLayout.current
     val uiState by trainingViewModel.uiState.collectAsState()
     val ageGroups = listOf(
-        "Mini Ball (Ages 5-6)",
+        "Ages 5-6",
         "Under 8's",
         "Under 10's",
         "Under 12's",
@@ -43,13 +45,13 @@ fun TrainingScreen(
     val localNetworkPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
-        if (granted) trainingViewModel.generateDrills(selectedAgeGroup) else trainingViewModel.reportLocalNetworkDenied()
+        if (granted) trainingViewModel.generateDrills(sport, selectedAgeGroup) else trainingViewModel.reportLocalNetworkDenied()
     }
     val generate = {
         if (trainingViewModel.localNetworkPermissionNeeded()) {
             localNetworkPermissionLauncher.launch(ACCESS_LOCAL_NETWORK)
         } else {
-            trainingViewModel.generateDrills(selectedAgeGroup)
+            trainingViewModel.generateDrills(sport, selectedAgeGroup)
         }
     }
 
@@ -116,7 +118,7 @@ fun TrainingScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
                 ) {
-                    TrainingResultsPanel(uiState = uiState)
+                    TrainingResultsPanel(uiState = uiState, sport = sport)
                 }
             }
         }
@@ -172,7 +174,7 @@ fun TrainingScreen(
                 )
             }
 
-            TrainingResultsPanel(uiState = uiState)
+            TrainingResultsPanel(uiState = uiState, sport = sport)
         }
     }
 }
@@ -235,10 +237,10 @@ fun TrainingSelectionPanel(
 }
 
 @Composable
-fun TrainingResultsPanel(uiState: TrainingUiState) {
+fun TrainingResultsPanel(uiState: TrainingUiState, sport: Sport) {
     when (uiState) {
         is TrainingUiState.Idle -> {
-            EmptyMessage("Select an age group and click generate to see basketball drills tailored by AI.")
+            EmptyMessage("Select an age group and click generate to see ${sport.displayName} drills tailored by AI.")
         }
 
         is TrainingUiState.Loading -> {
@@ -272,7 +274,7 @@ fun TrainingResultsPanel(uiState: TrainingUiState) {
 }
 
 @Composable
-fun DrillCard(drill: BasketballDrill) {
+fun DrillCard(drill: Drill) {
     val layout = LocalResponsiveLayout.current
 
     OutlinedCard(modifier = Modifier.fillMaxWidth()) {

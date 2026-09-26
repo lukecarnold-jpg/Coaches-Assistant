@@ -125,9 +125,7 @@ private fun EmojiIcon(emoji: String) {
 private fun navTabSpecsFor(sport: Sport): List<NavTabSpec> = buildList {
     add(NavTabSpec(AppTab.ROSTER, "Roster") { EmojiIcon("👥") })
     add(NavTabSpec(AppTab.GAME, "Game") { EmojiIcon(sport.emoji) })
-    if (sport == Sport.BASKETBALL) {
-        add(NavTabSpec(AppTab.TRAINING, "Training") { EmojiIcon("🏋️") })
-    }
+    add(NavTabSpec(AppTab.TRAINING, "Training") { EmojiIcon("🏋️") })
     add(NavTabSpec(AppTab.HISTORY, "History") { EmojiIcon("🕘") })
     add(NavTabSpec(AppTab.SETTINGS, "Settings") { Icon(Icons.Default.Settings, contentDescription = null) })
 }
@@ -136,9 +134,10 @@ private fun navTabSpecsFor(sport: Sport): List<NavTabSpec> = buildList {
 private fun SportApp(
     sport: Sport,
     onSwitchSport: () -> Unit,
-    trainingViewModel: TrainingViewModel = viewModel(),
 ) {
     val application = LocalContext.current.applicationContext as Application
+    // One per sport, so one sport's generated drills don't show up on another's Training tab.
+    val trainingViewModel: TrainingViewModel = viewModel(key = "TrainingViewModel-${sport.name}")
     val appViewModel: AppViewModel = viewModel(
         key = "AppViewModel-${sport.name}",
         factory = remember(sport) { AppViewModelFactory(application, sport) },
@@ -265,6 +264,7 @@ private fun SportApp(
                     AppTab.TRAINING -> TrainingScreen(
                         modifier = Modifier.fillMaxSize(),
                         isExpanded = isExpanded,
+                        sport = sport,
                         trainingViewModel = trainingViewModel,
                     )
 

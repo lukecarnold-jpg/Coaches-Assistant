@@ -1,5 +1,6 @@
 package com.lukearnold.coachesassistant.ai
 
+import com.lukearnold.coachesassistant.data.Sport
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -8,7 +9,7 @@ class DrillParsingTest {
 
     @Test
     fun buildDrillPrompt_includesAgeGroupAndFormatInstructions() {
-        val prompt = buildDrillPrompt("Under 10's")
+        val prompt = buildDrillPrompt(Sport.BASKETBALL, "Under 10's")
 
         assertTrue(prompt.contains("Under 10's"))
         assertTrue(prompt.contains("TITLE:"))
@@ -70,4 +71,13 @@ class DrillParsingTest {
     fun parseDrills_blankInput_returnsEmptyList() {
         assertEquals(0, parseDrills("").size)
     }
+
+    @Test
+    fun buildDrillPrompt_namesTheSport_spellingOutAmbiguousOnes() {
+        assertTrue(buildDrillPrompt(Sport.BASKETBALL, "Under 10's").contains("3 age-appropriate basketball drills"))
+        assertTrue(buildDrillPrompt(Sport.NETBALL, "Under 12's").contains("3 age-appropriate netball drills"))
+        assertTrue(buildDrillPrompt(Sport.AFL, "Under 12's").contains("Australian rules football (AFL) drills"))
+        assertTrue(buildDrillPrompt(Sport.TOUCH_FOOTBALL, "Ages 5-6").contains("touch football (touch rugby) drills"))
+    }
 }
+

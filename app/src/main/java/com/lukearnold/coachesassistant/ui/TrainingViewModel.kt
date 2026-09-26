@@ -8,13 +8,14 @@ import com.lukearnold.coachesassistant.BuildConfig
 import com.lukearnold.coachesassistant.ai.AiProvider
 import com.lukearnold.coachesassistant.ai.AiRequestException
 import com.lukearnold.coachesassistant.ai.AiSettingsStore
-import com.lukearnold.coachesassistant.ai.BasketballDrill
+import com.lukearnold.coachesassistant.ai.Drill
 import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
 import com.lukearnold.coachesassistant.ai.buildDrillPrompt
 import com.lukearnold.coachesassistant.ai.hasLocalNetworkPermission
 import com.lukearnold.coachesassistant.ai.needsLocalNetworkPermission
 import com.lukearnold.coachesassistant.ai.parseDrills
 import com.lukearnold.coachesassistant.ai.textGeneratorFor
+import com.lukearnold.coachesassistant.data.Sport
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -22,7 +23,7 @@ import kotlinx.coroutines.launch
 sealed class TrainingUiState {
     object Idle : TrainingUiState()
     object Loading : TrainingUiState()
-    data class Success(val drills: List<BasketballDrill>) : TrainingUiState()
+    data class Success(val drills: List<Drill>) : TrainingUiState()
     data class Error(val message: String) : TrainingUiState()
 }
 
@@ -91,7 +92,7 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         )
     }
 
-    fun generateDrills(ageGroup: String) {
+    fun generateDrills(sport: Sport, ageGroup: String) {
         val provider = _selectedProvider.value
         val apiKey = effectiveApiKey(provider)
         // The Other provider may be a local server that doesn't need a key.
@@ -112,7 +113,7 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _uiState.value = TrainingUiState.Loading
             try {
-                val text = textGeneratorFor(provider, customEndpoint).generateText(buildDrillPrompt(ageGroup), apiKey)
+                val text = textGeneratorFor(provider, customEndpoint).generateText(buildDrillPrompt(sport, ageGroup), apiKey)
                 val drills = parseDrills(text)
                 _uiState.value = if (drills.isEmpty()) {
                     TrainingUiState.Error("Failed to parse drills. Try again.")

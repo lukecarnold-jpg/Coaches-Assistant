@@ -100,11 +100,11 @@ The database is local-first and is stored in a Room database named
 
 ### `ai/` - training assistant integrations
 
-The AI package is used by the basketball Training tab:
+The AI package is used by the Training tab (every sport):
 
 - `AiProvider.kt` - supported providers and provider metadata.
 - `CustomEndpointConfig.kt` - configuration for an OpenAI-compatible endpoint.
-- `BasketballDrill.kt` - parsed drill model.
+- `Drill.kt` - parsed drill model.
 - `DrillParsing.kt` - prompt construction and response parsing.
 - `DrillTextGenerators.kt` - provider-specific text generation implementations
   for Gemini, Anthropic, OpenAI, and custom OpenAI-compatible services.
