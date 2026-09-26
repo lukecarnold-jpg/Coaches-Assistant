@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -419,13 +421,13 @@ private fun DataDeletionOption(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .toggleable(value = checked, role = Role.Checkbox, onValueChange = onCheckedChange),
         horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(label)
-        Checkbox(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-        )
+        Checkbox(checked = checked, onCheckedChange = null)
     }
 }

@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -36,20 +38,13 @@ fun AttendanceDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                if (isAbsent) currentAbsent.remove(player.id)
-                                else currentAbsent.add(player.id)
+                            .toggleable(value = isAbsent, role = Role.Checkbox) { absent ->
+                                if (absent) currentAbsent.add(player.id) else currentAbsent.remove(player.id)
                             }
                             .padding(vertical = layout.tinyGap),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Checkbox(
-                            checked = isAbsent,
-                            onCheckedChange = {
-                                if (it) currentAbsent.add(player.id)
-                                else currentAbsent.remove(player.id)
-                            }
-                        )
+                        Checkbox(checked = isAbsent, onCheckedChange = null)
                         Spacer(Modifier.width(layout.smallGap))
                         Text(player.displayLabel())
                     }
