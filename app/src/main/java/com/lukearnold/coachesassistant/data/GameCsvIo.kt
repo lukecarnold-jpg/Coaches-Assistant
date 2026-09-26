@@ -14,6 +14,9 @@ import java.util.Locale
  * [GameRepository] so that class stays focused on transactional game-state changes, and so
  * the pure formatting/parsing helpers below can be unit tested without a database.
  */
+/** How a roster CSV import went: players added, and players skipped as already on the roster. */
+data class RosterImportResult(val added: Int, val skipped: Int)
+
 class GameCsvIo(private val database: AppDatabase) {
     private val playerDao = database.playerDao()
     private val gameDao = database.gameDao()
@@ -24,7 +27,7 @@ class GameCsvIo(private val database: AppDatabase) {
             val players = playerDao.getAllBySport(sport.name)
 
             contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
-                writer.appendLine("id,name,jerseyNumber")
+                writer.appendLine("id,name,jerseyNumber,position")
 
                 players.forEach { player ->
                     writer.appendLine(
@@ -32,6 +35,7 @@ class GameCsvIo(private val database: AppDatabase) {
                             player.id.toString(),
                             escapeCsv(player.name),
                             player.jerseyNumber?.toString().orEmpty(),
+                            escapeCsv(player.position.orEmpty()),
                         ).joinToString(","),
                     )
                 }
@@ -39,41 +43,53 @@ class GameCsvIo(private val database: AppDatabase) {
         }
     }
 
-    suspend fun importPlayersCsv(contentResolver: ContentResolver, uri: Uri, sport: Sport) {
-        withContext(Dispatchers.IO) {
-            contentResolver.openInputStream(uri)?.bufferedReader()?.use { reader ->
-                val lines = reader.readLines()
-                if (lines.isEmpty()) return@use
+    /**
+     * Adds the players in a roster CSV (`id,name,jerseyNumber[,position]`; the id is ignored) to
+     * [sport]'s roster. Players already on the roster (same name, ignoring case, and number) are
+     * skipped, as are repeats within the file, so re-importing a file doesn't duplicate anyone. A
+     * position is kept only if it's one of [allowedPositions] (the sport's squad positions), since a
+     * CSV may come from another sport. Files from before the position column still import.
+     */
+    suspend fun importPlayersCsv(
+        contentResolver: ContentResolver,
+        uri: Uri,
+        sport: Sport,
+        allowedPositions: Collection<String> = emptyList(),
+    ): RosterImportResult = withContext(Dispatchers.IO) {
+        val lines = contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readLines() }
+            ?: error("Unable to open import file")
+        // Skip header if present
+        val rows = lines.drop(if (lines.firstOrNull()?.contains("name", ignoreCase = true) == true) 1 else 0)
 
-                // Skip header if present
-                val startIdx = if (lines.first().contains("name", ignoreCase = true)) 1 else 0
-
-                database.withTransaction {
-                    for (i in startIdx until lines.size) {
-                        val line = lines[i]
-                        if (line.isBlank()) continue
-
-                        val parts = parseCsvLine(line)
-                        if (parts.size >= 2) {
-                            // Format: id, name, jerseyNumber (id is ignored for new inserts)
-                            val name = parts.getOrNull(1)?.trim()?.removeSurrounding("\"") ?: ""
-                            val jersey = parts.getOrNull(2)?.trim()?.removeSurrounding("\"")?.toIntOrNull()
-
-                            if (name.isNotBlank()) {
-                                playerDao.insert(
-                                    PlayerEntity(
-                                        name = name,
-                                        jerseyNumber = jersey,
-                                        sport = sport.name,
-                                    ),
-                                )
-                            }
-                        }
-                    }
+        database.withTransaction {
+            val onRoster = playerDao.getAllBySport(sport.name).map { rosterKey(it.name, it.jerseyNumber) }.toMutableSet()
+            var added = 0
+            var skipped = 0
+            for (line in rows) {
+                if (line.isBlank()) continue
+                val parts = parseCsvLine(line).map { it.trim().removeSurrounding("\"") }
+                val name = parts.getOrNull(1).orEmpty()
+                if (name.isBlank()) continue
+                val jersey = parts.getOrNull(2)?.toIntOrNull()
+                if (!onRoster.add(rosterKey(name, jersey))) {
+                    skipped++
+                    continue
                 }
-            } ?: error("Unable to open import file")
+                playerDao.insert(
+                    PlayerEntity(
+                        name = name,
+                        jerseyNumber = jersey,
+                        sport = sport.name,
+                        position = parts.getOrNull(3)?.takeIf { it in allowedPositions },
+                    ),
+                )
+                added++
+            }
+            RosterImportResult(added = added, skipped = skipped)
         }
     }
+
+    private fun rosterKey(name: String, jerseyNumber: Int?) = name.trim().lowercase() to jerseyNumber
 
     suspend fun exportGameCsv(contentResolver: ContentResolver, gameId: Long, uri: Uri) {
         withContext(Dispatchers.IO) {

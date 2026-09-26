@@ -132,4 +132,46 @@ class GameCsvIoTest {
         assertTrue(text.contains("Opponent: Rivals"))
         assertTrue(text.contains("Play zone defense in Q4."))
     }
+
+    @Test
+    fun importPlayersCsv_skipsPlayersAlreadyOnTheRosterAndRepeatsInTheFile() = runBlocking {
+        repository.addPlayer(Sport.BASKETBALL, "Alex", 23)
+        val uri = fileUri("roster.csv")
+        File(uri.path!!).writeText(
+            """
+            id,name,jerseyNumber,position
+            ,alex,23,
+            ,Sam,7,
+            ,Sam,7,
+            ,Sam,8,
+            """.trimIndent(),
+        )
+
+        val result = csvIo.importPlayersCsv(contentResolver, uri, Sport.BASKETBALL)
+
+        assertEquals(RosterImportResult(added = 2, skipped = 2), result) // "alex 23" matches Alex; Sam 7 twice
+        assertEquals(
+            setOf("Alex" to 23, "Sam" to 7, "Sam" to 8),
+            database.playerDao().getAllBySport(Sport.BASKETBALL.name).map { it.name to it.jerseyNumber }.toSet(),
+        )
+        // Importing the same file again adds nobody.
+        assertEquals(RosterImportResult(added = 0, skipped = 4), csvIo.importPlayersCsv(contentResolver, uri, Sport.BASKETBALL))
+    }
+
+    @Test
+    fun positionsRoundTrip_butOnlyWhenTheyFitTheTargetSport() = runBlocking {
+        repository.addPlayer(Sport.BASKETBALL, "Alex", 23, position = "PG")
+        val uri = fileUri("roster.csv")
+        csvIo.exportPlayersCsv(contentResolver, uri, Sport.BASKETBALL)
+        assertTrue(File(uri.path!!).readLines().first() == "id,name,jerseyNumber,position")
+
+        // Into a fresh basketball roster (after removing Alex): the position comes back.
+        database.playerDao().deleteAll()
+        csvIo.importPlayersCsv(contentResolver, uri, Sport.BASKETBALL, allowedPositions = listOf("PG", "SG", "SF", "PF", "C"))
+        assertEquals("PG", database.playerDao().getAllBySport(Sport.BASKETBALL.name).single().position)
+
+        // Into netball: "PG" isn't a netball position, so it's dropped.
+        csvIo.importPlayersCsv(contentResolver, uri, Sport.NETBALL, allowedPositions = listOf("GS", "GA", "WA", "C", "WD", "GD", "GK"))
+        assertEquals(null, database.playerDao().getAllBySport(Sport.NETBALL.name).single().position)
+    }
 }

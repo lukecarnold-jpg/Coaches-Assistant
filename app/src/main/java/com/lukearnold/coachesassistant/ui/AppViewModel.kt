@@ -15,6 +15,7 @@ import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.GameEventEntity
 import com.lukearnold.coachesassistant.data.MvpVotes
 import com.lukearnold.coachesassistant.data.PlayerEntity
+import com.lukearnold.coachesassistant.data.RosterImportResult
 import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.data.GameLineup
 import com.lukearnold.coachesassistant.data.capToPeriod
@@ -507,9 +508,9 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     fun importPlayersCsv(uri: Uri) {
         viewModelScope.launch {
             runCatching {
-                csvIo.importPlayersCsv(getApplication<Application>().contentResolver, uri, sport)
-            }.onSuccess {
-                _messages.emit(UiMessage("Roster CSV imported."))
+                csvIo.importPlayersCsv(getApplication<Application>().contentResolver, uri, sport, sport.config.squadPositions)
+            }.onSuccess { result ->
+                _messages.emit(UiMessage(rosterImportMessage(result)))
             }.onFailure {
                 _messages.emit(UiMessage(it.message ?: "Import failed."))
             }
@@ -555,6 +556,17 @@ class AppViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
         return AppViewModel(application, sport) as T
+    }
+}
+
+/** The snackbar after a roster CSV import. */
+fun rosterImportMessage(result: RosterImportResult): String {
+    fun players(n: Int) = if (n == 1) "1 player" else "$n players"
+    return when {
+        result.added == 0 && result.skipped == 0 -> "No players found in that file."
+        result.added == 0 -> "No new players: ${if (result.skipped == 1) "they were" else "all ${result.skipped} were"} already on the roster."
+        result.skipped == 0 -> "Imported ${players(result.added)}."
+        else -> "Imported ${players(result.added)} (${result.skipped} already on the roster)."
     }
 }
 
