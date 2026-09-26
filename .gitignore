@@ -7,6 +7,12 @@
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+# Per-developer Android Studio state (selected device, UI layout), not project settings
+/.idea/deploymentTargetSelector.xml
+/.idea/deviceManager.xml
+/.idea/appInsightsSettings.xml
+/.idea/markdown.xml
+/.idea/planningMode.xml
 .DS_Store
 /build
 /captures
