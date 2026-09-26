@@ -77,8 +77,9 @@ presentation helpers:
 - `FileExport.kt` - shared file-export launcher.
 - `SportConfig.kt` - sport-specific rules, scoring, periods, positions, and labels.
 - `SportPreferences.kt` - remembers the last selected sport.
-- `AppViewModel.kt` - screen state, user actions, repository coordination, and
-  player game-stat calculations.
+- `AppViewModel.kt` - screen state, user actions, and repository coordination.
+- `PlayerGameStats.kt` - the per-game player stats calculator (`calculatePlayerGameStats`).
+- `UiMessages.kt` - snackbar messages (with optional Undo) and their text.
 - `TrainingViewModel.kt` - AI provider selection, endpoint configuration, and
   API key state.
 
