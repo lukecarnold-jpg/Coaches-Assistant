@@ -1,5 +1,10 @@
 package com.lukearnold.coachesassistant.ui
 
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
@@ -210,23 +215,23 @@ fun GameControlPanel(
                 players.forEach { player ->
                     val checked = startingLineupSelection.contains(player.id)
 
+                    // The whole row is one toggle, so tapping the name works and screen readers
+                    // announce the player's name with the checked state.
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = layout.tinyGap),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Checkbox(
-                            checked = checked,
-                            onCheckedChange = { newValue ->
-                                if (newValue && !checked && (startingLineupSelection.size < requiredOnCourt)) {
+                            .toggleable(value = checked, role = Role.Checkbox) { newValue ->
+                                if (newValue && (startingLineupSelection.size < requiredOnCourt)) {
                                     startingLineupSelection.add(player.id)
                                 }
-                                if (!newValue && checked) {
+                                if (!newValue) {
                                     startingLineupSelection.remove(player.id)
                                 }
                             }
-                        )
+                            .padding(vertical = layout.tinyGap),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(checked = checked, onCheckedChange = null)
                         Text(player.displayLabel())
                     }
                 }
@@ -383,8 +388,11 @@ fun GameClock(
                     IconButton(onClick = { isEditing = !isEditing }) {
                         Icon(Icons.Default.Settings, contentDescription = "Edit time")
                     }
-                    IconButton(onClick = { showResetConfirm = true }) {
-                        Text("🔄", style = MaterialTheme.typography.titleLarge)
+                    IconButton(
+                        onClick = { showResetConfirm = true },
+                        modifier = Modifier.semantics { contentDescription = "Reset clock" },
+                    ) {
+                        Text("🔄", style = MaterialTheme.typography.titleLarge, modifier = Modifier.clearAndSetSemantics {})
                     }
                     Button(
                         onClick = onToggleTimer,

@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -95,7 +97,8 @@ fun SelectablePlayerRow(
     androidx.compose.material3.Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            // Announced as selected / not selected, not just "double-tap to activate".
+            .selectable(selected = selected, role = Role.Checkbox, onClick = onClick),
         shape = RoundedCornerShape(layout.cardCornerRadius),
         color = background,
         tonalElevation = if (selected) 2.dp else 0.dp,
