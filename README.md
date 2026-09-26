@@ -187,7 +187,7 @@ Last checked by hand on the Pixel 10 Pro emulator (API 37) in September 2026:
   - Theme: `app/src/main/java/com/lukearnold/coachesassistant/ui/Theme.kt`
   - Shared file-export launcher: `app/src/main/java/com/lukearnold/coachesassistant/ui/FileExport.kt`
 - State and logic
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/AppViewModel.kt` (also hosts the pure `calculatePlayerGameStats` function)
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/AppViewModel.kt`, with the pure `calculatePlayerGameStats` function in `PlayerGameStats.kt`
   - `app/src/main/java/com/lukearnold/coachesassistant/ui/TrainingViewModel.kt`
 - AI provider layer (`app/src/main/java/com/lukearnold/coachesassistant/ai/`)
   - `AiProvider.kt` — the Gemini/Anthropic/OpenAI/Other enum, each provider's preferences key and display strings
