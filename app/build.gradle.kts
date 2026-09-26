@@ -149,6 +149,10 @@ dependencies {
     // in-memory Room database as a fast JVM unit test instead of an emulator-backed androidTest.
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
+    // Compose UI tests run as JVM unit tests on Robolectric (no emulator), using the
+    // ComponentActivity that ui-test-manifest adds to the debug manifest.
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.compose.ui.junit4)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
