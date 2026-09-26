@@ -8,7 +8,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Pinned rather than ubuntu-latest (which moves to Ubuntu 26 on 2026-10-19), so the build
+    # environment only changes when this line does.
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
