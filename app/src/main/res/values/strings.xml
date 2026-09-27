@@ -405,6 +405,9 @@
     <string name="msg_player_added">Player added.</string>
     <string name="msg_name_empty">Name cannot be empty.</string>
     <string name="msg_player_updated">Player updated.</string>
+    <string name="msg_player_already_on_roster">%1$s is already on the roster.</string>
+    <!-- A player was saved with a number someone else wears, e.g. "Player added. Tommy also wears #2." -->
+    <string name="msg_number_shared">%1$s %2$s also wears #%3$d.</string>
     <string name="msg_player_removed">Player removed.</string>
     <string name="msg_all_data_cleared">All data cleared.</string>
     <string name="msg_selected_data_cleared">Selected data cleared.</string>

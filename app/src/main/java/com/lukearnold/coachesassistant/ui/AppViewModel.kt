@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.annotation.StringRes
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.AppDatabase
 import com.lukearnold.coachesassistant.data.BackupIo
@@ -15,6 +16,7 @@ import com.lukearnold.coachesassistant.data.GameCsvIo
 import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.GameEventEntity
 import com.lukearnold.coachesassistant.data.PlayerEntity
+import com.lukearnold.coachesassistant.data.displayLabel
 import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.data.GameLineup
 import com.lukearnold.coachesassistant.data.remainingPeriodTimeMillis
@@ -152,9 +154,15 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             return
         }
 
+        val clash = rosterClash(players.value, trimmedName, jerseyNumber)
+        if (clash is RosterClash.SamePlayer) {
+            _messages.tryEmit(UiMessage(uiText(R.string.msg_player_already_on_roster, clash.player.displayLabel())))
+            return
+        }
+
         viewModelScope.launch {
             repository.addPlayer(sport, trimmedName, jerseyNumber, position)
-            _messages.emit(UiMessage(uiText(R.string.msg_player_added)))
+            _messages.emit(UiMessage(savedPlayerMessage(R.string.msg_player_added, clash)))
         }
     }
 
@@ -171,11 +179,25 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             return
         }
 
+        val clash = rosterClash(players.value, trimmedName, jerseyNumber, exceptId = player.id)
+        if (clash is RosterClash.SamePlayer) {
+            _messages.tryEmit(UiMessage(uiText(R.string.msg_player_already_on_roster, clash.player.displayLabel())))
+            return
+        }
+
         viewModelScope.launch {
             repository.updatePlayer(player.copy(name = trimmedName, jerseyNumber = jerseyNumber, position = newPosition))
-            _messages.emit(UiMessage(uiText(R.string.msg_player_updated)))
+            _messages.emit(UiMessage(savedPlayerMessage(R.string.msg_player_updated, clash)))
         }
     }
+
+    /** [saved] ("Player added."), plus who else wears the number if it's shared. */
+    private fun savedPlayerMessage(@StringRes saved: Int, clash: RosterClash?): UiText =
+        if (clash is RosterClash.SharedNumber) {
+            uiText(R.string.msg_number_shared, uiText(saved), clash.player.name, clash.player.jerseyNumber ?: 0)
+        } else {
+            uiText(saved)
+        }
 
     fun deletePlayer(playerId: Long) {
         viewModelScope.launch {
