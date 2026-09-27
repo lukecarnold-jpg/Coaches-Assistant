@@ -5,6 +5,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
@@ -22,18 +23,23 @@ fun GameNotesPanel(
     }
 }
 
+/**
+ * Edits a game's coaching notes. What's typed survives rotation, and closing the dialog by tapping
+ * outside it or pressing Back saves it (only Cancel discards it), so notes aren't lost to a stray
+ * tap. Export saves first, so the file has what's on screen.
+ */
 @Composable
 fun CoachingNotesDialog(
     notes: String,
     onDismiss: () -> Unit,
     onSave: (String) -> Unit,
-    onExport: () -> Unit
+    onExport: (String) -> Unit
 ) {
-    var text by remember { mutableStateOf(notes) }
+    var text by rememberSaveable { mutableStateOf(notes) }
     val layout = LocalResponsiveLayout.current
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { onSave(text) },
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -41,7 +47,7 @@ fun CoachingNotesDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(stringResource(R.string.coaching_notes))
-                OutlinedButton(onClick = onExport) {
+                OutlinedButton(onClick = { onExport(text) }) {
                     Text(stringResource(R.string.export_txt))
                 }
             }

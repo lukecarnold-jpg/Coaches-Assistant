@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -209,5 +210,21 @@ class ScreenBehaviourTest {
         compose.onAllNodesWithContentDescription("Remove event").assertCountEquals(1)
         compose.onNodeWithContentDescription("Remove event").performScrollTo().performClick()
         assertEquals(listOf(2L), removed)
+    }
+
+    @Test
+    fun coachingNotes_keepWhatsTypedThroughRotation_andExportIt() {
+        val restoration = StateRestorationTester(compose)
+        val exported = mutableListOf<String>()
+        restoration.setContent {
+            CoachingNotesDialog(notes = "Zone", onDismiss = {}, onSave = {}, onExport = { exported += it })
+        }
+
+        compose.onNodeWithText("Zone").performTextReplacement("Zone in Q4")
+        restoration.emulateSavedInstanceStateRestore()
+
+        compose.onNodeWithText("Zone in Q4").assertExists()
+        compose.onNodeWithText("Export TXT", substring = true).performClick()
+        assertEquals(listOf("Zone in Q4"), exported)
     }
 }
