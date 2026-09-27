@@ -41,31 +41,30 @@ fun ConfirmDialog(
     )
 }
 
-private fun GameEntity.scoreLine(): String = "Us $teamScore – $opponentScore ${opponent.ifBlank { "Them" }}"
+private fun GameEntity.scoreLine(): UiText =
+    if (opponent.isBlank()) uiText(R.string.score_line_no_opponent, teamScore, opponentScore)
+    else uiText(R.string.score_line, teamScore, opponentScore, opponent)
 
 /** The End Game confirmation's message: the score, a warning if periods remain, and what happens next. */
-fun endGameConfirmMessage(game: GameEntity): String = buildString {
-    append("Final score: ${game.scoreLine()}.")
+fun endGameConfirmMessage(game: GameEntity): UiText =
     if (game.currentPeriod < game.periodCount) {
-        append(" You're only in ${game.periodLabel()} of ${game.periodCount}.")
+        uiText(R.string.end_game_confirm_early, game.scoreLine(), game.periodLabel(), game.periodCount)
+    } else {
+        uiText(R.string.end_game_confirm, game.scoreLine())
     }
-    append(" The game will move to History and can't be resumed.")
-}
 
-fun deleteGameConfirmMessage(game: GameEntity): String =
-    "Delete \"${game.title}\" (${game.scoreLine()})? Its events and stats are removed and it no longer " +
-        "counts in season totals. This can't be undone."
+fun deleteGameConfirmMessage(game: GameEntity): UiText =
+    uiText(R.string.delete_game_confirm, game.title, game.scoreLine())
 
-fun removePlayerConfirmMessage(player: PlayerEntity): String =
-    "Remove ${player.displayLabel()} from the roster? They're taken off any game lineups, and past games " +
-        "show their scores as \"Removed player\". This can't be undone."
+fun removePlayerConfirmMessage(player: PlayerEntity): UiText =
+    uiText(R.string.remove_player_confirm, player.displayLabel(), uiText(R.string.removed_player))
 
-fun nextPeriodConfirmMessage(game: GameEntity): String {
-    val next = game.copy(currentPeriod = game.currentPeriod + 1).periodLabel()
-    return "Move on to $next? ${game.periodLabel()} ends at the current clock time, the clock resets to " +
-        "${formatDuration(game.periodDurationMillis)}, and everyone comes off court until you set the next lineup."
-}
+fun nextPeriodConfirmMessage(game: GameEntity): UiText = uiText(
+    R.string.next_period_confirm,
+    game.periodLabel(game.currentPeriod + 1),
+    game.periodLabel(),
+    formatDuration(game.periodDurationMillis),
+)
 
-fun resetClockConfirmMessage(game: GameEntity): String =
-    "Reset the ${game.periodLabel()} clock to ${formatDuration(game.periodDurationMillis)}? " +
-        "Use this to restart a period that hasn't really begun."
+fun resetClockConfirmMessage(game: GameEntity): UiText =
+    uiText(R.string.reset_clock_confirm, game.periodLabel(), formatDuration(game.periodDurationMillis))

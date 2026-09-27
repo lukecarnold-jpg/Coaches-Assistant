@@ -123,7 +123,7 @@ fun SettingsScreen(
 
         if (currentSport != null) {
             SectionCard(title = stringResource(R.string.sport)) {
-                Text("Currently coaching ${currentSport.emoji} ${currentSport.displayName}.")
+                Text(stringResource(R.string.currently_coaching, currentSport.emoji, stringResource(currentSport.label)))
                 Spacer(Modifier.height(layout.smallGap))
                 Button(onClick = onSwitchSport) {
                     Text(stringResource(R.string.switch_sport))
@@ -162,7 +162,7 @@ fun SettingsScreen(
                     FilterChip(
                         selected = provider == selectedProvider,
                         onClick = { onSelectProvider(provider) },
-                        label = { Text(provider.displayName) },
+                        label = { Text(stringResource(provider.label)) },
                     )
                 }
             }
@@ -171,13 +171,13 @@ fun SettingsScreen(
             Text(
                 when {
                     savedKey.isNotBlank() ->
-                        "Your saved ${selectedProvider.displayName} API key is active. AI drill generation is enabled."
+                        stringResource(R.string.api_key_active, stringResource(selectedProvider.label))
                     (selectedProvider == AiProvider.GEMINI) && hasBuiltInApiKey ->
                         stringResource(R.string.using_the_gemini_api_key_built_into_this_app_ai)
                     isOther ->
                         stringResource(R.string.no_api_key_saved_hosted_providers_need_one_a_loc)
                     else ->
-                        "No ${selectedProvider.displayName} API key configured. Add one below to enable AI drill generation on the Training tab."
+                        stringResource(R.string.api_key_missing, stringResource(selectedProvider.label))
                 }
             )
             Spacer(Modifier.height(layout.smallGap))
@@ -191,7 +191,7 @@ fun SettingsScreen(
                     singleLine = true,
                     isError = endpointProblem != null,
                     supportingText = when {
-                        endpointProblem != null -> { { Text(endpointProblem) } }
+                        endpointProblem != null -> { { Text(stringResource(endpointProblem)) } }
                         endpointNeedsLocalNetwork -> {
                             { Text(stringResource(R.string.this_server_is_on_your_local_network_so_android)) }
                         }
@@ -213,7 +213,7 @@ fun SettingsScreen(
             OutlinedTextField(
                 value = apiKeyInput,
                 onValueChange = { apiKeyInput = it },
-                label = { Text("${selectedProvider.displayName} API key") },
+                label = { Text(stringResource(R.string.provider_api_key, stringResource(selectedProvider.label))) },
                 singleLine = true,
                 visualTransformation = if (apiKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -258,7 +258,7 @@ fun SettingsScreen(
             }
             Spacer(Modifier.height(layout.smallGap))
             Text(
-                "${selectedProvider.getKeyHint} The key is stored only on this device.",
+                stringResource(R.string.key_hint_stored_on_device, stringResource(selectedProvider.keyHint)),
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -287,7 +287,11 @@ fun SettingsScreen(
 
         SectionCard(title = stringResource(R.string.data_management)) {
             Text(
-                "Delete ${currentSport?.displayName ?: "this sport"}'s players, games, or events, or delete everything for every sport at once. These actions cannot be undone.",
+                if (currentSport != null) {
+                    stringResource(R.string.data_management_description, stringResource(currentSport.label))
+                } else {
+                    stringResource(R.string.data_management_description_no_sport)
+                },
             )
             Spacer(Modifier.height(layout.smallGap))
             Button(
@@ -334,7 +338,13 @@ fun SettingsScreen(
                 onDismissRequest = { showConfirm = false },
                 title = { Text(stringResource(R.string.confirm_deletion)) },
                 text = {
-                    Text("Are you sure you want to delete all data? This removes every player and game for every sport, not just ${currentSport?.displayName ?: "this one"}.")
+                    Text(
+                        if (currentSport != null) {
+                            stringResource(R.string.delete_all_confirm, stringResource(currentSport.label))
+                        } else {
+                            stringResource(R.string.delete_all_confirm_no_sport)
+                        },
+                    )
                 },
                 confirmButton = {
                     TextButton(
@@ -362,7 +372,13 @@ fun SettingsScreen(
                 title = { Text(stringResource(R.string.delete_local_data)) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
-                        Text("Select the ${currentSport?.displayName ?: "current sport"} data to delete. Other sports are not affected.")
+                        Text(
+                            if (currentSport != null) {
+                                stringResource(R.string.delete_selected_prompt, stringResource(currentSport.label))
+                            } else {
+                                stringResource(R.string.delete_selected_prompt_no_sport)
+                            },
+                        )
                         DataDeletionOption(
                             label = stringResource(R.string.players),
                             checked = deletePlayers,

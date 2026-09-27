@@ -45,7 +45,7 @@ fun PlayerActionCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Text("Points: ${stat.points}   ${sportConfig.infractionLabelPlural}: ${stat.fouls}   Subbed off: ${stat.timesSubbedOff}")
+                    Text(stringResource(R.string.player_card_stats, stat.points, stringResource(sportConfig.infraction.plural), stat.fouls, stat.timesSubbedOff))
                     if (enabled) {
                         Row {
                             TextButton(
@@ -60,14 +60,14 @@ fun PlayerActionCard(
                     Row {
                         val now = gameTimeMillis()
                         Text(
-                            text = "Shift: ${formatDuration(stat.shiftTimeAt(now))}",
+                            text = stringResource(R.string.shift_time, formatDuration(stat.shiftTimeAt(now))),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.width(layout.smallGap))
                         Text(
-                            text = "Total: ${formatDuration(stat.totalTimeAt(now))}",
+                            text = stringResource(R.string.total_time_short, formatDuration(stat.totalTimeAt(now))),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -75,8 +75,11 @@ fun PlayerActionCard(
                     val now = gameTimeMillis()
                     fairShareAt(now)?.let { share ->
                         Text(
-                            text = "Target ${formatDuration(share.fullGameMillis)} · " +
-                                paceLabel(share.behindMillis(stat.totalTimeAt(now))),
+                            text = stringResource(
+                                R.string.target_and_pace,
+                                formatDuration(share.fullGameMillis),
+                                paceLabel(share.behindMillis(stat.totalTimeAt(now))).asString(),
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -93,7 +96,7 @@ fun PlayerActionCard(
                             modifier = Modifier.height(layout.controlHeight),
                             colors = ButtonDefaults.textButtonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
                         ) {
-                            Text("MVP Vote (${stat.mvpVotes})", style = MaterialTheme.typography.labelSmall)
+                            Text(stringResource(R.string.mvp_vote_count, stat.mvpVotes), style = MaterialTheme.typography.labelSmall)
                         }
                     }
                 }
@@ -105,7 +108,7 @@ fun PlayerActionCard(
                     horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
                 ) {
                     sportConfig.scoringOptions.forEach { option ->
-                        SmallActionButton(label = option.label, modifier = Modifier.weight(1f)) {
+                        SmallActionButton(label = option.label.asString(), modifier = Modifier.weight(1f)) {
                             onAddScore(stat.player.id, option.points)
                         }
                     }
@@ -117,7 +120,7 @@ fun PlayerActionCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        sportConfig.infractionLabel,
+                        stringResource(sportConfig.infraction.label),
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold

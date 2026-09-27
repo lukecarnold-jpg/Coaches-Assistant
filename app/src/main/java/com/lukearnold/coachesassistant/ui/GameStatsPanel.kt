@@ -20,8 +20,7 @@ fun GameStatsPanel(
     events: List<GameEventEntity> = emptyList(),
     playerById: Map<Long, PlayerEntity> = emptyMap(),
     opponentName: String = "",
-    infractionLabel: String = "Foul",
-    infractionLabelPlural: String = "Fouls",
+    infraction: Infraction = Infraction.FOUL,
     onEditEvent: (GameEventEntity) -> Unit = {},
     onDeleteEvent: (GameEventEntity) -> Unit = {},
     gameTitle: String = "",
@@ -47,7 +46,7 @@ fun GameStatsPanel(
     pendingDelete?.let { game ->
         ConfirmDialog(
             title = stringResource(R.string.delete_this_game_question),
-            message = deleteGameConfirmMessage(game),
+            message = deleteGameConfirmMessage(game).asString(),
             confirmLabel = stringResource(R.string.delete),
             onConfirm = {
                 pendingDelete = null
@@ -83,7 +82,7 @@ fun GameStatsPanel(
                     FilterChip(
                         selected = periodCount == count,
                         onClick = { onPeriodCountChange(count) },
-                        label = { Text(label) },
+                        label = { Text(stringResource(label)) },
                     )
                 }
             }
@@ -121,9 +120,9 @@ fun GameStatsPanel(
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 if (game.opponent.isNotBlank()) {
-                                    Text("Opponent: ${game.opponent}")
+                                    Text(stringResource(R.string.opponent_value, game.opponent))
                                 }
-                                Text("Score: ${game.teamScore}")
+                                Text(stringResource(R.string.score_value, game.teamScore))
                             },
                             actions = {
                                 TextButton(onClick = { onSelectGame(game.id) }) {
@@ -179,16 +178,20 @@ fun GameStatsPanel(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
-                                Text("Points: ${stat.points} | $infractionLabelPlural: ${stat.fouls} | Votes: ${stat.mvpVotes} | Subbed off: ${stat.timesSubbedOff}")
+                                Text(stringResource(R.string.game_stats_line, stat.points, stringResource(infraction.plural), stat.fouls, stat.mvpVotes, stat.timesSubbedOff))
                                 val now = gameTimeMillis()
                                 val played = stat.totalTimeAt(now)
                                 val share = fairShareAt(now)
                                 Text(
                                     if (share == null) {
-                                        "Total Time: ${formatDuration(played)}"
+                                        stringResource(R.string.total_time, formatDuration(played))
                                     } else {
-                                        "Total Time: ${formatDuration(played)} of ${formatDuration(share.fullGameMillis)} target · " +
-                                            paceLabel(share.behindMillis(played))
+                                        stringResource(
+                                            R.string.total_time_with_target,
+                                            formatDuration(played),
+                                            formatDuration(share.fullGameMillis),
+                                            paceLabel(share.behindMillis(played)).asString(),
+                                        )
                                     },
                                     style = MaterialTheme.typography.bodySmall
                                 )
@@ -218,7 +221,7 @@ fun GameStatsPanel(
                                     verticalArrangement = Arrangement.spacedBy(layout.tinyGap)
                                 ) {
                                     Text(
-                                        text = eventDescription(event, playerById, opponentName, infractionLabel),
+                                        text = eventDescription(event, playerById, opponentName, infraction).asString(),
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Medium
                                     )

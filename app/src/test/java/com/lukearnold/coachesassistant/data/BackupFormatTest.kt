@@ -1,5 +1,8 @@
 package com.lukearnold.coachesassistant.data
 
+import androidx.annotation.StringRes
+import com.lukearnold.coachesassistant.R
+
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
@@ -35,20 +38,20 @@ class BackupFormatTest {
 
     @Test
     fun decode_rejectsFilesThatArentBackups() {
-        assertRejected("not json at all", "isn't a Coaches Assistant backup")
-        assertRejected("""{"some":"other json"}""", "isn't a Coaches Assistant backup")
+        assertRejected("not json at all", R.string.backup_not_a_backup)
+        assertRejected("""{"some":"other json"}""", R.string.backup_not_a_backup)
     }
 
     @Test
     fun decode_rejectsBackupsFromANewerVersion() {
         val newer = JSONObject(BackupFormat.encode(data, 0L)).put("formatVersion", BackupFormat.FORMAT_VERSION + 1)
-        assertRejected(newer.toString(), "newer version")
+        assertRejected(newer.toString(), R.string.backup_from_newer_app)
     }
 
     @Test
     fun decode_rejectsDamagedBackups() {
         val missingTable = JSONObject(BackupFormat.encode(data, 0L)).apply { remove("games") }
-        assertRejected(missingTable.toString(), "damaged")
+        assertRejected(missingTable.toString(), R.string.backup_damaged)
     }
 
     @Test
@@ -63,12 +66,12 @@ class BackupFormatTest {
         assertSame(stopped, result[1])
     }
 
-    private fun assertRejected(text: String, messagePart: String) {
+    private fun assertRejected(text: String, @StringRes expectedMessage: Int) {
         try {
             BackupFormat.decode(text)
             fail("Expected BackupFormatException")
         } catch (e: BackupFormatException) {
-            assertTrue(e.message.orEmpty(), e.message.orEmpty().contains(messagePart))
+            assertEquals(expectedMessage, e.messageRes)
         }
     }
 }

@@ -71,16 +71,16 @@ fun SportSelectionScreen(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                 )
-                SportTile(emoji = Sport.BASKETBALL.emoji, label = Sport.BASKETBALL.displayName) {
+                SportTile(emoji = Sport.BASKETBALL.emoji, label = stringResource(Sport.BASKETBALL.label)) {
                     onSelectSport(Sport.BASKETBALL)
                 }
-                SportTile(emoji = Sport.NETBALL.emoji, label = Sport.NETBALL.displayName) {
+                SportTile(emoji = Sport.NETBALL.emoji, label = stringResource(Sport.NETBALL.label)) {
                     onSelectSport(Sport.NETBALL)
                 }
-                SportTile(emoji = Sport.FUTSAL.emoji, label = Sport.FUTSAL.displayName) {
+                SportTile(emoji = Sport.FUTSAL.emoji, label = stringResource(Sport.FUTSAL.label)) {
                     onSelectSport(Sport.FUTSAL)
                 }
-                SportTile(emoji = Sport.HANDBALL.emoji, label = Sport.HANDBALL.displayName) {
+                SportTile(emoji = Sport.HANDBALL.emoji, label = stringResource(Sport.HANDBALL.label)) {
                     onSelectSport(Sport.HANDBALL)
                 }
             }
@@ -93,31 +93,31 @@ fun SportSelectionScreen(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                 )
-                SportTile(emoji = Sport.SOCCER.emoji, label = Sport.SOCCER.displayName) {
+                SportTile(emoji = Sport.SOCCER.emoji, label = stringResource(Sport.SOCCER.label)) {
                     onSelectSport(Sport.SOCCER)
                 }
-                SportTile(emoji = Sport.AFL.emoji, label = Sport.AFL.displayName) {
+                SportTile(emoji = Sport.AFL.emoji, label = stringResource(Sport.AFL.label)) {
                     onSelectSport(Sport.AFL)
                 }
                 SportTile(emoji = Sport.RUGBY_UNION.emoji, label = stringResource(R.string.rugby)) {
                     showRugbyDialog = true
                 }
-                SportTile(emoji = Sport.TOUCH_FOOTBALL.emoji, label = Sport.TOUCH_FOOTBALL.displayName) {
+                SportTile(emoji = Sport.TOUCH_FOOTBALL.emoji, label = stringResource(Sport.TOUCH_FOOTBALL.label)) {
                     onSelectSport(Sport.TOUCH_FOOTBALL)
                 }
-                SportTile(emoji = Sport.FLAG_FOOTBALL.emoji, label = Sport.FLAG_FOOTBALL.displayName) {
+                SportTile(emoji = Sport.FLAG_FOOTBALL.emoji, label = stringResource(Sport.FLAG_FOOTBALL.label)) {
                     onSelectSport(Sport.FLAG_FOOTBALL)
                 }
-                SportTile(emoji = Sport.GAELIC_FOOTBALL.emoji, label = Sport.GAELIC_FOOTBALL.displayName) {
+                SportTile(emoji = Sport.GAELIC_FOOTBALL.emoji, label = stringResource(Sport.GAELIC_FOOTBALL.label)) {
                     onSelectSport(Sport.GAELIC_FOOTBALL)
                 }
-                SportTile(emoji = Sport.FIELD_HOCKEY.emoji, label = Sport.FIELD_HOCKEY.displayName) {
+                SportTile(emoji = Sport.FIELD_HOCKEY.emoji, label = stringResource(Sport.FIELD_HOCKEY.label)) {
                     onSelectSport(Sport.FIELD_HOCKEY)
                 }
-                SportTile(emoji = Sport.LACROSSE.emoji, label = Sport.LACROSSE.displayName) {
+                SportTile(emoji = Sport.LACROSSE.emoji, label = stringResource(Sport.LACROSSE.label)) {
                     onSelectSport(Sport.LACROSSE)
                 }
-                SportTile(emoji = Sport.ULTIMATE_FRISBEE.emoji, label = Sport.ULTIMATE_FRISBEE.displayName) {
+                SportTile(emoji = Sport.ULTIMATE_FRISBEE.emoji, label = stringResource(Sport.ULTIMATE_FRISBEE.label)) {
                     onSelectSport(Sport.ULTIMATE_FRISBEE)
                 }
             }
@@ -130,10 +130,10 @@ fun SportSelectionScreen(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                 )
-                SportTile(emoji = Sport.ICE_HOCKEY.emoji, label = Sport.ICE_HOCKEY.displayName) {
+                SportTile(emoji = Sport.ICE_HOCKEY.emoji, label = stringResource(Sport.ICE_HOCKEY.label)) {
                     onSelectSport(Sport.ICE_HOCKEY)
                 }
-                SportTile(emoji = Sport.WATER_POLO.emoji, label = Sport.WATER_POLO.displayName) {
+                SportTile(emoji = Sport.WATER_POLO.emoji, label = stringResource(Sport.WATER_POLO.label)) {
                     onSelectSport(Sport.WATER_POLO)
                 }
             }
@@ -164,10 +164,10 @@ private fun RugbyCodeDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 Text(stringResource(R.string.rugby_splits_into_two_codes_which_one_do_you_coa_question))
-                SportTile(emoji = Sport.RUGBY_UNION.emoji, label = Sport.RUGBY_UNION.displayName) {
+                SportTile(emoji = Sport.RUGBY_UNION.emoji, label = stringResource(Sport.RUGBY_UNION.label)) {
                     onSelectCode(Sport.RUGBY_UNION)
                 }
-                SportTile(emoji = Sport.RUGBY_LEAGUE.emoji, label = Sport.RUGBY_LEAGUE.displayName) {
+                SportTile(emoji = Sport.RUGBY_LEAGUE.emoji, label = stringResource(Sport.RUGBY_LEAGUE.label)) {
                     onSelectCode(Sport.RUGBY_LEAGUE)
                 }
             }

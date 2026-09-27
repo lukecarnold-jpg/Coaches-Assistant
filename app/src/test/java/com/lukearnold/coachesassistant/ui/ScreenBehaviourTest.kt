@@ -56,7 +56,7 @@ class ScreenBehaviourTest {
             GameHistoryScreen(
                 games = listOf(finishedGame),
                 season = SeasonSummary(),
-                infractionLabelPlural = "Fouls",
+                infraction = Infraction.FOUL,
                 onViewGame = {},
                 onDeleteGame = { deleted += it },
                 onExportGame = { _, _ -> },

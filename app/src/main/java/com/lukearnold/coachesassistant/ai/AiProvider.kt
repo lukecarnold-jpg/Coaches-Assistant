@@ -1,5 +1,8 @@
 package com.lukearnold.coachesassistant.ai
 
+import androidx.annotation.StringRes
+import com.lukearnold.coachesassistant.R
+
 /**
  * AI providers that can generate training drills. Each requires the user's own API key entered
  * in Settings; there is no "log in with your Gemini/Claude/ChatGPT account" option. Google and
@@ -7,28 +10,25 @@ package com.lukearnold.coachesassistant.ai
  * including paying subscribers) to use a consumer subscription's login in a third-party app
  * instead of billed API access, and OpenAI's equivalent is scoped to its own Codex tooling only.
  */
-enum class AiProvider(val storageKey: String, val displayName: String, val getKeyHint: String) {
+enum class AiProvider(val storageKey: String, @param:StringRes val label: Int, @param:StringRes val keyHint: Int) {
     GEMINI(
         storageKey = "gemini_api_key",
-        displayName = "Google Gemini",
-        getKeyHint = "Get a free key from Google AI Studio.",
+        label = R.string.provider_gemini,
+        keyHint = R.string.provider_gemini_key_hint,
     ),
     ANTHROPIC(
         storageKey = "anthropic_api_key",
-        displayName = "Anthropic Claude",
-        getKeyHint = "Get a key from the Anthropic Console.",
+        label = R.string.provider_anthropic,
+        keyHint = R.string.provider_anthropic_key_hint,
     ),
     OPENAI(
         storageKey = "openai_api_key",
-        displayName = "OpenAI ChatGPT",
-        getKeyHint = "Get a key from the OpenAI Platform.",
+        label = R.string.provider_openai,
+        keyHint = R.string.provider_openai_key_hint,
     ),
     OTHER(
         storageKey = "other_api_key",
-        displayName = "Other (OpenAI-compatible)",
-        getKeyHint = "Works with any provider that speaks the OpenAI chat-completions API " +
-            "(e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted server such as Ollama). " +
-            "Also set its endpoint URL and model name above. Hosted providers need https:// and a key; " +
-            "a server on your local network can use http:// and may not need a key.",
+        label = R.string.provider_other,
+        keyHint = R.string.provider_other_key_hint,
     ),
 }

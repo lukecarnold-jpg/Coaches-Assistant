@@ -125,7 +125,7 @@ class GameCsvIoTest {
         repository.updateGameNotes(gameId, "Play zone defense in Q4.")
         val uri = fileUri("notes.txt")
 
-        csvIo.exportGameNotesTxt(contentResolver, gameId, uri)
+        csvIo.exportGameNotesTxt(contentResolver, ApplicationProvider.getApplicationContext<Application>().resources, gameId, uri)
 
         val text = File(uri.path!!).readText()
         assertTrue(text.contains("Game: Test Game"))

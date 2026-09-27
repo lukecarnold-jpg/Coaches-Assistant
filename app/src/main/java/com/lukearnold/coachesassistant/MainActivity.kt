@@ -37,6 +37,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lukearnold.coachesassistant.data.Sport
@@ -167,12 +168,13 @@ private fun SportApp(
     val isExpanded = responsiveLayout.widthDp >= 600
 
     val undoLabel = stringResource(R.string.undo)
+    val resources = LocalResources.current
     LaunchedEffect(appViewModel) {
         // collectLatest: a new message replaces the one showing (and its Undo) straight away.
         appViewModel.messages.collectLatest { message ->
             val undo = message.undo
             val result = snackbarHostState.showSnackbar(
-                message = message.text,
+                message = message.text.resolve(resources),
                 actionLabel = if (undo != null) undoLabel else null,
                 duration = if (undo != null) SnackbarDuration.Long else SnackbarDuration.Short,
             )
@@ -280,7 +282,7 @@ private fun SportApp(
                             modifier = Modifier.fillMaxSize(),
                             games = games,
                             season = season,
-                            infractionLabelPlural = sport.config.infractionLabelPlural,
+                            infraction = sport.config.infraction,
                             onViewGame = { gameId ->
                                 appViewModel.selectGame(gameId)
                                 currentTab = AppTab.GAME.name
