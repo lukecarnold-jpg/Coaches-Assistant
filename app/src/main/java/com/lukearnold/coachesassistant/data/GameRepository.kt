@@ -244,10 +244,17 @@ class GameRepository(
             eventId
         }
 
-    /** Returns the event's id, or null if the game doesn't exist. */
+    /**
+     * Adds [adjustment] (negative to correct) to the player's infraction count. Returns the event's
+     * id, or null if the game doesn't exist or the count would go below zero.
+     */
     suspend fun addFoul(gameId: Long, playerId: Long, adjustment: Int = 1): Long? =
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction null
+            val fouls = gameEventDao.getByGame(gameId)
+                .filter { it.type == EventType.FOUL.name && it.playerId == playerId }
+                .sumOf { it.points }
+            if (fouls + adjustment < 0) return@withTransaction null
             gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,

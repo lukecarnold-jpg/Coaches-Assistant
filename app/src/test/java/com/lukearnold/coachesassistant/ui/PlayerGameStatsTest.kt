@@ -30,6 +30,16 @@ class PlayerGameStatsTest {
     )
 
     @Test
+    fun fouls_neverShowBelowZero() {
+        // e.g. a foul added, removed, then the addition undone, leaving only the removal.
+        val removal = GameEventEntity(gameId = 1, timestamp = 1, type = EventType.FOUL.name, playerId = 1, points = -1)
+
+        val stat = calculatePlayerGameStats(listOf(player1), game(), GameLineup(), listOf(removal)).single()
+
+        assertEquals(0, stat.fouls)
+    }
+
+    @Test
     fun playerOnCourtSinceLineup_accruesShiftAndTotalTime() {
         val stats = calculatePlayerGameStats(
             playerList = listOf(player1),

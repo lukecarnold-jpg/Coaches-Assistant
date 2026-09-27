@@ -136,6 +136,7 @@ fun PlayerActionCard(
                             val removeLabel = stringResource(sportConfig.infraction.remove)
                             IconButton(
                                 onClick = { onAddFoul(stat.player.id, -1) },
+                                enabled = stat.fouls > 0,
                                 modifier = Modifier
                                     .size(layout.iconButtonSize)
                                     .semantics { contentDescription = removeLabel }
