@@ -8,7 +8,10 @@ import com.lukearnold.coachesassistant.data.PlayerEntity
 /** One roster player's totals across the season's finished games. */
 data class PlayerSeasonStat(
     val player: PlayerEntity,
-    /** Finished games in which they got on-court time. */
+    /**
+     * Finished games in which they were on court (see PlayerGameStat.wasOnCourt), whether or not
+     * the clock was used; [averageTimeMillis] is over these.
+     */
     val gamesPlayed: Int,
     val totalTimeMillis: Long,
     val points: Int,
@@ -60,7 +63,7 @@ fun calculateSeasonStats(
             val stats = perGame[player.id].orEmpty()
             PlayerSeasonStat(
                 player = player,
-                gamesPlayed = stats.count { it.totalTimeMillis > 0 },
+                gamesPlayed = stats.count { it.wasOnCourt || it.totalTimeMillis > 0 },
                 totalTimeMillis = stats.sumOf { it.totalTimeMillis },
                 points = stats.sumOf { it.points },
                 fouls = stats.sumOf { it.fouls },
