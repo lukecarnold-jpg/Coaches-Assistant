@@ -54,7 +54,6 @@ fun PlayerActionCard(
                             TextButton(
                                 onClick = { onAddScore(stat.player.id, -1) },
                                 contentPadding = PaddingValues(0.dp),
-                                modifier = Modifier.height(layout.compactControlHeight)
                             ) {
                                 Text(stringResource(R.string.minus_one_point), style = MaterialTheme.typography.bodySmall)
                             }
