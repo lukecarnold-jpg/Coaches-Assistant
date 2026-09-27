@@ -95,4 +95,19 @@ class SeasonStatsTest {
         assertEquals(0, season.games)
         assertEquals(0, season.players.single().gamesPlayed)
     }
+
+    @Test
+    fun gamesPlayed_countsGamesOnCourtEvenWithoutTheClock() {
+        // The clock never ran: Alex started, Sam came on for him, Jo sat the whole game.
+        val events = listOf(
+            GameEventEntity(gameId = 1, timestamp = 0, type = EventType.START_LINEUP.name, note = "1"),
+            GameEventEntity(gameId = 1, timestamp = 1, type = EventType.SUBSTITUTION.name, playerId = 2, relatedPlayerId = 1),
+            GameEventEntity(gameId = 1, timestamp = 2, type = EventType.GAME_END.name),
+        )
+
+        val season = calculateSeasonStats(listOf(alex, sam, jo), listOf(game(1, 3, 1)), events, emptyMap())
+
+        assertEquals(listOf(1, 1, 0), season.players.map { it.gamesPlayed })
+        assertEquals(listOf(0L, 0L, 0L), season.players.map { it.totalTimeMillis })
+    }
 }

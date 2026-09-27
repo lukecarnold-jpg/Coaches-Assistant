@@ -21,6 +21,8 @@ data class PlayerGameStat(
     val totalTimeMillis: Long,
     /** Game time the player last went to the bench this period (0 if never on court), or null on court. */
     val benchStartGameTimeMillis: Long? = null,
+    /** Whether they were on court at any point: in a starting lineup, subbed on, or on now. */
+    val wasOnCourt: Boolean = false,
 ) {
     // The *TimeMillis fields above are as of the game's stored running time, which only advances
     // when the clock is stopped. These give the same figures as of [gameTimeMillis], the live
@@ -64,6 +66,7 @@ fun calculatePlayerGameStats(
     val pointsByPlayer = mutableMapOf<Long, Int>()
     val foulsByPlayer = mutableMapOf<Long, Int>()
     val timesSubbedOffByPlayer = mutableMapOf<Long, Int>()
+    val everOnCourt = onCourt.toMutableSet()
 
     // Process events chronologically to calculate stats and times
     val sortedEvents = events.sortedWith(compareBy<GameEventEntity>({ it.timestamp }, { it.id }))
@@ -75,6 +78,7 @@ fun calculatePlayerGameStats(
                 event.note.split(',')
                     .mapNotNull { it.trim().toLongOrNull() }
                     .forEach { id ->
+                        everOnCourt += id
                         lastEnteredAt[id] = event.at()
                         lastBenchedAt.remove(id)
                     }
@@ -82,6 +86,7 @@ fun calculatePlayerGameStats(
 
             EventType.SUBSTITUTION -> {
                 event.playerId?.let { playerInId ->
+                    everOnCourt += playerInId
                     lastEnteredAt[playerInId] = event.at()
                     lastBenchedAt.remove(playerInId)
                 }
@@ -168,6 +173,7 @@ fun calculatePlayerGameStats(
                 shiftStartGameTimeMillis = if (isOnCourt) enteredAt else null,
                 totalTimeMillis = totalTime,
                 benchStartGameTimeMillis = if (isOnCourt) null else benchedAt,
+                wasOnCourt = player.id in everOnCourt,
             )
         }
         .toList()
