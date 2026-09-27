@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.clickable
@@ -24,7 +26,7 @@ fun AttendanceDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Manage Attendance") },
+        title = { Text(stringResource(R.string.manage_attendance)) },
         text = {
             Column(
                 modifier = Modifier
@@ -32,7 +34,7 @@ fun AttendanceDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(layout.smallGap)
             ) {
-                Text("Select players who are ABSENT for this game.")
+                Text(stringResource(R.string.select_players_who_are_absent_for_this_game))
                 players.forEach { player ->
                     val isAbsent = currentAbsent.contains(player.id)
                     Row(
@@ -53,12 +55,12 @@ fun AttendanceDialog(
         },
         confirmButton = {
             Button(onClick = { onConfirm(currentAbsent.toList()) }) {
-                Text("Save")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
@@ -77,7 +79,7 @@ fun EventEditDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Edit Event") },
+        title = { Text(stringResource(R.string.edit_event)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 Text("Type: ${event.type}")
@@ -96,7 +98,7 @@ fun EventEditDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("Note") },
+                    label = { Text(stringResource(R.string.note)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -107,12 +109,12 @@ fun EventEditDialog(
                     onConfirm(event.copy(points = points.toIntOrNull() ?: event.points, note = note))
                 }
             ) {
-                Text("Save")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

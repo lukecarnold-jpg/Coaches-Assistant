@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -44,9 +46,9 @@ fun GameHistoryScreen(
 
     pendingDelete?.let { game ->
         ConfirmDialog(
-            title = "Delete this game?",
+            title = stringResource(R.string.delete_this_game_question),
             message = deleteGameConfirmMessage(game),
-            confirmLabel = "Delete",
+            confirmLabel = stringResource(R.string.delete),
             onConfirm = {
                 pendingDelete = null
                 onDeleteGame(game.id)
@@ -62,22 +64,22 @@ fun GameHistoryScreen(
         verticalArrangement = Arrangement.spacedBy(layout.sectionGap)
     ) {
         Text(
-            text = "Game history",
+            text = stringResource(R.string.game_history),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
 
         if (finishedGames.isEmpty()) {
-            EmptyMessage("No completed games yet. Games appear here once you end them.")
+            EmptyMessage(stringResource(R.string.no_completed_games_yet_games_appear_here_once_yo))
         } else {
             SeasonSummaryCard(season = season, infractionLabelPlural = infractionLabelPlural)
 
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 finishedGames.forEach { game ->
                     val result = when {
-                        game.teamScore > game.opponentScore -> "WIN"
-                        game.teamScore < game.opponentScore -> "LOSS"
-                        else -> "TIE"
+                        game.teamScore > game.opponentScore -> stringResource(R.string.win)
+                        game.teamScore < game.opponentScore -> stringResource(R.string.loss)
+                        else -> stringResource(R.string.tie)
                     }
 
                     GameListCard(
@@ -104,16 +106,16 @@ fun GameHistoryScreen(
                         },
                         actions = {
                             TextButton(onClick = { onViewGame(game.id) }) {
-                                Text("View")
+                                Text(stringResource(R.string.view))
                             }
                             TextButton(onClick = { exportGame(game.id, "game_${game.id}.csv") }) {
-                                Text("Export")
+                                Text(stringResource(R.string.export))
                             }
                             TextButton(
                                 onClick = { pendingDelete = game },
                                 colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                             ) {
-                                Text("Delete")
+                                Text(stringResource(R.string.delete))
                             }
                         },
                     )

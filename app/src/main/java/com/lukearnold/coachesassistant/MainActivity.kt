@@ -1,5 +1,8 @@
 package com.lukearnold.coachesassistant
 
+import com.lukearnold.coachesassistant.R
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -112,7 +115,7 @@ enum class AppTab {
 
 private data class NavTabSpec(
     val tab: AppTab,
-    val label: String,
+    @StringRes val label: Int,
     val icon: @Composable () -> Unit,
 )
 
@@ -123,11 +126,11 @@ private fun EmojiIcon(emoji: String) {
 }
 
 private fun navTabSpecsFor(sport: Sport): List<NavTabSpec> = buildList {
-    add(NavTabSpec(AppTab.ROSTER, "Roster") { EmojiIcon("👥") })
-    add(NavTabSpec(AppTab.GAME, "Game") { EmojiIcon(sport.emoji) })
-    add(NavTabSpec(AppTab.TRAINING, "Training") { EmojiIcon("🏋️") })
-    add(NavTabSpec(AppTab.HISTORY, "History") { EmojiIcon("🕘") })
-    add(NavTabSpec(AppTab.SETTINGS, "Settings") { Icon(Icons.Default.Settings, contentDescription = null) })
+    add(NavTabSpec(AppTab.ROSTER, R.string.roster) { EmojiIcon("👥") })
+    add(NavTabSpec(AppTab.GAME, R.string.game) { EmojiIcon(sport.emoji) })
+    add(NavTabSpec(AppTab.TRAINING, R.string.training) { EmojiIcon("🏋️") })
+    add(NavTabSpec(AppTab.HISTORY, R.string.history) { EmojiIcon("🕘") })
+    add(NavTabSpec(AppTab.SETTINGS, R.string.settings) { Icon(Icons.Default.Settings, contentDescription = null) })
 }
 
 @Composable
@@ -163,13 +166,14 @@ private fun SportApp(
     val responsiveLayout = LocalResponsiveLayout.current
     val isExpanded = responsiveLayout.widthDp >= 600
 
+    val undoLabel = stringResource(R.string.undo)
     LaunchedEffect(appViewModel) {
         // collectLatest: a new message replaces the one showing (and its Undo) straight away.
         appViewModel.messages.collectLatest { message ->
             val undo = message.undo
             val result = snackbarHostState.showSnackbar(
                 message = message.text,
-                actionLabel = if (undo != null) "Undo" else null,
+                actionLabel = if (undo != null) undoLabel else null,
                 duration = if (undo != null) SnackbarDuration.Long else SnackbarDuration.Short,
             )
             if (result == SnackbarResult.ActionPerformed) undo?.invoke()
@@ -184,7 +188,7 @@ private fun SportApp(
                         selected = (currentTab == spec.tab.name),
                         onClick = { currentTab = spec.tab.name },
                         icon = spec.icon,
-                        label = { Text(spec.label) },
+                        label = { Text(stringResource(spec.label)) },
                     )
                 }
             }
@@ -201,7 +205,7 @@ private fun SportApp(
                                 selected = (currentTab == spec.tab.name),
                                 onClick = { currentTab = spec.tab.name },
                                 icon = spec.icon,
-                                label = { Text(spec.label) },
+                                label = { Text(stringResource(spec.label)) },
                             )
                         }
                     }

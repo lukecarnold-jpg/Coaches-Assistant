@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import android.net.Uri
@@ -114,30 +116,30 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
     ) {
         Text(
-            text = "Settings",
+            text = stringResource(R.string.settings),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
 
         if (currentSport != null) {
-            SectionCard(title = "Sport") {
+            SectionCard(title = stringResource(R.string.sport)) {
                 Text("Currently coaching ${currentSport.emoji} ${currentSport.displayName}.")
                 Spacer(Modifier.height(layout.smallGap))
                 Button(onClick = onSwitchSport) {
-                    Text("Switch sport")
+                    Text(stringResource(R.string.switch_sport))
                 }
             }
         }
 
-        SectionCard(title = "Display") {
+        SectionCard(title = stringResource(R.string.display)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Keep screen on while the clock runs")
+                    Text(stringResource(R.string.keep_screen_on_while_the_clock_runs))
                     Text(
-                        "Stops the phone locking mid-game. The normal screen timeout returns when the clock stops.",
+                        stringResource(R.string.stops_the_phone_locking_mid_game_the_normal_scre),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -148,8 +150,8 @@ fun SettingsScreen(
             }
         }
 
-        SectionCard(title = "AI training assistant") {
-            Text("Choose which AI generates training drills, then add its API key. Each provider requires its own key — the app does not support signing in with a Gemini, Claude, or ChatGPT account.")
+        SectionCard(title = stringResource(R.string.ai_training_assistant)) {
+            Text(stringResource(R.string.choose_which_ai_generates_training_drills_then_a))
             Spacer(Modifier.height(layout.smallGap))
 
             FlowRow(
@@ -171,9 +173,9 @@ fun SettingsScreen(
                     savedKey.isNotBlank() ->
                         "Your saved ${selectedProvider.displayName} API key is active. AI drill generation is enabled."
                     (selectedProvider == AiProvider.GEMINI) && hasBuiltInApiKey ->
-                        "Using the GEMINI_API_KEY built into this app. AI drill generation is enabled."
+                        stringResource(R.string.using_the_gemini_api_key_built_into_this_app_ai)
                     isOther ->
-                        "No API key saved. Hosted providers need one; a local server (such as Ollama) usually doesn't."
+                        stringResource(R.string.no_api_key_saved_hosted_providers_need_one_a_loc)
                     else ->
                         "No ${selectedProvider.displayName} API key configured. Add one below to enable AI drill generation on the Training tab."
                 }
@@ -184,14 +186,14 @@ fun SettingsScreen(
                 OutlinedTextField(
                     value = endpointUrlInput,
                     onValueChange = { endpointUrlInput = it },
-                    label = { Text("Endpoint URL") },
+                    label = { Text(stringResource(R.string.endpoint_url)) },
                     placeholder = { Text("https://.../v1/chat/completions") },
                     singleLine = true,
                     isError = endpointProblem != null,
                     supportingText = when {
                         endpointProblem != null -> { { Text(endpointProblem) } }
                         endpointNeedsLocalNetwork -> {
-                            { Text("This server is on your local network, so Android will ask to allow local network access.") }
+                            { Text(stringResource(R.string.this_server_is_on_your_local_network_so_android)) }
                         }
                         else -> null
                     },
@@ -201,7 +203,7 @@ fun SettingsScreen(
                 OutlinedTextField(
                     value = modelInput,
                     onValueChange = { modelInput = it },
-                    label = { Text("Model name") },
+                    label = { Text(stringResource(R.string.model_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -218,7 +220,7 @@ fun SettingsScreen(
                     IconButton(onClick = { apiKeyVisible = !apiKeyVisible }) {
                         Icon(
                             imageVector = if (apiKeyVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = if (apiKeyVisible) "Hide API key" else "Show API key",
+                            contentDescription = if (apiKeyVisible) stringResource(R.string.hide_api_key) else stringResource(R.string.show_api_key),
                         )
                     }
                 },
@@ -241,7 +243,7 @@ fun SettingsScreen(
                     },
                     enabled = ((apiKeyInput.trim() != savedKey) || endpointChanged) && (endpointProblem == null),
                 ) {
-                    Text("Save")
+                    Text(stringResource(R.string.save))
                 }
                 if (savedKey.isNotBlank()) {
                     TextButton(
@@ -250,7 +252,7 @@ fun SettingsScreen(
                             onClearApiKey(selectedProvider)
                         },
                     ) {
-                        Text("Remove saved key")
+                        Text(stringResource(R.string.remove_saved_key))
                     }
                 }
             }
@@ -261,57 +263,52 @@ fun SettingsScreen(
             )
         }
 
-        SectionCard(title = "Backup") {
+        SectionCard(title = stringResource(R.string.backup)) {
             if (BuildConfig.LEGACY_TRANSITION_BUILD) {
                 Text(
-                    "This is the old app, updated so you can move your data to the new Coaches Assistant " +
-                        "app: tap \"Back up all data\" below, then open the new app and use \"Restore from " +
-                        "backup\" in its Settings. Re-enter your AI API keys there afterwards.",
+                    stringResource(R.string.this_is_the_old_app_updated_so_you_can_move_your),
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(Modifier.height(layout.smallGap))
             }
             Text(
-                "Save every sport's players and games to a file, e.g. to move to a new phone. " +
-                    "API keys aren't included; add them again after restoring.",
+                stringResource(R.string.save_every_sport_s_players_and_games_to_a_file_e),
             )
             Spacer(Modifier.height(layout.smallGap))
             Row(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 Button(onClick = { backupLauncher.launch("coaches-assistant-backup-${LocalDate.now()}.json") }) {
-                    Text("Back up all data")
+                    Text(stringResource(R.string.back_up_all_data))
                 }
                 OutlinedButton(onClick = { showRestoreConfirm = true }) {
-                    Text("Restore from backup")
+                    Text(stringResource(R.string.restore_from_backup))
                 }
             }
         }
 
-        SectionCard(title = "Data management") {
+        SectionCard(title = stringResource(R.string.data_management)) {
             Text(
-                "Delete ${currentSport?.displayName ?: "this sport"}'s players, games, or events, or delete " +
-                    "everything for every sport at once. These actions cannot be undone.",
+                "Delete ${currentSport?.displayName ?: "this sport"}'s players, games, or events, or delete everything for every sport at once. These actions cannot be undone.",
             )
             Spacer(Modifier.height(layout.smallGap))
             Button(
                 onClick = { showDeleteOptions = true },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
             ) {
-                Text("Delete data")
+                Text(stringResource(R.string.delete_data))
             }
         }
 
-        SectionCard(title = "Exports") {
-            Text("To view exported CSV files, use your device's file manager (e.g., Files or Downloads app).")
+        SectionCard(title = stringResource(R.string.exports)) {
+            Text(stringResource(R.string.to_view_exported_csv_files_use_your_device_s_fil))
         }
 
         if (showRestoreConfirm) {
             AlertDialog(
                 onDismissRequest = { showRestoreConfirm = false },
-                title = { Text("Restore from backup?") },
+                title = { Text(stringResource(R.string.restore_from_backup_question)) },
                 text = {
                     Text(
-                        "The backup replaces all current players, games, and events for every sport. " +
-                            "This can't be undone, so back up first if you might want today's data.",
+                        stringResource(R.string.the_backup_replaces_all_current_players_games_an),
                     )
                 },
                 confirmButton = {
@@ -321,12 +318,12 @@ fun SettingsScreen(
                             restoreLauncher.launch(arrayOf("*/*"))
                         },
                     ) {
-                        Text("Choose backup file", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.choose_backup_file), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showRestoreConfirm = false }) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                 },
             )
@@ -335,7 +332,7 @@ fun SettingsScreen(
         if (showConfirm) {
             AlertDialog(
                 onDismissRequest = { showConfirm = false },
-                title = { Text("Confirm deletion") },
+                title = { Text(stringResource(R.string.confirm_deletion)) },
                 text = {
                     Text("Are you sure you want to delete all data? This removes every player and game for every sport, not just ${currentSport?.displayName ?: "this one"}.")
                 },
@@ -346,14 +343,14 @@ fun SettingsScreen(
                             showConfirm = false
                         },
                     ) {
-                        Text("Delete everything", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.delete_everything), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(
                         onClick = { showConfirm = false },
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             )
@@ -362,22 +359,22 @@ fun SettingsScreen(
         if (showDeleteOptions) {
             AlertDialog(
                 onDismissRequest = { showDeleteOptions = false },
-                title = { Text("Delete local data") },
+                title = { Text(stringResource(R.string.delete_local_data)) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                         Text("Select the ${currentSport?.displayName ?: "current sport"} data to delete. Other sports are not affected.")
                         DataDeletionOption(
-                            label = "Players",
+                            label = stringResource(R.string.players),
                             checked = deletePlayers,
                             onCheckedChange = { deletePlayers = it },
                         )
                         DataDeletionOption(
-                            label = "Games",
+                            label = stringResource(R.string.games),
                             checked = deleteGames,
                             onCheckedChange = { deleteGames = it },
                         )
                         DataDeletionOption(
-                            label = "Events",
+                            label = stringResource(R.string.events),
                             checked = deleteEvents,
                             onCheckedChange = { deleteEvents = it },
                         )
@@ -391,7 +388,7 @@ fun SettingsScreen(
                                 showConfirm = true
                             },
                         ) {
-                            Text("Delete all data (every sport)", color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(R.string.delete_all_data_every_sport), color = MaterialTheme.colorScheme.error)
                         }
                         TextButton(
                             onClick = {
@@ -400,13 +397,13 @@ fun SettingsScreen(
                             },
                             enabled = deletePlayers || deleteGames || deleteEvents,
                         ) {
-                            Text("Delete selected", color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(R.string.delete_selected), color = MaterialTheme.colorScheme.error)
                         }
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDeleteOptions = false }) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                 },
             )

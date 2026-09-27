@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -10,12 +12,12 @@ import androidx.compose.ui.Modifier
 fun GameNotesPanel(
     onClick: () -> Unit
 ) {
-    SectionCard(title = "Coaching Notes") {
+    SectionCard(title = stringResource(R.string.coaching_notes)) {
         Button(
             onClick = onClick,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("📝 Open & Edit Notes")
+            Text(stringResource(R.string.open_edit_notes))
         }
     }
 }
@@ -38,9 +40,9 @@ fun CoachingNotesDialog(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Coaching Notes")
+                Text(stringResource(R.string.coaching_notes))
                 OutlinedButton(onClick = onExport) {
-                    Text("📤 Export TXT")
+                    Text(stringResource(R.string.export_txt))
                 }
             }
         },
@@ -52,19 +54,19 @@ fun CoachingNotesDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = layout.notesMinHeight),
-                    placeholder = { Text("Write strategy or observations here...") },
-                    label = { Text("Notes (Keyboard/Pen support)") }
+                    placeholder = { Text(stringResource(R.string.write_strategy_or_observations_here)) },
+                    label = { Text(stringResource(R.string.notes_keyboard_pen_support)) }
                 )
             }
         },
         confirmButton = {
             Button(onClick = { onSave(text) }) {
-                Text("Save")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

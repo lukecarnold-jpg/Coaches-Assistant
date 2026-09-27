@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -51,7 +53,7 @@ fun PlayerActionCard(
                                 contentPadding = PaddingValues(0.dp),
                                 modifier = Modifier.height(layout.compactControlHeight)
                             ) {
-                                Text("-1 pt", style = MaterialTheme.typography.bodySmall)
+                                Text(stringResource(R.string.minus_one_point), style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }
@@ -82,7 +84,7 @@ fun PlayerActionCard(
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    StatusBadge(if (stat.onCourt) "ON COURT" else "BENCH")
+                    StatusBadge(if (stat.onCourt) stringResource(R.string.on_court) else stringResource(R.string.bench))
                     Spacer(Modifier.height(4.dp))
                     if (enabled) {
                         TextButton(
@@ -141,7 +143,7 @@ fun PlayerActionCard(
                                 onClick = { onAddFoul(stat.player.id, 1) },
                                 modifier = Modifier.size(layout.iconButtonSize)
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = "Add foul", modifier = Modifier.size(layout.inlineIconSize))
+                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_foul), modifier = Modifier.size(layout.inlineIconSize))
                             }
                         }
                     }

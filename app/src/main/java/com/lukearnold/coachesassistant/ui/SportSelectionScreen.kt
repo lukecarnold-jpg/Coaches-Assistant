@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,12 +53,12 @@ fun SportSelectionScreen(
         verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
     ) {
         Text(
-            text = "Choose a sport",
+            text = stringResource(R.string.choose_a_sport),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
         Text(
-            text = "Pick the sport you're coaching. You can switch sports later from Settings.",
+            text = stringResource(R.string.pick_the_sport_you_re_coaching_you_can_switch_sp),
             style = MaterialTheme.typography.bodyMedium,
         )
 
@@ -64,7 +66,7 @@ fun SportSelectionScreen(
             // Court Sports
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 Text(
-                    text = "Court Sports",
+                    text = stringResource(R.string.court_sports),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
@@ -86,7 +88,7 @@ fun SportSelectionScreen(
             // Field Sports
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 Text(
-                    text = "Field Sports",
+                    text = stringResource(R.string.field_sports),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
@@ -97,7 +99,7 @@ fun SportSelectionScreen(
                 SportTile(emoji = Sport.AFL.emoji, label = Sport.AFL.displayName) {
                     onSelectSport(Sport.AFL)
                 }
-                SportTile(emoji = Sport.RUGBY_UNION.emoji, label = "Rugby") {
+                SportTile(emoji = Sport.RUGBY_UNION.emoji, label = stringResource(R.string.rugby)) {
                     showRugbyDialog = true
                 }
                 SportTile(emoji = Sport.TOUCH_FOOTBALL.emoji, label = Sport.TOUCH_FOOTBALL.displayName) {
@@ -123,7 +125,7 @@ fun SportSelectionScreen(
             // Ice & Water Sports
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 Text(
-                    text = "Ice & Water Sports",
+                    text = stringResource(R.string.ice_water_sports),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
@@ -158,10 +160,10 @@ private fun RugbyCodeDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Which code?") },
+        title = { Text(stringResource(R.string.which_code_question)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
-                Text("Rugby splits into two codes. Which one do you coach?")
+                Text(stringResource(R.string.rugby_splits_into_two_codes_which_one_do_you_coa_question))
                 SportTile(emoji = Sport.RUGBY_UNION.emoji, label = Sport.RUGBY_UNION.displayName) {
                     onSelectCode(Sport.RUGBY_UNION)
                 }
@@ -172,7 +174,7 @@ private fun RugbyCodeDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         },
     )
 }
