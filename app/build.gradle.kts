@@ -201,9 +201,5 @@ dependencies {
     // ComponentActivity that ui-test-manifest adds to the debug manifest.
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.compose.ui.junit4)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.compose.ui.junit4)
     debugImplementation(libs.compose.ui.manifest)
 }
