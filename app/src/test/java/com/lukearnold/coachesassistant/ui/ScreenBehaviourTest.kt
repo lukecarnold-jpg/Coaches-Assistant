@@ -147,4 +147,36 @@ class ScreenBehaviourTest {
         dialogButton("Reset").performClick()
         assertEquals(1, resets)
     }
+
+    @Test
+    fun infractionButtons_areLabelledWithTheSportsInfraction() {
+        val adjustments = mutableListOf<Int>()
+        val stat = PlayerGameStat(
+            player = tommy,
+            points = 0,
+            fouls = 1,
+            mvpVotes = 0,
+            timesSubbedOff = 0,
+            onCourt = true,
+            currentShiftTimeMillis = 0L,
+            currentBenchTimeMillis = 0L,
+            shiftStartGameTimeMillis = 0L,
+            totalTimeMillis = 0L,
+        )
+        compose.setContent {
+            PlayerActionCard(
+                stat = stat,
+                sportConfig = Sport.NETBALL.config,
+                onAddScore = { _, _ -> },
+                onAddFoul = { _, adjustment -> adjustments += adjustment },
+                onAddMvpVote = {},
+                gameTimeMillis = { 0L },
+                fairShareAt = { null },
+            )
+        }
+
+        compose.onNodeWithContentDescription("Add penalty").performClick()
+        compose.onNodeWithContentDescription("Remove penalty").performClick()
+        assertEquals(listOf(1, -1), adjustments)
+    }
 }

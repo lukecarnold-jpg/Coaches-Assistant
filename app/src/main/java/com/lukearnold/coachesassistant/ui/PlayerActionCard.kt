@@ -10,6 +10,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lukearnold.coachesassistant.data.*
@@ -130,11 +133,15 @@ fun PlayerActionCard(
                         shape = RoundedCornerShape(layout.cardCornerRadius),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            val removeLabel = stringResource(sportConfig.infraction.remove)
                             IconButton(
                                 onClick = { onAddFoul(stat.player.id, -1) },
-                                modifier = Modifier.size(layout.iconButtonSize)
+                                modifier = Modifier
+                                    .size(layout.iconButtonSize)
+                                    .semantics { contentDescription = removeLabel }
                             ) {
-                                Text("-", fontWeight = FontWeight.Bold)
+                                // The button's description says what it does; "-" alone reads as "minus".
+                                Text("-", fontWeight = FontWeight.Bold, modifier = Modifier.clearAndSetSemantics {})
                             }
                             Text(
                                 text = stat.fouls.toString(),
@@ -146,7 +153,7 @@ fun PlayerActionCard(
                                 onClick = { onAddFoul(stat.player.id, 1) },
                                 modifier = Modifier.size(layout.iconButtonSize)
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_foul), modifier = Modifier.size(layout.inlineIconSize))
+                                Icon(Icons.Default.Add, contentDescription = stringResource(sportConfig.infraction.add), modifier = Modifier.size(layout.inlineIconSize))
                             }
                         }
                     }

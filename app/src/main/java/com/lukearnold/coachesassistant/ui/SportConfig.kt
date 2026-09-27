@@ -10,20 +10,37 @@ data class ScoreOption(val label: UiText, val points: Int)
 
 /**
  * What a sport calls the infraction the app counts per player, in each form the screens need:
- * the name ("Penalty"), the stat heading ("Penalties"), a count ("3 penalties"), and an event
- * ("#4 Sam penalty", from the player's label).
+ * the name ("Penalty"), the stat heading ("Penalties"), a count ("3 penalties"), an event
+ * ("#4 Sam penalty", from the player's label), and the +/- buttons' labels ("Add penalty").
  */
 enum class Infraction(
     @param:StringRes val label: Int,
     @param:StringRes val plural: Int,
     @param:PluralsRes val count: Int,
     @param:StringRes val event: Int,
+    @param:StringRes val add: Int,
+    @param:StringRes val remove: Int,
 ) {
-    FOUL(R.string.infraction_foul, R.string.infraction_fouls, R.plurals.infraction_foul_count, R.string.infraction_foul_event),
-    PENALTY(R.string.infraction_penalty, R.string.infraction_penalties, R.plurals.infraction_penalty_count, R.string.infraction_penalty_event),
-    CARD(R.string.infraction_card, R.string.infraction_cards, R.plurals.infraction_card_count, R.string.infraction_card_event),
-    FREE_KICK(R.string.infraction_free_kick, R.string.infraction_free_kicks, R.plurals.infraction_free_kick_count, R.string.infraction_free_kick_event),
-    EXCLUSION(R.string.infraction_exclusion, R.string.infraction_exclusions, R.plurals.infraction_exclusion_count, R.string.infraction_exclusion_event),
+    FOUL(
+        R.string.infraction_foul, R.string.infraction_fouls, R.plurals.infraction_foul_count, R.string.infraction_foul_event,
+        R.string.infraction_foul_add, R.string.infraction_foul_remove,
+    ),
+    PENALTY(
+        R.string.infraction_penalty, R.string.infraction_penalties, R.plurals.infraction_penalty_count, R.string.infraction_penalty_event,
+        R.string.infraction_penalty_add, R.string.infraction_penalty_remove,
+    ),
+    CARD(
+        R.string.infraction_card, R.string.infraction_cards, R.plurals.infraction_card_count, R.string.infraction_card_event,
+        R.string.infraction_card_add, R.string.infraction_card_remove,
+    ),
+    FREE_KICK(
+        R.string.infraction_free_kick, R.string.infraction_free_kicks, R.plurals.infraction_free_kick_count, R.string.infraction_free_kick_event,
+        R.string.infraction_free_kick_add, R.string.infraction_free_kick_remove,
+    ),
+    EXCLUSION(
+        R.string.infraction_exclusion, R.string.infraction_exclusions, R.plurals.infraction_exclusion_count, R.string.infraction_exclusion_event,
+        R.string.infraction_exclusion_add, R.string.infraction_exclusion_remove,
+    ),
 }
 
 /** The rotation/scoring rules a sport's game screen is configured with. */

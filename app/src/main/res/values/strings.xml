@@ -141,7 +141,6 @@
     <string name="which_code_question">Which code?</string>
     <string name="rugby_splits_into_two_codes_which_one_do_you_coa_question">Rugby splits into two codes. Which one do you coach?</string>
     <string name="minus_one_point">-1 pt</string>
-    <string name="add_foul">Add foul</string>
     <string name="coaching_notes">Coaching Notes</string>
     <string name="open_edit_notes">📝 Open &amp; Edit Notes</string>
     <string name="export_txt">📤 Export TXT</string>
@@ -254,6 +253,8 @@
         <item quantity="other">%d fouls</item>
     </plurals>
     <string name="infraction_foul_event">%1$s foul</string>
+    <string name="infraction_foul_add">Add foul</string>
+    <string name="infraction_foul_remove">Remove foul</string>
     <string name="infraction_penalty">Penalty</string>
     <string name="infraction_penalties">Penalties</string>
     <plurals name="infraction_penalty_count">
@@ -261,6 +262,8 @@
         <item quantity="other">%d penalties</item>
     </plurals>
     <string name="infraction_penalty_event">%1$s penalty</string>
+    <string name="infraction_penalty_add">Add penalty</string>
+    <string name="infraction_penalty_remove">Remove penalty</string>
     <string name="infraction_card">Card</string>
     <string name="infraction_cards">Cards</string>
     <plurals name="infraction_card_count">
@@ -268,6 +271,8 @@
         <item quantity="other">%d cards</item>
     </plurals>
     <string name="infraction_card_event">%1$s card</string>
+    <string name="infraction_card_add">Add card</string>
+    <string name="infraction_card_remove">Remove card</string>
     <string name="infraction_free_kick">Free Kick</string>
     <string name="infraction_free_kicks">Free Kicks</string>
     <plurals name="infraction_free_kick_count">
@@ -275,6 +280,8 @@
         <item quantity="other">%d free kicks</item>
     </plurals>
     <string name="infraction_free_kick_event">%1$s free kick</string>
+    <string name="infraction_free_kick_add">Add free kick</string>
+    <string name="infraction_free_kick_remove">Remove free kick</string>
     <string name="infraction_exclusion">Exclusion</string>
     <string name="infraction_exclusions">Exclusions</string>
     <plurals name="infraction_exclusion_count">
@@ -282,6 +289,8 @@
         <item quantity="other">%d exclusions</item>
     </plurals>
     <string name="infraction_exclusion_event">%1$s exclusion</string>
+    <string name="infraction_exclusion_add">Add exclusion</string>
+    <string name="infraction_exclusion_remove">Remove exclusion</string>
     <string name="infraction_count_adjustment">%1$s count/adj</string>
 
     <!-- Periods -->
