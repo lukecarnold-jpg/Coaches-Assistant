@@ -307,6 +307,7 @@ fun GameScreen(
     editingEvent?.let { event ->
         EventEditDialog(
             event = event,
+            description = eventDescription(event, playerById, selectedGame?.opponent.orEmpty(), sportConfig.infraction).asString(),
             onDismiss = { editingEvent = null },
             infraction = sportConfig.infraction,
         ) { updated ->

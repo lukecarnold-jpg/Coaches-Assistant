@@ -8,6 +8,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import com.lukearnold.coachesassistant.data.*
 import java.util.Date
@@ -243,12 +246,27 @@ fun GameStatsPanel(
                                     )
                                 }
 
+                                // Only events that can change on their own (see EventType): lineup,
+                                // period, and game-end events are what playing time is counted from.
+                                val type = EventType.fromRaw(event.type)
                                 Row {
-                                    IconButton(onClick = { onEditEvent(event) }) {
-                                        Text("✏️")
+                                    if (type.hasEditablePoints) {
+                                        val editLabel = stringResource(R.string.edit_event)
+                                        IconButton(
+                                            onClick = { onEditEvent(event) },
+                                            modifier = Modifier.semantics { contentDescription = editLabel },
+                                        ) {
+                                            Text("✏️", modifier = Modifier.clearAndSetSemantics {})
+                                        }
                                     }
-                                    IconButton(onClick = { onDeleteEvent(event) }) {
-                                        Text("🗑️")
+                                    if (type.isRemovable) {
+                                        val removeLabel = stringResource(R.string.remove_event)
+                                        IconButton(
+                                            onClick = { onDeleteEvent(event) },
+                                            modifier = Modifier.semantics { contentDescription = removeLabel },
+                                        ) {
+                                            Text("🗑️", modifier = Modifier.clearAndSetSemantics {})
+                                        }
                                     }
                                 }
                             }

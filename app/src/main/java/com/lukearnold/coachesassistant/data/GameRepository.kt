@@ -144,17 +144,18 @@ class GameRepository(
         }
     }
 
+    /**
+     * Corrects an event's points and note from [event]. Only events with editable points (see
+     * EventType.hasEditablePoints) change, and a team adjustment keeps its note, which is what
+     * marks it as one; nothing else about the stored event changes.
+     */
     suspend fun updateEvent(event: GameEventEntity) {
         database.withTransaction {
-            gameEventDao.update(event)
-            recalculateTotals(event.gameId)
-        }
-    }
-
-    suspend fun deleteEvent(event: GameEventEntity) {
-        database.withTransaction {
-            gameEventDao.deleteById(event.id)
-            recalculateTotals(event.gameId)
+            val stored = gameEventDao.getById(event.id) ?: return@withTransaction
+            if (!EventType.fromRaw(stored.type).hasEditablePoints) return@withTransaction
+            val note = if (stored.note == TEAM_ADJUSTMENT_NOTE) stored.note else event.note
+            gameEventDao.update(stored.copy(points = event.points, note = note))
+            recalculateTotals(stored.gameId)
         }
     }
 
@@ -391,18 +392,14 @@ class GameRepository(
     /** Undoes one event; call inside a transaction. */
     private suspend fun undoEvent(eventId: Long): Boolean {
         val event = gameEventDao.getById(eventId) ?: return false
-        when (EventType.fromRaw(event.type)) {
-            EventType.SCORE, EventType.OPPONENT_SCORE, EventType.FOUL, EventType.MVP_VOTE -> Unit
-            EventType.SUBSTITUTION -> {
-                val playerIn = event.playerId ?: return false
-                val playerOut = event.relatedPlayerId ?: return false
-                val lineup = getLineup(event.gameId)
-                if (playerIn !in lineup.onCourtIds || playerOut in lineup.onCourtIds) return false
-                saveLineup(event.gameId, lineup.copy(onCourtIds = lineup.onCourtIds - playerIn + playerOut))
-            }
-            // These change more than the event itself (period, clock, the whole lineup), so they
-            // aren't offered for undo.
-            EventType.START_LINEUP, EventType.PERIOD_CHANGE, EventType.GAME_END -> return false
+        val type = EventType.fromRaw(event.type)
+        if (!type.isRemovable) return false
+        if (type == EventType.SUBSTITUTION) {
+            val playerIn = event.playerId ?: return false
+            val playerOut = event.relatedPlayerId ?: return false
+            val lineup = getLineup(event.gameId)
+            if (playerIn !in lineup.onCourtIds || playerOut in lineup.onCourtIds) return false
+            saveLineup(event.gameId, lineup.copy(onCourtIds = lineup.onCourtIds - playerIn + playerOut))
         }
         gameEventDao.deleteById(eventId)
         recalculateTotals(event.gameId)

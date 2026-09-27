@@ -1,18 +1,26 @@
 package com.lukearnold.coachesassistant.ui
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
+import com.lukearnold.coachesassistant.data.EventType
 import com.lukearnold.coachesassistant.data.GameEntity
+import com.lukearnold.coachesassistant.data.GameEventEntity
 import com.lukearnold.coachesassistant.data.PlayerEntity
 import com.lukearnold.coachesassistant.data.Sport
 import org.junit.Assert.assertEquals
@@ -178,5 +186,28 @@ class ScreenBehaviourTest {
         compose.onNodeWithContentDescription("Add penalty").performClick()
         compose.onNodeWithContentDescription("Remove penalty").performClick()
         assertEquals(listOf(1, -1), adjustments)
+    }
+
+    @Test
+    fun eventLog_offersEditAndRemoveOnlyForEventsThatCanChangeOnTheirOwn() {
+        val removed = mutableListOf<Long>()
+        val lineup = GameEventEntity(id = 1, gameId = 1, timestamp = 1, type = EventType.START_LINEUP.name, note = "7")
+        val score = GameEventEntity(id = 2, gameId = 1, timestamp = 2, type = EventType.SCORE.name, playerId = 7, points = 2)
+        compose.setContent {
+            // Scrollable, as on the Game screen, since the log is below the game list.
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                GameStatsPanel(
+                    events = listOf(score, lineup),
+                    playerById = mapOf(7L to tommy),
+                    onDeleteEvent = { removed += it.id },
+                )
+            }
+        }
+
+        // One of each button: the score's, not the lineup's.
+        compose.onAllNodesWithContentDescription("Edit Event").assertCountEquals(1)
+        compose.onAllNodesWithContentDescription("Remove event").assertCountEquals(1)
+        compose.onNodeWithContentDescription("Remove event").performScrollTo().performClick()
+        assertEquals(listOf(2L), removed)
     }
 }

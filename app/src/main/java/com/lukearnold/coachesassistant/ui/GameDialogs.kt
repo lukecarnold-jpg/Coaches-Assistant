@@ -69,6 +69,8 @@ fun AttendanceDialog(
 @Composable
 fun EventEditDialog(
     event: GameEventEntity,
+    /** The event log's description of [event], so the dialog says which event it is. */
+    description: String,
     onDismiss: () -> Unit,
     infraction: Infraction = Infraction.FOUL,
     onConfirm: (GameEventEntity) -> Unit,
@@ -82,12 +84,8 @@ fun EventEditDialog(
         title = { Text(stringResource(R.string.edit_event)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
-                Text(stringResource(R.string.event_type, event.type))
-                if (
-                    (event.type == EventType.SCORE.name) ||
-                    (event.type == EventType.OPPONENT_SCORE.name) ||
-                    (event.type == EventType.FOUL.name)
-                ) {
+                Text(description)
+                if (EventType.fromRaw(event.type).hasEditablePoints) {
                     OutlinedTextField(
                         value = points,
                         onValueChange = { points = it },
@@ -95,12 +93,15 @@ fun EventEditDialog(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                OutlinedTextField(
-                    value = note,
-                    onValueChange = { note = it },
-                    label = { Text(stringResource(R.string.note)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                // A team adjustment's note is what marks it as one, so it isn't offered for editing.
+                if (event.note != TEAM_ADJUSTMENT_NOTE) {
+                    OutlinedTextField(
+                        value = note,
+                        onValueChange = { note = it },
+                        label = { Text(stringResource(R.string.note)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         },
         confirmButton = {

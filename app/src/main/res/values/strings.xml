@@ -131,6 +131,7 @@
     <string name="manage_attendance">Manage Attendance</string>
     <string name="select_players_who_are_absent_for_this_game">Select players who are ABSENT for this game.</string>
     <string name="edit_event">Edit Event</string>
+    <string name="remove_event">Remove event</string>
     <string name="note">Note</string>
     <string name="choose_a_sport">Choose a sport</string>
     <string name="pick_the_sport_you_re_coaching_you_can_switch_sp">Pick the sport you\'re coaching. You can switch sports later from Settings.</string>
@@ -311,7 +312,6 @@
     <string name="event_mvp_vote">%1$s MVP vote</string>
     <string name="event_finished_period">Finished Period %1$d</string>
     <string name="event_game_ended">Game Ended</string>
-    <string name="event_type">Type: %1$s</string>
     <!-- When an event happened: its period, the game clock then, and the time of day, e.g. "Q2 07:00 · 3:41 PM". -->
     <string name="event_when">%1$s %2$s · %3$s</string>
     <string name="points">Points</string>
@@ -414,6 +414,7 @@
     <string name="msg_attendance_updated">Attendance updated.</string>
     <string name="msg_event_updated">Event updated.</string>
     <string name="msg_event_removed">Event removed.</string>
+    <string name="msg_event_cant_remove">Couldn\'t remove that substitution: the lineup has changed since.</string>
     <string name="msg_event_removed_named">%1$s removed</string>
     <string name="msg_game_deleted">Game and related events deleted.</string>
     <string name="msg_select_game_first">Create or select a game first.</string>
