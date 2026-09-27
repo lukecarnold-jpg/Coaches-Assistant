@@ -4,7 +4,12 @@ import com.lukearnold.coachesassistant.data.Sport
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class SportConfigTest {
 
     @Test
@@ -43,16 +48,27 @@ class SportConfigTest {
     @Test
     fun aflScoringOptions_matchGoalAndBehindValues() {
         val options = Sport.AFL.config.scoringOptions
-        assertEquals(6, options.first { it.label.contains("Goal") }.points)
-        assertEquals(1, options.first { it.label.contains("Behind") }.points)
+        assertEquals(6, options.first { it.label.english().contains("Goal") }.points)
+        assertEquals(1, options.first { it.label.english().contains("Behind") }.points)
     }
 
     @Test
-    fun infractionLabelPlural_pluralizesCorrectly() {
-        assertEquals("Fouls", Sport.BASKETBALL.config.infractionLabelPlural)
-        assertEquals("Penalties", Sport.NETBALL.config.infractionLabelPlural)
-        assertEquals("Cards", Sport.SOCCER.config.infractionLabelPlural)
-        assertEquals("Exclusions", Sport.WATER_POLO.config.infractionLabelPlural)
+    fun infractions_haveTheirPluralsAndCounts() {
+        assertEquals("Fouls", uiText(Sport.BASKETBALL.config.infraction.plural).english())
+        assertEquals("Penalties", uiText(Sport.NETBALL.config.infraction.plural).english())
+        assertEquals("Cards", uiText(Sport.SOCCER.config.infraction.plural).english())
+        assertEquals("Exclusions", uiText(Sport.WATER_POLO.config.infraction.plural).english())
+        assertEquals("1 penalty", pluralText(Infraction.PENALTY.count, 1).english())
+        assertEquals("3 free kicks", pluralText(Infraction.FREE_KICK.count, 3).english())
+    }
+
+    @Test
+    fun positionLabel_translatesKnownCodesAndShowsOthersAsStored() {
+        assertEquals("Five-Eighth", positionLabel("Five-Eighth").english())
+        assertEquals(UiText.Plain("Sweeper"), positionLabel("Sweeper"))
+        Sport.entries.flatMap { it.config.squadPositions }.forEach { code ->
+            assertEquals("$code shows as itself in English", code, positionLabel(code).english())
+        }
     }
 
     @Test
@@ -72,8 +88,8 @@ class SportConfigTest {
     fun periodLabel_usesHalvesQuartersOrGenericPeriodPrefix() {
         val game = com.lukearnold.coachesassistant.data.GameEntity(title = "", opponent = "", createdAt = 0L, currentPeriod = 2)
 
-        assertEquals("H2", game.copy(periodCount = 2).periodLabel())
-        assertEquals("P2", game.copy(periodCount = 3).periodLabel())
-        assertEquals("Q2", game.copy(periodCount = 4).periodLabel())
+        assertEquals("H2", game.copy(periodCount = 2).periodLabel().english())
+        assertEquals("P2", game.copy(periodCount = 3).periodLabel().english())
+        assertEquals("Q2", game.copy(periodCount = 4).periodLabel().english())
     }
 }

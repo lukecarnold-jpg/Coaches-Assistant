@@ -1,5 +1,8 @@
 package com.lukearnold.coachesassistant.data
 
+import androidx.annotation.StringRes
+import com.lukearnold.coachesassistant.R
+
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -13,7 +16,7 @@ data class BackupData(
 )
 
 /** A backup file that can't be restored, with a message fit to show the user. */
-class BackupFormatException(message: String) : Exception(message)
+class BackupFormatException(@StringRes messageRes: Int) : UserFacingException(messageRes)
 
 /**
  * The backup file format: JSON with each table written field by field, so it stays readable as
@@ -39,16 +42,16 @@ object BackupFormat {
         val root = try {
             JSONObject(text)
         } catch (_: JSONException) {
-            throw BackupFormatException("That file isn't a Coaches Assistant backup.")
+            throw BackupFormatException(R.string.backup_not_a_backup)
         }
         if (root.optString("app") != APP_TAG) {
-            throw BackupFormatException("That file isn't a Coaches Assistant backup.")
+            throw BackupFormatException(R.string.backup_not_a_backup)
         }
         val version = root.optInt("formatVersion", -1)
         if (version > FORMAT_VERSION) {
-            throw BackupFormatException("This backup was made by a newer version of the app. Update the app to restore it.")
+            throw BackupFormatException(R.string.backup_from_newer_app)
         }
-        if (version < 1) throw BackupFormatException("This backup file is damaged.")
+        if (version < 1) throw BackupFormatException(R.string.backup_damaged)
 
         return try {
             BackupData(
@@ -58,7 +61,7 @@ object BackupFormat {
                 gamePlayers = root.getJSONArray("gamePlayers").objects().map(::gamePlayerFrom),
             )
         } catch (_: JSONException) {
-            throw BackupFormatException("This backup file is damaged.")
+            throw BackupFormatException(R.string.backup_damaged)
         }
     }
 

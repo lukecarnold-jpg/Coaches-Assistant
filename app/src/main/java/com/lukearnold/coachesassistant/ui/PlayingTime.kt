@@ -1,5 +1,6 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.EventType
 import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.GameEventEntity
@@ -58,8 +59,8 @@ fun benchSubOrder(bench: List<PlayerGameStat>): List<PlayerGameStat> =
 private const val ON_PACE_MARGIN_MILLIS = 30_000L
 
 /** A short label for [behindMillis]: "2:15 behind", "0:40 ahead", or "on pace". */
-fun paceLabel(behindMillis: Long): String = when {
-    abs(behindMillis) < ON_PACE_MARGIN_MILLIS -> "on pace"
-    behindMillis > 0 -> "${formatDuration(behindMillis)} behind"
-    else -> "${formatDuration(-behindMillis)} ahead"
+fun paceLabel(behindMillis: Long): UiText = when {
+    abs(behindMillis) < ON_PACE_MARGIN_MILLIS -> uiText(R.string.pace_on_pace)
+    behindMillis > 0 -> uiText(R.string.pace_behind, formatDuration(behindMillis))
+    else -> uiText(R.string.pace_ahead, formatDuration(-behindMillis))
 }

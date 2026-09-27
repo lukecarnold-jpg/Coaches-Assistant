@@ -1,6 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
 import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
@@ -59,7 +60,7 @@ fun GameControlPanel(
     if (showEndGameConfirm) {
         ConfirmDialog(
             title = stringResource(R.string.end_this_game_question),
-            message = endGameConfirmMessage(selectedGame),
+            message = endGameConfirmMessage(selectedGame).asString(),
             confirmLabel = stringResource(R.string.end_game),
             dismissLabel = stringResource(R.string.keep_playing),
             onConfirm = {
@@ -72,7 +73,7 @@ fun GameControlPanel(
     if (showNextPeriodConfirm) {
         ConfirmDialog(
             title = stringResource(R.string.next_period_question),
-            message = nextPeriodConfirmMessage(selectedGame),
+            message = nextPeriodConfirmMessage(selectedGame).asString(),
             confirmLabel = stringResource(R.string.next_period),
             onConfirm = {
                 showNextPeriodConfirm = false
@@ -84,7 +85,7 @@ fun GameControlPanel(
 
     SectionCard(title = stringResource(R.string.game_clock_score)) {
         Text(
-            text = "Period: ${selectedGame.periodLabel()}",
+            text = stringResource(R.string.period_value, selectedGame.periodLabel().asString()),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -207,11 +208,11 @@ fun GameControlPanel(
     val requiredOnCourt = sportConfig.onCourtSize
 
     if (players.size < requiredOnCourt) {
-        EmptyMessage("You need at least $requiredOnCourt players in the roster before you can set the lineup.")
+        EmptyMessage(pluralStringResource(R.plurals.need_players_for_lineup, requiredOnCourt, requiredOnCourt))
     } else {
         if (onCourtIds.size < requiredOnCourt) {
             SectionCard(title = stringResource(R.string.set_starting_lineup)) {
-                Text("Select exactly $requiredOnCourt players.")
+                Text(pluralStringResource(R.plurals.select_exactly_players, requiredOnCourt, requiredOnCourt))
                 Spacer(Modifier.height(layout.smallGap))
 
                 players.forEach { player ->
@@ -270,7 +271,7 @@ fun GameControlPanel(
                     Text(stringResource(R.string.select_players_to_come_out_and_players_to_come_i))
                     if (pendingIn.size != pendingOut.size) {
                         Text(
-                            "Selection mismatch: ${pendingOut.size} out, ${pendingIn.size} in",
+                            stringResource(R.string.selection_mismatch, pendingOut.size, pendingIn.size),
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.labelSmall
                         )
@@ -278,7 +279,7 @@ fun GameControlPanel(
                     Spacer(Modifier.height(layout.smallGap))
 
                     Text(
-                        text = "Players coming out (${pendingOut.size})",
+                        text = stringResource(R.string.players_coming_out, pendingOut.size),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -292,7 +293,7 @@ fun GameControlPanel(
                                 text = stat.player.displayLabel(),
                                 selected = outIndex >= 0,
                                 badgeNumber = if (outIndex >= 0) outIndex + 1 else null,
-                                trailingText = fairShareAt(now)?.let { paceLabel(it.behindMillis(stat.totalTimeAt(now))) },
+                                trailingText = fairShareAt(now)?.let { paceLabel(it.behindMillis(stat.totalTimeAt(now))).asString() },
                             ) {
                                 onPlayerOutClick(stat.player.id)
                             }
@@ -302,7 +303,7 @@ fun GameControlPanel(
                     Spacer(Modifier.height(layout.sectionGap))
 
                     Text(
-                        text = "Players coming in (${pendingIn.size}) · furthest behind first",
+                        text = stringResource(R.string.players_coming_in, pendingIn.size),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -319,7 +320,7 @@ fun GameControlPanel(
                                     text = stat.player.displayLabel(),
                                     selected = inIndex >= 0,
                                     badgeNumber = if (inIndex >= 0) inIndex + 1 else null,
-                                    trailingText = fairShareAt(now)?.let { paceLabel(it.behindMillis(stat.totalTimeAt(now))) },
+                                    trailingText = fairShareAt(now)?.let { paceLabel(it.behindMillis(stat.totalTimeAt(now))).asString() },
                                 ) {
                                     onPlayerInClick(stat.player.id)
                                 }
@@ -333,7 +334,7 @@ fun GameControlPanel(
                         onClick = onSubstitute,
                         enabled = (pendingIn.isNotEmpty()) && (pendingIn.size == pendingOut.size)
                     ) {
-                        Text("Confirm Rotation (${pendingIn.size} Subs)")
+                        Text(pluralStringResource(R.plurals.confirm_rotation, pendingIn.size, pendingIn.size))
                     }
                 }
             }
@@ -361,7 +362,7 @@ fun GameClock(
     if (showResetConfirm) {
         ConfirmDialog(
             title = stringResource(R.string.reset_the_clock_question),
-            message = resetClockConfirmMessage(game),
+            message = resetClockConfirmMessage(game).asString(),
             confirmLabel = stringResource(R.string.reset),
             onConfirm = {
                 showResetConfirm = false

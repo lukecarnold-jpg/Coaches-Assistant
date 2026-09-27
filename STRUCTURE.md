@@ -80,6 +80,7 @@ presentation helpers:
 - `AppViewModel.kt` - screen state, user actions, and repository coordination.
 - `PlayerGameStats.kt` - the per-game player stats calculator (`calculatePlayerGameStats`).
 - `UiMessages.kt` - snackbar messages (with optional Undo) and their text.
+- `UiText.kt` - text built in code as a string resource and its arguments, resolved when shown.
 - `TrainingViewModel.kt` - AI provider selection, endpoint configuration, and
   API key state.
 
@@ -94,6 +95,7 @@ The data package defines the multi-sport domain model and local Room database:
 - `GameRepository.kt` - repository operations used by the view models.
 - `Backup.kt` / `BackupIo.kt` - the whole-app backup file format, and backing up to / restoring from a file the user picks.
 - `MvpVotes.kt` - serialization and parsing for MVP vote data.
+- `UserFacingException.kt` - failures that carry a message (a string resource) for the user.
 
 The database is local-first and is stored in a Room database named
 `basketball_rotation.db`. Room schema snapshots are kept in
@@ -140,12 +142,17 @@ res/
     └── data_extraction_rules.xml
 ```
 
-`values/strings.xml` holds the app name and all static screen text (labels,
-buttons, headings, dialog titles, accessibility labels), read with
-`stringResource(R.string...)`. To translate the app, add `values-<lang>/strings.xml`
-with the same names. Text built in code (snackbar and confirmation messages,
-errors) and sport data (sport names, scoring labels, positions) are still in
-Kotlin and would need moving too.
+`values/strings.xml` holds all the app's text: screen text, messages, errors,
+and sport data (sport names, positions, scoring buttons, infractions). Screens
+read it with `stringResource(R.string...)`; text built in code (snackbar
+messages, confirmations, event descriptions, errors) is a `UiText` (a resource
+and its arguments) that's turned into words only when shown, so it follows a
+change of language. To translate the app, add `values-<lang>/strings.xml` with
+the same names; anything left out falls back to English.
+
+A few things stay in English on purpose: what's stored (players' position
+codes, the event notes such as "Finished Period 2", which the event log shows
+translated), CSV column headers, and the prompt sent to the AI provider.
 
 `AndroidManifest.xml` declares the launcher activity, application label, icon,
 backup behavior, and required network permission.

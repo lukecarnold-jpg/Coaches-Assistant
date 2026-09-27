@@ -1,24 +1,115 @@
 package com.lukearnold.coachesassistant.ui
 
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.Sport
 
 /** A scoring action available while tracking a game, e.g. "Try" for +5. */
-data class ScoreOption(val label: String, val points: Int)
+data class ScoreOption(val label: UiText, val points: Int)
+
+/**
+ * What a sport calls the infraction the app counts per player, in each form the screens need:
+ * the name ("Penalty"), the stat heading ("Penalties"), a count ("3 penalties"), and an event
+ * ("#4 Sam penalty", from the player's label).
+ */
+enum class Infraction(
+    @param:StringRes val label: Int,
+    @param:StringRes val plural: Int,
+    @param:PluralsRes val count: Int,
+    @param:StringRes val event: Int,
+) {
+    FOUL(R.string.infraction_foul, R.string.infraction_fouls, R.plurals.infraction_foul_count, R.string.infraction_foul_event),
+    PENALTY(R.string.infraction_penalty, R.string.infraction_penalties, R.plurals.infraction_penalty_count, R.string.infraction_penalty_event),
+    CARD(R.string.infraction_card, R.string.infraction_cards, R.plurals.infraction_card_count, R.string.infraction_card_event),
+    FREE_KICK(R.string.infraction_free_kick, R.string.infraction_free_kicks, R.plurals.infraction_free_kick_count, R.string.infraction_free_kick_event),
+    EXCLUSION(R.string.infraction_exclusion, R.string.infraction_exclusions, R.plurals.infraction_exclusion_count, R.string.infraction_exclusion_event),
+}
 
 /** The rotation/scoring rules a sport's game screen is configured with. */
 data class SportConfig(
     val onCourtSize: Int,
+    /** Position codes, as stored on players and in roster CSVs; see [positionLabel] for display. */
     val squadPositions: List<String>,
     /** Default number of periods: 2 halves, 3 periods, or 4 quarters. */
     val defaultPeriodCount: Int,
     val defaultPeriodMinutes: Int,
     val scoringOptions: List<ScoreOption>,
-    val infractionLabel: String,
-) {
-    /** Plural form for stat summaries, e.g. "Penalty" -> "Penalties". */
-    val infractionLabelPlural: String
-        get() = if (infractionLabel.endsWith("y")) "${infractionLabel.dropLast(1)}ies" else "${infractionLabel}s"
-}
+    val infraction: Infraction,
+)
+
+/**
+ * How to show a stored position [code]: its translation, or the code itself for one the app
+ * doesn't know (players keep whatever position they were saved with).
+ */
+fun positionLabel(code: String): UiText =
+    POSITION_LABELS[code]?.let { uiText(it) } ?: UiText.Plain(code)
+
+private val POSITION_LABELS: Map<String, Int> = mapOf(
+    "PG" to R.string.position_pg,
+    "SG" to R.string.position_sg,
+    "SF" to R.string.position_sf,
+    "PF" to R.string.position_pf,
+    "C" to R.string.position_c,
+    "GS" to R.string.position_gs,
+    "GA" to R.string.position_ga,
+    "WA" to R.string.position_wa,
+    "WD" to R.string.position_wd,
+    "GD" to R.string.position_gd,
+    "GK" to R.string.position_gk,
+    "DEF" to R.string.position_def,
+    "MID" to R.string.position_mid,
+    "FWD" to R.string.position_fwd,
+    "Full Forward" to R.string.position_full_forward,
+    "Half Forward" to R.string.position_half_forward,
+    "Midfield" to R.string.position_midfield,
+    "Half Back" to R.string.position_half_back,
+    "Full Back" to R.string.position_full_back,
+    "Ruck" to R.string.position_ruck,
+    "Interchange" to R.string.position_interchange,
+    "Prop" to R.string.position_prop,
+    "Hooker" to R.string.position_hooker,
+    "Lock" to R.string.position_lock,
+    "Flanker" to R.string.position_flanker,
+    "No.8" to R.string.position_no_8,
+    "Scrum-half" to R.string.position_scrum_half,
+    "Fly-half" to R.string.position_fly_half,
+    "Centre" to R.string.position_centre,
+    "Wing" to R.string.position_wing,
+    "Fullback" to R.string.position_fullback,
+    "Second Row" to R.string.position_second_row,
+    "Halfback" to R.string.position_halfback,
+    "Five-Eighth" to R.string.position_five_eighth,
+    "FIX" to R.string.position_fix,
+    "ALA" to R.string.position_ala,
+    "PIVO" to R.string.position_pivo,
+    "G" to R.string.position_g,
+    "LD" to R.string.position_ld,
+    "RD" to R.string.position_rd,
+    "LW" to R.string.position_lw,
+    "RW" to R.string.position_rw,
+    "Link" to R.string.position_link,
+    "Middle" to R.string.position_middle,
+    "Driver" to R.string.position_driver,
+    "Hole Set" to R.string.position_hole_set,
+    "Point" to R.string.position_point,
+    "Left Wing" to R.string.position_left_wing,
+    "Left Back" to R.string.position_left_back,
+    "Centre Back" to R.string.position_centre_back,
+    "Right Back" to R.string.position_right_back,
+    "Right Wing" to R.string.position_right_wing,
+    "Pivot" to R.string.position_pivot,
+    "Defense" to R.string.position_defense,
+    "Attack" to R.string.position_attack,
+    "QB" to R.string.position_qb,
+    "WR" to R.string.position_wr,
+    "RB" to R.string.position_rb,
+    "DB" to R.string.position_db,
+    "Rusher" to R.string.position_rusher,
+    "Handler" to R.string.position_handler,
+    "Cutter" to R.string.position_cutter,
+    "Deep" to R.string.position_deep,
+)
 
 val Sport.config: SportConfig
     get() = when (this) {
@@ -28,11 +119,11 @@ val Sport.config: SportConfig
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 10,
             scoringOptions = listOf(
-                ScoreOption("+1", 1),
-                ScoreOption("+2", 2),
-                ScoreOption("+3", 3),
+                ScoreOption(UiText.Plain("+1"), 1),
+                ScoreOption(UiText.Plain("+2"), 2),
+                ScoreOption(UiText.Plain("+3"), 3),
             ),
-            infractionLabel = "Foul",
+            infraction = Infraction.FOUL,
         )
 
         Sport.NETBALL -> SportConfig(
@@ -41,9 +132,9 @@ val Sport.config: SportConfig
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 15,
             scoringOptions = listOf(
-                ScoreOption("Goal", 1),
+                ScoreOption(uiText(R.string.score_goal), 1),
             ),
-            infractionLabel = "Penalty",
+            infraction = Infraction.PENALTY,
         )
 
         Sport.SOCCER -> SportConfig(
@@ -52,9 +143,9 @@ val Sport.config: SportConfig
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 45,
             scoringOptions = listOf(
-                ScoreOption("Goal", 1),
+                ScoreOption(uiText(R.string.score_goal), 1),
             ),
-            infractionLabel = "Card",
+            infraction = Infraction.CARD,
         )
 
         Sport.AFL -> SportConfig(
@@ -65,10 +156,10 @@ val Sport.config: SportConfig
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
-                ScoreOption("Goal (6)", 6),
-                ScoreOption("Behind (1)", 1),
+                ScoreOption(uiText(R.string.score_goal_6), 6),
+                ScoreOption(uiText(R.string.score_behind_1), 1),
             ),
-            infractionLabel = "Free Kick",
+            infraction = Infraction.FREE_KICK,
         )
 
         Sport.RUGBY_UNION -> SportConfig(
@@ -79,12 +170,12 @@ val Sport.config: SportConfig
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 40,
             scoringOptions = listOf(
-                ScoreOption("Try", 5),
-                ScoreOption("Conversion", 2),
-                ScoreOption("Penalty", 3),
-                ScoreOption("Drop Goal", 3),
+                ScoreOption(uiText(R.string.score_try), 5),
+                ScoreOption(uiText(R.string.score_conversion), 2),
+                ScoreOption(uiText(R.string.score_penalty), 3),
+                ScoreOption(uiText(R.string.score_drop_goal), 3),
             ),
-            infractionLabel = "Penalty",
+            infraction = Infraction.PENALTY,
         )
 
         Sport.RUGBY_LEAGUE -> SportConfig(
@@ -95,12 +186,12 @@ val Sport.config: SportConfig
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 40,
             scoringOptions = listOf(
-                ScoreOption("Try", 4),
-                ScoreOption("Conversion", 2),
-                ScoreOption("Penalty", 2),
-                ScoreOption("Field Goal", 1),
+                ScoreOption(uiText(R.string.score_try), 4),
+                ScoreOption(uiText(R.string.score_conversion), 2),
+                ScoreOption(uiText(R.string.score_penalty), 2),
+                ScoreOption(uiText(R.string.score_field_goal), 1),
             ),
-            infractionLabel = "Penalty",
+            infraction = Infraction.PENALTY,
         )
 
         Sport.FUTSAL -> SportConfig(
@@ -109,9 +200,9 @@ val Sport.config: SportConfig
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
-                ScoreOption("Goal", 1),
+                ScoreOption(uiText(R.string.score_goal), 1),
             ),
-            infractionLabel = "Foul",
+            infraction = Infraction.FOUL,
         )
 
         Sport.FIELD_HOCKEY -> SportConfig(
@@ -120,9 +211,9 @@ val Sport.config: SportConfig
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 15,
             scoringOptions = listOf(
-                ScoreOption("Goal", 1),
+                ScoreOption(uiText(R.string.score_goal), 1),
             ),
-            infractionLabel = "Card",
+            infraction = Infraction.CARD,
         )
 
         Sport.ICE_HOCKEY -> SportConfig(
@@ -131,9 +222,9 @@ val Sport.config: SportConfig
             defaultPeriodCount = 3,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
-                ScoreOption("Goal", 1),
+                ScoreOption(uiText(R.string.score_goal), 1),
             ),
-            infractionLabel = "Penalty",
+            infraction = Infraction.PENALTY,
         )
 
         Sport.TOUCH_FOOTBALL -> SportConfig(
@@ -142,9 +233,9 @@ val Sport.config: SportConfig
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
-                ScoreOption("Touchdown", 1),
+                ScoreOption(uiText(R.string.score_touchdown), 1),
             ),
-            infractionLabel = "Penalty",
+            infraction = Infraction.PENALTY,
         )
 
         Sport.WATER_POLO -> SportConfig(
@@ -153,9 +244,9 @@ val Sport.config: SportConfig
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 8,
             scoringOptions = listOf(
-                ScoreOption("Goal", 1),
+                ScoreOption(uiText(R.string.score_goal), 1),
             ),
-            infractionLabel = "Exclusion",
+            infraction = Infraction.EXCLUSION,
         )
 
         Sport.HANDBALL -> SportConfig(
@@ -166,9 +257,9 @@ val Sport.config: SportConfig
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 30,
             scoringOptions = listOf(
-                ScoreOption("Goal", 1),
+                ScoreOption(uiText(R.string.score_goal), 1),
             ),
-            infractionLabel = "Foul",
+            infraction = Infraction.FOUL,
         )
 
         Sport.LACROSSE -> SportConfig(
@@ -177,9 +268,9 @@ val Sport.config: SportConfig
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 15,
             scoringOptions = listOf(
-                ScoreOption("Goal", 1),
+                ScoreOption(uiText(R.string.score_goal), 1),
             ),
-            infractionLabel = "Penalty",
+            infraction = Infraction.PENALTY,
         )
 
         Sport.GAELIC_FOOTBALL -> SportConfig(
@@ -190,10 +281,10 @@ val Sport.config: SportConfig
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 30,
             scoringOptions = listOf(
-                ScoreOption("Goal (3)", 3),
-                ScoreOption("Point (1)", 1),
+                ScoreOption(uiText(R.string.score_goal_3), 3),
+                ScoreOption(uiText(R.string.score_point_1), 1),
             ),
-            infractionLabel = "Foul",
+            infraction = Infraction.FOUL,
         )
 
         Sport.FLAG_FOOTBALL -> SportConfig(
@@ -202,12 +293,12 @@ val Sport.config: SportConfig
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
-                ScoreOption("Touchdown (6)", 6),
-                ScoreOption("1-pt Extra (1)", 1),
-                ScoreOption("2-pt Extra (2)", 2),
-                ScoreOption("Safety (2)", 2),
+                ScoreOption(uiText(R.string.score_touchdown_6), 6),
+                ScoreOption(uiText(R.string.score_1_pt_extra_1), 1),
+                ScoreOption(uiText(R.string.score_2_pt_extra_2), 2),
+                ScoreOption(uiText(R.string.score_safety_2), 2),
             ),
-            infractionLabel = "Penalty",
+            infraction = Infraction.PENALTY,
         )
 
         Sport.ULTIMATE_FRISBEE -> SportConfig(
@@ -216,8 +307,8 @@ val Sport.config: SportConfig
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
             scoringOptions = listOf(
-                ScoreOption("Point", 1),
+                ScoreOption(uiText(R.string.score_point), 1),
             ),
-            infractionLabel = "Foul",
+            infraction = Infraction.FOUL,
         )
     }

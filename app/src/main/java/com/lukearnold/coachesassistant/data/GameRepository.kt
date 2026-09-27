@@ -88,6 +88,7 @@ class GameRepository(
                         gameId = gameId,
                         timestamp = System.currentTimeMillis(),
                         type = EventType.PERIOD_CHANGE.name,
+                        // Stored in English; the event log shows it translated (see eventDescription).
                         note = "Finished Period ${game.currentPeriod}",
                         gameTimeMillis = calculateCurrentGameTime(game),
                     ),

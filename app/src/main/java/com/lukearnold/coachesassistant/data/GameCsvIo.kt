@@ -1,6 +1,9 @@
 package com.lukearnold.coachesassistant.data
 
+import com.lukearnold.coachesassistant.R
+
 import android.content.ContentResolver
+import android.content.res.Resources
 import android.net.Uri
 import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +42,7 @@ class GameCsvIo(private val database: AppDatabase) {
                         ).joinToString(","),
                     )
                 }
-            } ?: error("Unable to open export file")
+            } ?: throw UserFacingException(R.string.export_file_unopenable)
         }
     }
 
@@ -57,7 +60,7 @@ class GameCsvIo(private val database: AppDatabase) {
         allowedPositions: Collection<String> = emptyList(),
     ): RosterImportResult = withContext(Dispatchers.IO) {
         val lines = contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readLines() }
-            ?: error("Unable to open import file")
+            ?: throw UserFacingException(R.string.import_file_unopenable)
         // Skip header if present
         val rows = lines.drop(if (lines.firstOrNull()?.contains("name", ignoreCase = true) == true) 1 else 0)
 
@@ -93,7 +96,7 @@ class GameCsvIo(private val database: AppDatabase) {
 
     suspend fun exportGameCsv(contentResolver: ContentResolver, gameId: Long, uri: Uri) {
         withContext(Dispatchers.IO) {
-            val game = gameDao.getById(gameId) ?: error("Game not found")
+            val game = gameDao.getById(gameId) ?: throw UserFacingException(R.string.game_not_found)
             val players = playerDao.getAll().associateBy { it.id }
             val events = gameEventDao.getByGame(gameId)
 
@@ -154,21 +157,22 @@ class GameCsvIo(private val database: AppDatabase) {
                         )
                     }
                 }
-            } ?: error("Unable to open export file")
+            } ?: throw UserFacingException(R.string.export_file_unopenable)
         }
     }
 
-    suspend fun exportGameNotesTxt(contentResolver: ContentResolver, gameId: Long, uri: Uri) {
+    /** Writes the game's coaching notes under a short summary, labelled in the app's language from [resources]. */
+    suspend fun exportGameNotesTxt(contentResolver: ContentResolver, resources: Resources, gameId: Long, uri: Uri) {
         withContext(Dispatchers.IO) {
-            val game = gameDao.getById(gameId) ?: error("Game not found")
+            val game = gameDao.getById(gameId) ?: throw UserFacingException(R.string.game_not_found)
             contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
-                writer.write("Game: ${game.title}\n")
-                writer.write("Opponent: ${game.opponent}\n")
-                writer.write("Date: ${formatDate(game.createdAt)}\n")
-                writer.write("Score: Us ${game.teamScore} - ${game.opponentScore} ${game.opponent}\n")
-                writer.write("\n--- COACHING NOTES ---\n\n")
+                writer.write(resources.getString(R.string.notes_file_game, game.title) + "\n")
+                writer.write(resources.getString(R.string.notes_file_opponent, game.opponent) + "\n")
+                writer.write(resources.getString(R.string.notes_file_date, formatDate(game.createdAt)) + "\n")
+                writer.write(resources.getString(R.string.notes_file_score, game.teamScore, game.opponentScore, game.opponent) + "\n")
+                writer.write("\n" + resources.getString(R.string.notes_file_heading) + "\n\n")
                 writer.write(game.notes)
-            } ?: error("Unable to open export file")
+            } ?: throw UserFacingException(R.string.export_file_unopenable)
         }
     }
 }

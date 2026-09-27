@@ -4,7 +4,12 @@ import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.PlayerEntity
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class ConfirmationsTest {
 
     private val game = GameEntity(
@@ -23,7 +28,7 @@ class ConfirmationsTest {
         assertEquals(
             "Delete \"Rnd 3\" (Us 4 – 2 Rivals)? Its events and stats are removed and it no longer counts in " +
                 "season totals. This can't be undone.",
-            deleteGameConfirmMessage(game),
+            deleteGameConfirmMessage(game).english(),
         )
     }
 
@@ -32,7 +37,7 @@ class ConfirmationsTest {
         assertEquals(
             "Remove #2 Tommy from the roster? They're taken off any game lineups, and past games show their " +
                 "scores as \"Removed player\". This can't be undone.",
-            removePlayerConfirmMessage(PlayerEntity(id = 1, name = "Tommy", jerseyNumber = 2)),
+            removePlayerConfirmMessage(PlayerEntity(id = 1, name = "Tommy", jerseyNumber = 2)).english(),
         )
     }
 
@@ -41,7 +46,7 @@ class ConfirmationsTest {
         assertEquals(
             "Move on to Q2? Q1 ends at the current clock time, the clock resets to 10:00, and everyone comes off " +
                 "court until you set the next lineup.",
-            nextPeriodConfirmMessage(game),
+            nextPeriodConfirmMessage(game).english(),
         )
     }
 
@@ -49,7 +54,7 @@ class ConfirmationsTest {
     fun resetClock_namesThePeriodAndFullTime() {
         assertEquals(
             "Reset the Q1 clock to 10:00? Use this to restart a period that hasn't really begun.",
-            resetClockConfirmMessage(game),
+            resetClockConfirmMessage(game).english(),
         )
     }
 }

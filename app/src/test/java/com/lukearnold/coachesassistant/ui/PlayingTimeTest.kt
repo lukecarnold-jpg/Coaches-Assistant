@@ -7,7 +7,12 @@ import com.lukearnold.coachesassistant.data.PlayerEntity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class PlayingTimeTest {
 
     // Basketball-style: 4 x 10-minute quarters, 5 on court.
@@ -88,10 +93,10 @@ class PlayingTimeTest {
 
     @Test
     fun paceLabel_callsSmallDifferencesOnPace() {
-        assertEquals("on pace", paceLabel(29_000L))
-        assertEquals("on pace", paceLabel(-29_000L))
-        assertEquals("02:15 behind", paceLabel(135_000L))
-        assertEquals("00:40 ahead", paceLabel(-40_000L))
+        assertEquals("on pace", paceLabel(29_000L).english())
+        assertEquals("on pace", paceLabel(-29_000L).english())
+        assertEquals("02:15 behind", paceLabel(135_000L).english())
+        assertEquals("00:40 ahead", paceLabel(-40_000L).english())
     }
 
     @Test

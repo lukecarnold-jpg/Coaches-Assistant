@@ -149,4 +149,330 @@
     <string name="notes_keyboard_pen_support">Notes (Keyboard/Pen support)</string>
     <string name="select_or_create_a_game_to_start_tracking">Select or create a game to start tracking.</string>
     <string name="game_tracker">Game tracker</string>
+
+    <!-- Sports, and the positions, scoring buttons and infractions each uses. Position codes are stored
+         on players and in roster CSVs untranslated; these are only how they're shown. -->
+    <string name="sport_basketball">Basketball</string>
+    <string name="sport_netball">Netball</string>
+    <string name="sport_soccer">Soccer</string>
+    <string name="sport_afl">AFL</string>
+    <string name="sport_rugby_union">Rugby Union</string>
+    <string name="sport_rugby_league">Rugby League</string>
+    <string name="sport_futsal">Futsal</string>
+    <string name="sport_field_hockey">Field Hockey</string>
+    <string name="sport_ice_hockey">Ice Hockey</string>
+    <string name="sport_touch_football">Touch Football</string>
+    <string name="sport_water_polo">Water Polo</string>
+    <string name="sport_handball">Handball</string>
+    <string name="sport_lacrosse">Lacrosse</string>
+    <string name="sport_gaelic_football">Gaelic Football</string>
+    <string name="sport_flag_football">Flag Football</string>
+    <string name="sport_ultimate_frisbee">Ultimate Frisbee</string>
+    <string name="position_pg">PG</string>
+    <string name="position_sg">SG</string>
+    <string name="position_sf">SF</string>
+    <string name="position_pf">PF</string>
+    <string name="position_c">C</string>
+    <string name="position_gs">GS</string>
+    <string name="position_ga">GA</string>
+    <string name="position_wa">WA</string>
+    <string name="position_wd">WD</string>
+    <string name="position_gd">GD</string>
+    <string name="position_gk">GK</string>
+    <string name="position_def">DEF</string>
+    <string name="position_mid">MID</string>
+    <string name="position_fwd">FWD</string>
+    <string name="position_full_forward">Full Forward</string>
+    <string name="position_half_forward">Half Forward</string>
+    <string name="position_midfield">Midfield</string>
+    <string name="position_half_back">Half Back</string>
+    <string name="position_full_back">Full Back</string>
+    <string name="position_ruck">Ruck</string>
+    <string name="position_interchange">Interchange</string>
+    <string name="position_prop">Prop</string>
+    <string name="position_hooker">Hooker</string>
+    <string name="position_lock">Lock</string>
+    <string name="position_flanker">Flanker</string>
+    <string name="position_no_8">No.8</string>
+    <string name="position_scrum_half">Scrum-half</string>
+    <string name="position_fly_half">Fly-half</string>
+    <string name="position_centre">Centre</string>
+    <string name="position_wing">Wing</string>
+    <string name="position_fullback">Fullback</string>
+    <string name="position_second_row">Second Row</string>
+    <string name="position_halfback">Halfback</string>
+    <string name="position_five_eighth">Five-Eighth</string>
+    <string name="position_fix">FIX</string>
+    <string name="position_ala">ALA</string>
+    <string name="position_pivo">PIVO</string>
+    <string name="position_g">G</string>
+    <string name="position_ld">LD</string>
+    <string name="position_rd">RD</string>
+    <string name="position_lw">LW</string>
+    <string name="position_rw">RW</string>
+    <string name="position_link">Link</string>
+    <string name="position_middle">Middle</string>
+    <string name="position_driver">Driver</string>
+    <string name="position_hole_set">Hole Set</string>
+    <string name="position_point">Point</string>
+    <string name="position_left_wing">Left Wing</string>
+    <string name="position_left_back">Left Back</string>
+    <string name="position_centre_back">Centre Back</string>
+    <string name="position_right_back">Right Back</string>
+    <string name="position_right_wing">Right Wing</string>
+    <string name="position_pivot">Pivot</string>
+    <string name="position_defense">Defense</string>
+    <string name="position_attack">Attack</string>
+    <string name="position_qb">QB</string>
+    <string name="position_wr">WR</string>
+    <string name="position_rb">RB</string>
+    <string name="position_db">DB</string>
+    <string name="position_rusher">Rusher</string>
+    <string name="position_handler">Handler</string>
+    <string name="position_cutter">Cutter</string>
+    <string name="position_deep">Deep</string>
+    <string name="score_goal">Goal</string>
+    <string name="score_goal_6">Goal (6)</string>
+    <string name="score_behind_1">Behind (1)</string>
+    <string name="score_try">Try</string>
+    <string name="score_conversion">Conversion</string>
+    <string name="score_penalty">Penalty</string>
+    <string name="score_drop_goal">Drop Goal</string>
+    <string name="score_field_goal">Field Goal</string>
+    <string name="score_touchdown">Touchdown</string>
+    <string name="score_goal_3">Goal (3)</string>
+    <string name="score_point_1">Point (1)</string>
+    <string name="score_touchdown_6">Touchdown (6)</string>
+    <string name="score_1_pt_extra_1">1-pt Extra (1)</string>
+    <string name="score_2_pt_extra_2">2-pt Extra (2)</string>
+    <string name="score_safety_2">Safety (2)</string>
+    <string name="score_point">Point</string>
+    <string name="infraction_foul">Foul</string>
+    <string name="infraction_fouls">Fouls</string>
+    <plurals name="infraction_foul_count">
+        <item quantity="one">%d foul</item>
+        <item quantity="other">%d fouls</item>
+    </plurals>
+    <string name="infraction_foul_event">%1$s foul</string>
+    <string name="infraction_penalty">Penalty</string>
+    <string name="infraction_penalties">Penalties</string>
+    <plurals name="infraction_penalty_count">
+        <item quantity="one">%d penalty</item>
+        <item quantity="other">%d penalties</item>
+    </plurals>
+    <string name="infraction_penalty_event">%1$s penalty</string>
+    <string name="infraction_card">Card</string>
+    <string name="infraction_cards">Cards</string>
+    <plurals name="infraction_card_count">
+        <item quantity="one">%d card</item>
+        <item quantity="other">%d cards</item>
+    </plurals>
+    <string name="infraction_card_event">%1$s card</string>
+    <string name="infraction_free_kick">Free Kick</string>
+    <string name="infraction_free_kicks">Free Kicks</string>
+    <plurals name="infraction_free_kick_count">
+        <item quantity="one">%d free kick</item>
+        <item quantity="other">%d free kicks</item>
+    </plurals>
+    <string name="infraction_free_kick_event">%1$s free kick</string>
+    <string name="infraction_exclusion">Exclusion</string>
+    <string name="infraction_exclusions">Exclusions</string>
+    <plurals name="infraction_exclusion_count">
+        <item quantity="one">%d exclusion</item>
+        <item quantity="other">%d exclusions</item>
+    </plurals>
+    <string name="infraction_exclusion_event">%1$s exclusion</string>
+    <string name="infraction_count_adjustment">%1$s count/adj</string>
+
+    <!-- Periods -->
+    <string name="period_count_halves">2 halves</string>
+    <string name="period_count_periods">3 periods</string>
+    <string name="period_count_quarters">4 quarters</string>
+    <string name="period_label_half">H%1$d</string>
+    <string name="period_label_quarter">Q%1$d</string>
+    <string name="period_label_other">P%1$d</string>
+    <string name="period_value">Period: %1$s</string>
+
+    <!-- Event log -->
+    <string name="event_starting_lineup">Starting lineup: %1$s</string>
+    <string name="event_substitution">%1$s in for %2$s</string>
+    <string name="event_score">%1$s %2$s</string>
+    <string name="team_adjustment">Team adjustment</string>
+    <string name="removed_player">Removed player</string>
+    <string name="event_mvp_vote">%1$s MVP vote</string>
+    <string name="event_finished_period">Finished Period %1$d</string>
+    <string name="event_game_ended">Game Ended</string>
+    <string name="event_type">Type: %1$s</string>
+    <string name="points">Points</string>
+
+    <!-- Game screens, with values filled in -->
+    <string name="score_line" tools:ignore="PluralsCandidate">Us %1$d – %2$d %3$s</string>
+    <string name="score_line_no_opponent" tools:ignore="PluralsCandidate">Us %1$d – %2$d Them</string>
+    <string name="pace_on_pace">on pace</string>
+    <string name="pace_behind">%1$s behind</string>
+    <string name="pace_ahead">%1$s ahead</string>
+    <plurals name="need_players_for_lineup">
+        <item quantity="one">You need at least %d player in the roster before you can set the lineup.</item>
+        <item quantity="other">You need at least %d players in the roster before you can set the lineup.</item>
+    </plurals>
+    <plurals name="select_exactly_players">
+        <item quantity="one">Select exactly %d player.</item>
+        <item quantity="other">Select exactly %d players.</item>
+    </plurals>
+    <string name="selection_mismatch" tools:ignore="PluralsCandidate">Selection mismatch: %1$d out, %2$d in</string>
+    <string name="players_coming_out">Players coming out (%1$d)</string>
+    <string name="players_coming_in">Players coming in (%1$d) · furthest behind first</string>
+    <plurals name="confirm_rotation">
+        <item quantity="one">Confirm Rotation (%d Sub)</item>
+        <item quantity="other">Confirm Rotation (%d Subs)</item>
+    </plurals>
+    <string name="player_card_stats" tools:ignore="PluralsCandidate">"Points: %1$d   %2$s: %3$d   Subbed off: %4$d"</string>
+    <string name="shift_time">Shift: %1$s</string>
+    <string name="total_time_short">Total: %1$s</string>
+    <string name="target_and_pace">Target %1$s · %2$s</string>
+    <string name="mvp_vote_count">MVP Vote (%1$d)</string>
+    <string name="opponent_value">Opponent: %1$s</string>
+    <string name="score_value">Score: %1$d</string>
+    <string name="game_stats_line" tools:ignore="PluralsCandidate">Points: %1$d | %2$s: %3$d | Votes: %4$d | Subbed off: %5$d</string>
+    <string name="total_time">Total Time: %1$s</string>
+    <string name="total_time_with_target">Total Time: %1$s of %2$s target · %3$s</string>
+    <string name="final_score_value" tools:ignore="PluralsCandidate">Final: %1$d – %2$d</string>
+    <plurals name="season_title">
+        <item quantity="one">Season (%d game)</item>
+        <item quantity="other">Season (%d games)</item>
+    </plurals>
+    <string name="season_record" tools:ignore="PluralsCandidate">W %1$d · L %2$d · T %3$d</string>
+    <string name="season_points" tools:ignore="PluralsCandidate">Points: %1$d for, %2$d against (avg %3$s–%4$s)</string>
+    <string name="season_player_line" tools:ignore="PluralsCandidate">%1$d GP · %2$s played (%3$s avg) · %4$d pts · %5$s · %6$d MVP</string>
+
+    <!-- Confirmations -->
+    <string name="end_game_confirm">Final score: %1$s. The game will move to History and can\'t be resumed.</string>
+    <string name="end_game_confirm_early">Final score: %1$s. You\'re only in %2$s of %3$d. The game will move to History and can\'t be resumed.</string>
+    <string name="delete_game_confirm">Delete \"%1$s\" (%2$s)? Its events and stats are removed and it no longer counts in season totals. This can\'t be undone.</string>
+    <string name="remove_player_confirm">Remove %1$s from the roster? They\'re taken off any game lineups, and past games show their scores as \"%2$s\". This can\'t be undone.</string>
+    <string name="next_period_confirm">Move on to %1$s? %2$s ends at the current clock time, the clock resets to %3$s, and everyone comes off court until you set the next lineup.</string>
+    <string name="reset_clock_confirm">Reset the %1$s clock to %2$s? Use this to restart a period that hasn\'t really begun.</string>
+
+    <!-- Settings and Training, with values filled in -->
+    <string name="currently_coaching">Currently coaching %1$s %2$s.</string>
+    <string name="provider_gemini">Google Gemini</string>
+    <string name="provider_gemini_key_hint">Get a free key from Google AI Studio.</string>
+    <string name="provider_anthropic">Anthropic Claude</string>
+    <string name="provider_anthropic_key_hint">Get a key from the Anthropic Console.</string>
+    <string name="provider_openai">OpenAI ChatGPT</string>
+    <string name="provider_openai_key_hint">Get a key from the OpenAI Platform.</string>
+    <string name="provider_other">Other (OpenAI-compatible)</string>
+    <string name="provider_other_key_hint">Works with any provider that speaks the OpenAI chat-completions API (e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted server such as Ollama). Also set its endpoint URL and model name above. Hosted providers need https:// and a key; a server on your local network can use http:// and may not need a key.</string>
+    <string name="api_key_active">Your saved %1$s API key is active. AI drill generation is enabled.</string>
+    <string name="api_key_missing">No %1$s API key configured. Add one below to enable AI drill generation on the Training tab.</string>
+    <string name="provider_api_key">%1$s API key</string>
+    <string name="key_hint_stored_on_device">%1$s The key is stored only on this device.</string>
+    <string name="endpoint_not_a_url">Enter a full URL starting with https:// (or http:// for a server on your local network).</string>
+    <string name="endpoint_needs_https">Use https:// for servers on the internet. Plain http:// only works for servers on your local network.</string>
+    <string name="data_management_description">Delete %1$s\'s players, games, or events, or delete everything for every sport at once. These actions cannot be undone.</string>
+    <string name="data_management_description_no_sport">Delete this sport\'s players, games, or events, or delete everything for every sport at once. These actions cannot be undone.</string>
+    <string name="delete_all_confirm">Are you sure you want to delete all data? This removes every player and game for every sport, not just %1$s.</string>
+    <string name="delete_all_confirm_no_sport">Are you sure you want to delete all data? This removes every player and game for every sport, not just this one.</string>
+    <string name="delete_selected_prompt">Select the %1$s data to delete. Other sports are not affected.</string>
+    <string name="delete_selected_prompt_no_sport">Select the current sport data to delete. Other sports are not affected.</string>
+    <string name="training_empty">Select an age group and click generate to see %1$s drills tailored by AI.</string>
+
+    <!-- Drill generation errors -->
+    <string name="local_network_denied">Coaches Assistant needs local network access to reach your server. Allow it for the app in your phone\'s Settings (Apps → Coaches Assistant → Permissions), then try again.</string>
+    <string name="add_api_key_to_generate">Add your %1$s API key in Settings to generate drills.</string>
+    <string name="other_provider_not_set_up">Add an endpoint URL and model name for the Other provider in Settings.</string>
+    <string name="drills_parse_failed">Failed to parse drills. Try again.</string>
+    <string name="gemini_model_not_found">The selected Gemini model was not found. It may have been retired; please check for an app update.</string>
+    <string name="request_failed_http">Request failed (HTTP %1$d)</string>
+    <string name="refusing_plain_http">Refusing to send a request over plain http to %1$s, which isn\'t on the local network.</string>
+    <string name="unknown_error">Unknown error occurred</string>
+
+    <!-- Snackbar messages -->
+    <string name="msg_period_ended">End of period — clock stopped.</string>
+    <string name="msg_enter_player_name">Enter a player name.</string>
+    <string name="msg_jersey_not_numeric">Jersey number must be numeric.</string>
+    <string name="msg_player_added">Player added.</string>
+    <string name="msg_name_empty">Name cannot be empty.</string>
+    <string name="msg_player_updated">Player updated.</string>
+    <string name="msg_player_removed">Player removed.</string>
+    <string name="msg_all_data_cleared">All data cleared.</string>
+    <string name="msg_selected_data_cleared">Selected data cleared.</string>
+    <string name="msg_game_created">Game created.</string>
+    <string name="msg_advanced_period">Advanced to next period.</string>
+    <string name="msg_game_finalized">Game finalized and court reset.</string>
+    <string name="msg_attendance_updated">Attendance updated.</string>
+    <string name="msg_event_updated">Event updated.</string>
+    <string name="msg_event_removed">Event removed.</string>
+    <string name="msg_event_removed_named">%1$s removed</string>
+    <string name="msg_game_deleted">Game and related events deleted.</string>
+    <string name="msg_select_game_first">Create or select a game first.</string>
+    <string name="msg_lineup_saved">Starting lineup saved.</string>
+    <string name="msg_pick_in_and_out">Pick one player in and one player out.</string>
+    <string name="msg_in_and_out_same">Player in and player out must be different.</string>
+    <string name="msg_substitution_stale">Substitution not recorded: the lineup has changed.</string>
+    <string name="msg_undone">Undone.</string>
+    <string name="msg_undo_stale">Couldn\'t undo: that\'s already been changed.</string>
+    <string name="msg_period_time_up">This period\'s time is up. Move to the next period or adjust the clock.</string>
+    <string name="msg_clock_reset">Clock reset to %1$s.</string>
+    <string name="clock_too_early">Can\'t set the clock back past %1$s: something was already recorded then this period, and moving before it would lose playing time.</string>
+    <string name="msg_backup_saved">Backup saved: %1$s and %2$s across all sports.</string>
+    <string name="msg_backup_failed">Backup failed.</string>
+    <string name="msg_restored">Restored %1$s and %2$s.</string>
+    <string name="msg_restore_failed">Restore failed. Nothing was changed.</string>
+    <string name="msg_roster_exported">Roster CSV exported.</string>
+    <string name="msg_import_failed">Import failed.</string>
+    <string name="msg_notes_exported">Coaching notes exported.</string>
+    <string name="msg_game_csv_exported">Game CSV exported.</string>
+    <string name="msg_export_failed">Export failed.</string>
+    <string name="import_none_found">No players found in that file.</string>
+    <plurals name="msg_lineup_needs_players">
+        <item quantity="one">Select exactly %d player for the starting lineup.</item>
+        <item quantity="other">Select exactly %d players for the starting lineup.</item>
+    </plurals>
+    <plurals name="msg_substitutions_recorded">
+        <item quantity="one">%d substitution recorded.</item>
+        <item quantity="other">%d substitutions recorded.</item>
+    </plurals>
+    <plurals name="msg_some_substitutions_recorded">
+        <item quantity="one">%1$d of %2$d substitution recorded; the rest no longer matched the lineup.</item>
+        <item quantity="other">%1$d of %2$d substitutions recorded; the rest no longer matched the lineup.</item>
+    </plurals>
+    <plurals name="import_added">
+        <item quantity="one">Imported %d player.</item>
+        <item quantity="other">Imported %d players.</item>
+    </plurals>
+    <plurals name="import_all_already_on_roster">
+        <item quantity="one">No new players: they were already on the roster.</item>
+        <item quantity="other">No new players: all %d were already on the roster.</item>
+    </plurals>
+    <plurals name="player_count">
+        <item quantity="one">%d player</item>
+        <item quantity="other">%d players</item>
+    </plurals>
+    <plurals name="game_count">
+        <item quantity="one">%d game</item>
+        <item quantity="other">%d games</item>
+    </plurals>
+    <plurals name="import_added_and_skipped">
+        <item quantity="one">Imported %1$s (%2$d already on the roster).</item>
+        <item quantity="other">Imported %1$s (%2$d already on the roster).</item>
+    </plurals>
+    <string name="default_game_title">Game %1$d</string>
+
+    <!-- File errors -->
+    <string name="backup_not_a_backup">That file isn\'t a Coaches Assistant backup.</string>
+    <string name="backup_from_newer_app">This backup was made by a newer version of the app. Update the app to restore it.</string>
+    <string name="backup_damaged">This backup file is damaged.</string>
+    <string name="backup_damaged_nothing_changed">This backup file is damaged. Nothing was changed.</string>
+    <string name="backup_file_unopenable">Unable to open the backup file</string>
+    <string name="export_file_unopenable">Unable to open export file</string>
+    <string name="import_file_unopenable">Unable to open import file</string>
+    <string name="game_not_found">Game not found</string>
+
+    <!-- The summary at the top of an exported notes file -->
+    <string name="notes_file_game">Game: %1$s</string>
+    <string name="notes_file_opponent">Opponent: %1$s</string>
+    <string name="notes_file_date">Date: %1$s</string>
+    <string name="notes_file_score" tools:ignore="PluralsCandidate">Score: Us %1$d – %2$d %3$s</string>
+    <string name="notes_file_heading">--- COACHING NOTES ---</string>
 </resources>

@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ai
 
+import androidx.annotation.StringRes
+import com.lukearnold.coachesassistant.R
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /** User-supplied connection details for [AiProvider.OTHER]. */
@@ -9,18 +11,19 @@ data class CustomEndpointConfig(
 )
 
 /**
- * Why [url] can't be used as the "Other" provider's endpoint, or null if it can. A blank URL isn't
+ * Why [url] can't be used as the "Other" provider's endpoint (a string resource), or null if it can. A blank URL isn't
  * reported here; callers treat "not set yet" separately.
  *
  * Plain `http://` is only allowed to servers on the local network (e.g. Ollama on a laptop), so an
  * API key or prompt is never sent unencrypted across the internet.
  */
-fun endpointUrlProblem(url: String): String? {
+@StringRes
+fun endpointUrlProblem(url: String): Int? {
     if (url.isBlank()) return null
     val parsed = url.trim().toHttpUrlOrNull()
-        ?: return "Enter a full URL starting with https:// (or http:// for a server on your local network)."
+        ?: return R.string.endpoint_not_a_url
     if (!parsed.isHttps && !isLocalNetworkHost(parsed.host)) {
-        return "Use https:// for servers on the internet. Plain http:// only works for servers on your local network."
+        return R.string.endpoint_needs_https
     }
     return null
 }

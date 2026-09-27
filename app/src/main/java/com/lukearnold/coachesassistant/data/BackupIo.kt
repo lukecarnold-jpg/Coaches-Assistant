@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.data
 
+import com.lukearnold.coachesassistant.R
+
 import android.content.ContentResolver
 import android.database.sqlite.SQLiteConstraintException
 import android.net.Uri
@@ -46,7 +48,7 @@ class BackupIo(private val database: AppDatabase) {
                 gamePlayerDao.insertAll(data.gamePlayers)
             }
         } catch (_: SQLiteConstraintException) {
-            throw BackupFormatException("This backup file is damaged. Nothing was changed.")
+            throw BackupFormatException(R.string.backup_damaged_nothing_changed)
         }
     }
 
@@ -55,7 +57,7 @@ class BackupIo(private val database: AppDatabase) {
         withContext(Dispatchers.IO) {
             contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
                 writer.write(BackupFormat.encode(data, exportedAt = System.currentTimeMillis()))
-            } ?: error("Unable to open the backup file")
+            } ?: throw UserFacingException(R.string.backup_file_unopenable)
         }
         return BackupCounts(players = data.players.size, games = data.games.size)
     }
@@ -64,7 +66,7 @@ class BackupIo(private val database: AppDatabase) {
     suspend fun restore(contentResolver: ContentResolver, uri: Uri): BackupCounts {
         val text = withContext(Dispatchers.IO) {
             contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
-                ?: error("Unable to open the backup file")
+                ?: throw UserFacingException(R.string.backup_file_unopenable)
         }
         val data = BackupFormat.decode(text)
         replaceAll(data)

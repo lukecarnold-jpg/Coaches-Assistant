@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.lukearnold.coachesassistant.BuildConfig
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.ai.AiProvider
 import com.lukearnold.coachesassistant.ai.AiRequestException
 import com.lukearnold.coachesassistant.ai.AiSettingsStore
@@ -24,7 +25,7 @@ sealed class TrainingUiState {
     object Idle : TrainingUiState()
     object Loading : TrainingUiState()
     data class Success(val drills: List<Drill>) : TrainingUiState()
-    data class Error(val message: String) : TrainingUiState()
+    data class Error(val message: UiText) : TrainingUiState()
 }
 
 class TrainingViewModel(application: Application) : AndroidViewModel(application) {
@@ -86,10 +87,7 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
 
     /** Explains why drills can't be generated after the user declines local network access. */
     fun reportLocalNetworkDenied() {
-        _uiState.value = TrainingUiState.Error(
-            "Coaches Assistant needs local network access to reach your server. Allow it for the app " +
-                "in your phone's Settings (Apps → Coaches Assistant → Permissions), then try again.",
-        )
+        _uiState.value = TrainingUiState.Error(uiText(R.string.local_network_denied))
     }
 
     fun generateDrills(sport: Sport, ageGroup: String) {
@@ -97,16 +95,12 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         val apiKey = effectiveApiKey(provider)
         // The Other provider may be a local server that doesn't need a key.
         if (apiKey.isBlank() && provider != AiProvider.OTHER) {
-            _uiState.value = TrainingUiState.Error(
-                "Add your ${provider.displayName} API key in Settings to generate drills.",
-            )
+            _uiState.value = TrainingUiState.Error(uiText(R.string.add_api_key_to_generate, uiText(provider.label)))
             return
         }
         val customEndpoint = _customEndpoint.value
         if (provider == AiProvider.OTHER && (customEndpoint.endpointUrl.isBlank() || customEndpoint.model.isBlank())) {
-            _uiState.value = TrainingUiState.Error(
-                "Add an endpoint URL and model name for the Other provider in Settings.",
-            )
+            _uiState.value = TrainingUiState.Error(uiText(R.string.other_provider_not_set_up))
             return
         }
 
@@ -116,7 +110,7 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
                 val text = textGeneratorFor(provider, customEndpoint).generateText(buildDrillPrompt(sport, ageGroup), apiKey)
                 val drills = parseDrills(text)
                 _uiState.value = if (drills.isEmpty()) {
-                    TrainingUiState.Error("Failed to parse drills. Try again.")
+                    TrainingUiState.Error(uiText(R.string.drills_parse_failed))
                 } else {
                     TrainingUiState.Success(drills)
                 }
@@ -126,11 +120,9 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private fun describeError(provider: AiProvider, e: Exception): String {
-        return when {
-            provider == AiProvider.GEMINI && e is AiRequestException && e.httpCode == 404 ->
-                "The selected Gemini model was not found. It may have been retired; please check for an app update."
-            else -> e.localizedMessage ?: "Unknown error occurred"
-        }
+    private fun describeError(provider: AiProvider, e: Exception): UiText = when {
+        provider == AiProvider.GEMINI && e is AiRequestException && e.httpCode == 404 -> uiText(R.string.gemini_model_not_found)
+        e is AiRequestException -> e.apiMessage?.let { UiText.Plain(it) } ?: uiText(R.string.request_failed_http, e.httpCode)
+        else -> e.toUiText(fallback = R.string.unknown_error)
     }
 }

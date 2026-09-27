@@ -65,7 +65,7 @@ fun RosterScreen(
     pendingRemoval?.let { player ->
         ConfirmDialog(
             title = stringResource(R.string.remove_this_player_question),
-            message = removePlayerConfirmMessage(player),
+            message = removePlayerConfirmMessage(player).asString(),
             confirmLabel = stringResource(R.string.remove),
             onConfirm = {
                 pendingRemoval = null
@@ -410,7 +410,7 @@ fun RosterList(
                             )
                             if (!player.position.isNullOrBlank()) {
                                 Text(
-                                    text = player.position,
+                                    text = positionLabel(player.position).asString(),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.secondary,
                                 )
@@ -455,7 +455,7 @@ fun PositionSelector(
                 FilterChip(
                     selected = position == candidate,
                     onClick = { onPositionChange(if (position == candidate) null else candidate) },
-                    label = { Text(candidate) },
+                    label = { Text(positionLabel(candidate).asString()) },
                 )
             }
         }

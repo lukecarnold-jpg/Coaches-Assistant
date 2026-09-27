@@ -167,8 +167,7 @@ fun GameScreen(
                     events = events,
                     playerById = playerById,
                     opponentName = selectedGame?.opponent.orEmpty(),
-                    infractionLabel = sportConfig.infractionLabel,
-                    infractionLabelPlural = sportConfig.infractionLabelPlural,
+                    infraction = sportConfig.infraction,
                     onEditEvent = { editingEvent = it },
                     onDeleteEvent = onDeleteEvent,
                     gameTitle = gameTitle,
@@ -212,8 +211,7 @@ fun GameScreen(
                 events = emptyList(),
                 playerById = emptyMap(),
                 opponentName = selectedGame?.opponent.orEmpty(),
-                infractionLabel = sportConfig.infractionLabel,
-                infractionLabelPlural = sportConfig.infractionLabelPlural,
+                infraction = sportConfig.infraction,
                 onEditEvent = {},
                 onDeleteEvent = {},
                 gameTitle = gameTitle,
@@ -292,8 +290,7 @@ fun GameScreen(
                     events = events,
                     playerById = playerById,
                     opponentName = selectedGame.opponent,
-                    infractionLabel = sportConfig.infractionLabel,
-                    infractionLabelPlural = sportConfig.infractionLabelPlural,
+                    infraction = sportConfig.infraction,
                     onEditEvent = { editingEvent = it },
                     onDeleteEvent = onDeleteEvent,
                     onlyStats = true,
@@ -309,7 +306,7 @@ fun GameScreen(
         EventEditDialog(
             event = event,
             onDismiss = { editingEvent = null },
-            infractionLabel = sportConfig.infractionLabel,
+            infraction = sportConfig.infraction,
         ) { updated ->
             onUpdateEvent(updated)
             editingEvent = null

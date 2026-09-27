@@ -1,6 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
 import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +32,7 @@ fun GameHistoryScreen(
     modifier: Modifier = Modifier,
     games: List<GameEntity>,
     season: SeasonSummary,
-    infractionLabelPlural: String,
+    infraction: Infraction,
     onViewGame: (Long) -> Unit,
     onDeleteGame: (Long) -> Unit,
     onExportGame: (Long, Uri) -> Unit,
@@ -47,7 +48,7 @@ fun GameHistoryScreen(
     pendingDelete?.let { game ->
         ConfirmDialog(
             title = stringResource(R.string.delete_this_game_question),
-            message = deleteGameConfirmMessage(game),
+            message = deleteGameConfirmMessage(game).asString(),
             confirmLabel = stringResource(R.string.delete),
             onConfirm = {
                 pendingDelete = null
@@ -72,7 +73,7 @@ fun GameHistoryScreen(
         if (finishedGames.isEmpty()) {
             EmptyMessage(stringResource(R.string.no_completed_games_yet_games_appear_here_once_yo))
         } else {
-            SeasonSummaryCard(season = season, infractionLabelPlural = infractionLabelPlural)
+            SeasonSummaryCard(season = season, infraction = infraction)
 
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 finishedGames.forEach { game ->
@@ -90,14 +91,14 @@ fun GameHistoryScreen(
                                 fontWeight = FontWeight.SemiBold,
                             )
                             if (game.opponent.isNotBlank()) {
-                                Text("Opponent: ${game.opponent}")
+                                Text(stringResource(R.string.opponent_value, game.opponent))
                             }
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(layout.tinyGap),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 StatusBadge(result)
-                                Text("Final: ${game.teamScore} - ${game.opponentScore}")
+                                Text(stringResource(R.string.final_score_value, game.teamScore, game.opponentScore))
                             }
                             Text(
                                 text = formatTime(game.finishedAt ?: game.createdAt),
@@ -127,18 +128,23 @@ fun GameHistoryScreen(
 
 /** Team record and per-player totals across every finished game of the current sport. */
 @Composable
-private fun SeasonSummaryCard(season: SeasonSummary, infractionLabelPlural: String) {
+private fun SeasonSummaryCard(season: SeasonSummary, infraction: Infraction) {
     val layout = LocalResponsiveLayout.current
 
-    SectionCard(title = "Season (${season.games} ${if (season.games == 1) "game" else "games"})") {
+    SectionCard(title = pluralStringResource(R.plurals.season_title, season.games, season.games)) {
         Text(
-            text = "W ${season.wins} · L ${season.losses} · T ${season.ties}",
+            text = stringResource(R.string.season_record, season.wins, season.losses, season.ties),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
         )
         Text(
-            "Points: ${season.pointsFor} for, ${season.pointsAgainst} against " +
-                "(avg ${perGame(season.pointsFor, season.games)}–${perGame(season.pointsAgainst, season.games)})",
+            stringResource(
+                R.string.season_points,
+                season.pointsFor,
+                season.pointsAgainst,
+                perGame(season.pointsFor, season.games),
+                perGame(season.pointsAgainst, season.games),
+            ),
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = layout.smallGap))
@@ -152,9 +158,15 @@ private fun SeasonSummaryCard(season: SeasonSummary, infractionLabelPlural: Stri
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = "${stat.gamesPlayed} GP · ${formatDuration(stat.totalTimeMillis)} played " +
-                            "(${formatDuration(stat.averageTimeMillis)} avg) · ${stat.points} pts · " +
-                            "${stat.fouls} ${infractionLabelPlural.lowercase()} · ${stat.mvpVotes} MVP",
+                        text = stringResource(
+                            R.string.season_player_line,
+                            stat.gamesPlayed,
+                            formatDuration(stat.totalTimeMillis),
+                            formatDuration(stat.averageTimeMillis),
+                            stat.points,
+                            pluralStringResource(infraction.count, stat.fouls, stat.fouls),
+                            stat.mvpVotes,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }

@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ai
 
+import com.lukearnold.coachesassistant.R
+import com.lukearnold.coachesassistant.data.UserFacingException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -11,8 +13,12 @@ import org.json.JSONObject
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-/** A provider's API rejected a request; [httpCode] is the HTTP status it answered with. */
-class AiRequestException(val httpCode: Int, message: String) : IOException(message)
+/**
+ * A provider's API rejected a request: [httpCode] is the HTTP status it answered with, and
+ * [apiMessage] the explanation it gave, if any (in the provider's language, not translated).
+ */
+class AiRequestException(val httpCode: Int, val apiMessage: String?) :
+    IOException(apiMessage ?: "Request failed (HTTP $httpCode)")
 
 /** Generates raw model text for a prompt using one provider's API. */
 interface DrillTextGenerator {
@@ -38,7 +44,11 @@ private val httpClient = OkHttpClient.Builder()
     .addNetworkInterceptor { chain ->
         val url = chain.request().url
         if (!url.isHttps && !isLocalNetworkHost(url.host)) {
-            throw IOException("Refusing to send a request over plain http to ${url.host}, which isn't on the local network.")
+            throw UserFacingException(
+                R.string.refusing_plain_http,
+                listOf(url.host),
+                "Refusing to send a request over plain http to ${url.host}, which isn't on the local network.",
+            )
         }
         chain.proceed(chain.request())
     }
@@ -116,9 +126,9 @@ class OpenAiTextGenerator : DrillTextGenerator {
 class CustomTextGenerator(private val config: CustomEndpointConfig) : DrillTextGenerator {
     override suspend fun generateText(prompt: String, apiKey: String): String {
         if (config.endpointUrl.isBlank() || config.model.isBlank()) {
-            throw IOException("Set an endpoint URL and model name for the Other provider in Settings.")
+            throw UserFacingException(R.string.other_provider_not_set_up)
         }
-        endpointUrlProblem(config.endpointUrl)?.let { throw IOException(it) }
+        endpointUrlProblem(config.endpointUrl)?.let { throw UserFacingException(it) }
         return openAiCompatibleRequest(
             url = config.endpointUrl,
             apiKey = apiKey,
@@ -162,10 +172,7 @@ private fun executeForText(request: Request, extract: (JSONObject) -> String): S
             val apiMessage = runCatching {
                 JSONObject(bodyString).optJSONObject("error")?.optString("message")
             }.getOrNull()
-            throw AiRequestException(
-                response.code,
-                apiMessage?.takeIf { it.isNotBlank() } ?: "Request failed (HTTP ${response.code})",
-            )
+            throw AiRequestException(response.code, apiMessage?.takeIf { it.isNotBlank() })
         }
 
         return extract(JSONObject(bodyString))

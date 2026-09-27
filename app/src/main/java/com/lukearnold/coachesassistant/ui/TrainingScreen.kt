@@ -1,5 +1,6 @@
 package com.lukearnold.coachesassistant.ui
 
+import androidx.annotation.StringRes
 import com.lukearnold.coachesassistant.R
 import androidx.compose.ui.res.stringResource
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -31,29 +32,31 @@ fun TrainingScreen(
     val layout = LocalResponsiveLayout.current
     val uiState by trainingViewModel.uiState.collectAsState()
     val ageGroups = listOf(
-        stringResource(R.string.ages_5_6),
-        stringResource(R.string.under_8_s),
-        stringResource(R.string.under_10_s),
-        stringResource(R.string.under_12_s),
-        stringResource(R.string.under_14_s),
-        stringResource(R.string.under_16_s),
-        stringResource(R.string.under_18_s),
+        R.string.ages_5_6,
+        R.string.under_8_s,
+        R.string.under_10_s,
+        R.string.under_12_s,
+        R.string.under_14_s,
+        R.string.under_16_s,
+        R.string.under_18_s,
     )
     
     var expanded by remember { mutableStateOf(value = false) }
-    var selectedAgeGroup by rememberSaveable { mutableStateOf(ageGroups.first()) }
+    // Kept as the resource, so the choice survives a change of language; the prompt gets its text.
+    var selectedAgeGroup by rememberSaveable { mutableIntStateOf(ageGroups.first()) }
+    val selectedAgeGroupText = stringResource(selectedAgeGroup)
 
     // A local AI server needs local network access on Android 17+; ask for it first if needed.
     val localNetworkPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
-        if (granted) trainingViewModel.generateDrills(sport, selectedAgeGroup) else trainingViewModel.reportLocalNetworkDenied()
+        if (granted) trainingViewModel.generateDrills(sport, selectedAgeGroupText) else trainingViewModel.reportLocalNetworkDenied()
     }
     val generate = {
         if (trainingViewModel.localNetworkPermissionNeeded()) {
             localNetworkPermissionLauncher.launch(ACCESS_LOCAL_NETWORK)
         } else {
-            trainingViewModel.generateDrills(sport, selectedAgeGroup)
+            trainingViewModel.generateDrills(sport, selectedAgeGroupText)
         }
     }
 
@@ -184,11 +187,11 @@ fun TrainingScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrainingSelectionPanel(
-    selectedAgeGroup: String,
+    @StringRes selectedAgeGroup: Int,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    ageGroups: List<String>,
-    onAgeGroupSelect: (String) -> Unit,
+    ageGroups: List<Int>,
+    onAgeGroupSelect: (Int) -> Unit,
     onGenerateClick: () -> Unit,
     isLoading: Boolean,
 ) {
@@ -201,7 +204,7 @@ fun TrainingSelectionPanel(
             modifier = Modifier.fillMaxWidth(),
         ) {
             OutlinedTextField(
-                value = selectedAgeGroup,
+                value = stringResource(selectedAgeGroup),
                 onValueChange = {},
                 readOnly = true,
                 label = { Text(stringResource(R.string.age_group)) },
@@ -218,7 +221,7 @@ fun TrainingSelectionPanel(
             ) {
                 ageGroups.forEach { age ->
                     DropdownMenuItem(
-                        text = { Text(age) },
+                        text = { Text(stringResource(age)) },
                         onClick = { onAgeGroupSelect(age) },
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                     )
@@ -242,7 +245,7 @@ fun TrainingSelectionPanel(
 fun TrainingResultsPanel(uiState: TrainingUiState, sport: Sport) {
     when (uiState) {
         is TrainingUiState.Idle -> {
-            EmptyMessage("Select an age group and click generate to see ${sport.displayName} drills tailored by AI.")
+            EmptyMessage(stringResource(R.string.training_empty, stringResource(sport.label)))
         }
 
         is TrainingUiState.Loading -> {
@@ -266,7 +269,7 @@ fun TrainingResultsPanel(uiState: TrainingUiState, sport: Sport) {
                 ),
             ) {
                 Text(
-                    text = uiState.message,
+                    text = uiState.message.asString(),
                     modifier = Modifier.padding(LocalResponsiveLayout.current.cardPadding),
                     style = MaterialTheme.typography.bodyMedium,
                 )

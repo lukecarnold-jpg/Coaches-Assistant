@@ -1,15 +1,23 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.*
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * The event log's one-line description of [event]. Player names and numbers are shown as they
+ * are; the words around them are translated.
+ */
 fun eventDescription(
     event: GameEventEntity,
     playersById: Map<Long, PlayerEntity>,
     opponentName: String = "",
-    infractionLabel: String = "Foul",
-): String {
+    infraction: Infraction = Infraction.FOUL,
+): UiText {
+    fun playerLabel(id: Long?) = id?.let(playersById::get)?.displayLabel().orEmpty()
+    fun signed(points: Int) = if (points >= 0) "+$points" else points.toString()
+
     return when (EventType.fromRaw(event.type)) {
         EventType.START_LINEUP -> {
             val names = event.note.split(',')
@@ -18,46 +26,40 @@ fun eventDescription(
                 .mapNotNull(playersById::get)
                 .joinToString(" | ") { it.displayLabel() }
 
-            "Starting lineup: $names"
+            uiText(R.string.event_starting_lineup, names)
         }
 
-        EventType.SUBSTITUTION -> {
-            val playerIn = event.playerId?.let(playersById::get)?.displayLabel().orEmpty()
-            val playerOut = event.relatedPlayerId?.let(playersById::get)?.displayLabel().orEmpty()
-            "$playerIn in for $playerOut"
-        }
+        EventType.SUBSTITUTION -> uiText(R.string.event_substitution, playerLabel(event.playerId), playerLabel(event.relatedPlayerId))
 
         EventType.SCORE -> {
-            val prefix = if (event.points >= 0) "+" else ""
             val label = when {
-                event.playerId != null -> playersById[event.playerId]?.displayLabel().orEmpty()
-                event.note == TEAM_ADJUSTMENT_NOTE -> "Team adjustment"
+                event.playerId != null -> UiText.Plain(playerLabel(event.playerId))
+                event.note == TEAM_ADJUSTMENT_NOTE -> uiText(R.string.team_adjustment)
                 // playerId is nulled when the player is deleted from the roster.
-                else -> "Removed player"
+                else -> uiText(R.string.removed_player)
             }
-            "$label $prefix${event.points}"
+            uiText(R.string.event_score, label, signed(event.points))
         }
 
         EventType.OPPONENT_SCORE -> {
-            val prefix = if (event.points >= 0) "+" else ""
-            val label = opponentName.ifBlank { "Opponent" }
-            "$label $prefix${event.points}"
+            val label = opponentName.ifBlank { null }?.let { UiText.Plain(it) } ?: uiText(R.string.opponent)
+            uiText(R.string.event_score, label, signed(event.points))
         }
 
-        EventType.FOUL -> {
-            val playerName = event.playerId?.let(playersById::get)?.displayLabel().orEmpty()
-            "$playerName ${infractionLabel.lowercase()}"
-        }
+        EventType.FOUL -> uiText(infraction.event, playerLabel(event.playerId))
 
-        EventType.MVP_VOTE -> {
-            val playerName = event.playerId?.let(playersById::get)?.displayLabel().orEmpty()
-            "$playerName MVP vote"
-        }
+        EventType.MVP_VOTE -> uiText(R.string.event_mvp_vote, playerLabel(event.playerId))
 
-        EventType.PERIOD_CHANGE -> event.note
-        EventType.GAME_END -> "Game Ended"
+        // The stored note ("Finished Period 2") is English; show the period in the current language.
+        EventType.PERIOD_CHANGE -> FINISHED_PERIOD_NOTE.matchEntire(event.note)
+            ?.let { uiText(R.string.event_finished_period, it.groupValues[1].toInt()) }
+            ?: UiText.Plain(event.note)
+
+        EventType.GAME_END -> uiText(R.string.event_game_ended)
     }
 }
+
+private val FINISHED_PERIOD_NOTE = Regex("""Finished Period (\d+)""")
 
 fun formatTime(timestamp: Long): String {
     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
@@ -72,14 +74,21 @@ fun formatDuration(millis: Long): String {
 }
 
 /** The period counts a new game can be set up with, and how each is labelled. */
-val PERIOD_COUNT_OPTIONS = listOf(2 to "2 halves", 3 to "3 periods", 4 to "4 quarters")
+val PERIOD_COUNT_OPTIONS = listOf(
+    2 to R.string.period_count_halves,
+    3 to R.string.period_count_periods,
+    4 to R.string.period_count_quarters,
+)
 
 /** Short label for the game's current period: "H1" for halves, "Q3" for quarters, "P2" otherwise. */
-fun GameEntity.periodLabel(): String {
-    val prefix = when (periodCount) {
-        2 -> "H"
-        4 -> "Q"
-        else -> "P"
-    }
-    return "$prefix$currentPeriod"
-}
+fun GameEntity.periodLabel(): UiText = periodLabel(currentPeriod)
+
+/** Short label for period [period] of this game. */
+fun GameEntity.periodLabel(period: Int): UiText = uiText(
+    when (periodCount) {
+        2 -> R.string.period_label_half
+        4 -> R.string.period_label_quarter
+        else -> R.string.period_label_other
+    },
+    period,
+)

@@ -33,12 +33,15 @@ fun parseDrills(text: String): List<Drill> {
     return drills.take(3)
 }
 
-/** How to name [this] sport to a model: the display name, spelled out where it's ambiguous. */
+/**
+ * How to name [this] sport to a model, in English like the rest of the prompt: its name, spelled
+ * out where it's ambiguous.
+ */
 private fun Sport.promptName(): String = when (this) {
     Sport.AFL -> "Australian rules football (AFL)"
     Sport.GAELIC_FOOTBALL -> "Gaelic football"
     Sport.TOUCH_FOOTBALL -> "touch football (touch rugby)"
     Sport.FLAG_FOOTBALL -> "flag football"
-    else -> displayName.lowercase()
+    else -> name.lowercase().replace('_', ' ')
 }
 

@@ -2,7 +2,12 @@ package com.lukearnold.coachesassistant.ui
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class ClockEditTest {
 
     @Test
@@ -19,7 +24,7 @@ class ClockEditTest {
         assertEquals(
             "Can't set the clock back past 05:00: something was already recorded then this period, " +
                 "and moving before it would lose playing time.",
-            clockTooEarlyMessage(periodDurationMillis = 600_000L, earliestElapsedMillis = 300_000L),
+            clockTooEarlyMessage(periodDurationMillis = 600_000L, earliestElapsedMillis = 300_000L).english(),
         )
     }
 }
