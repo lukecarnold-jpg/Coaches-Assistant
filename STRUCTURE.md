@@ -1,24 +1,25 @@
 # Project Structure
 
 Coaches Assistant is a single-module Android application built with Kotlin,
-Jetpack Compose, Room, and optional AI-powered basketball training tools. The
-application supports multiple sports while sharing the same roster, game,
-event, export, and persistence infrastructure.
+Jetpack Compose, Room, and optional AI-generated training drills. The
+application supports 16 sports while sharing the same roster, game, event,
+export, and persistence infrastructure.
 
 ## Top-level layout
 
 ```text
 .
 ├── .github/workflows/
-│   └── android-ci.yml                 # Unit tests and lint on master pushes/PRs
+│   └── android-ci.yml                 # Tests, lint, and a release build on pushes/PRs to master
 ├── app/
 │   ├── schemas/                       # Exported Room database schemas
 │   ├── proguard-rules.pro             # Release R8/ProGuard rules
 │   ├── build.gradle.kts               # Android module configuration and dependencies
 │   └── src/
 │       ├── main/                      # Production Android application
-│       ├── test/                      # JVM unit tests
-│       └── androidTest/               # Instrumented Android tests
+│       └── test/                      # Unit and UI tests (JVM, Robolectric)
+├── docs/
+│   └── privacy-policy.md              # Privacy policy draft for the Play listing
 ├── gradle/
 │   ├── libs.versions.toml             # Central dependency and plugin versions
 │   └── wrapper/                       # Gradle wrapper configuration
@@ -28,7 +29,8 @@ event, export, and persistence infrastructure.
 ├── gradlew / gradlew.bat              # Gradle wrapper entry points
 ├── README.md                          # Product overview, setup, and feature documentation
 ├── DEVELOPMENT_HISTORY.md             # Version and implementation history
-└── STRUCTURE.md                       # This guide
+├── STRUCTURE.md                       # This guide
+└── STRUCTURE_DIAGRAM.png              # Visual overview (see STRUCTURE_DIAGRAM_PHILOSOPHY.md)
 ```
 
 Generated build output is written to `build/` and `app/build/`. Local
@@ -54,14 +56,14 @@ app/src/main/java/com/lukearnold/coachesassistant/
 The UI package contains the screens, reusable components, view models, and
 presentation helpers:
 
-- `SportSelectionScreen.kt` - landing screen for choosing Basketball, Netball,
-  Soccer, AFL, Rugby Union, or Rugby League.
+- `SportSelectionScreen.kt` - landing screen for choosing one of the 16 sports.
 - `RosterScreen.kt` - roster management, CSV import, and CSV export.
 - `GameScreen.kt` - top-level live-game screen.
 - `GameControlPanel.kt` - timer, scoring, lineup, and substitution controls.
 - `GameStatsPanel.kt` - game selection, player statistics, and event display.
 - `PlayerActionCard.kt` - per-player live game actions.
 - `GameDialogs.kt` - attendance and event editing dialogs.
+- `Confirmations.kt` - the confirmation dialog and its messages (ending a game, deleting a game or player, changing period, resetting the clock).
 - `GameNotesPanel.kt` - coaching notes and TXT export.
 - `GameFormatting.kt` - event descriptions, period labels, and time formatting.
 - `LiveGameClock.kt` - the Game screen's single live clock ticker, shared by the game clock, player cards, and stats.
@@ -69,13 +71,13 @@ presentation helpers:
 - `PlayingTime.kt` - equal-share playing-time targets, pace labels, and the bench substitution order.
 - `GameHistoryScreen.kt` - finished-game history, viewing, exporting, and deletion, with the season summary on top.
 - `SeasonStats.kt` - season totals (team record and per-player totals) across a sport's finished games.
-- `TrainingScreen.kt` - basketball-only AI training assistant UI.
-- `SettingsScreen.kt` - sport switching, AI provider settings, and data clearing.
+- `TrainingScreen.kt` - the AI training assistant (drills for the current sport and an age group).
+- `SettingsScreen.kt` - sport switching, display, AI provider settings, backup and restore, and data clearing.
 - `Components.kt` - shared Compose components, including game list cards.
 - `ResponsiveLayout.kt` - compact and expanded layout decisions.
 - `Theme.kt` - the app's Material 3 theme (dark mode and Android 12+ dynamic color).
 - `FileExport.kt` - shared file-export launcher.
-- `SportConfig.kt` - sport-specific rules, scoring, periods, positions, and labels.
+- `SportConfig.kt` - sport-specific rules: players on court, scoring, periods, positions, and infractions.
 - `SportPreferences.kt` - remembers the last selected sport.
 - `AppViewModel.kt` - screen state, user actions, and repository coordination.
 - `PlayerGameStats.kt` - the per-game player stats calculator (`calculatePlayerGameStats`).
@@ -89,11 +91,12 @@ presentation helpers:
 The data package defines the multi-sport domain model and local Room database:
 
 - `Sport.kt` - supported sport enum and sport metadata.
-- `Entities.kt` - Room entities for players, games, and game events.
+- `Entities.kt` - Room entities for players, games, game events, and each game's lineup (`game_players`: who's on court or absent).
 - `Dao.kt` - Room data access objects.
-- `AppDatabase.kt` - Room database, version 10, and migrations.
+- `AppDatabase.kt` - Room database, version 13, and migrations.
 - `GameRepository.kt` - repository operations used by the view models.
 - `Backup.kt` / `BackupIo.kt` - the whole-app backup file format, and backing up to / restoring from a file the user picks.
+- `GameCsvIo.kt` - roster CSV import and export, game CSV export, and the coaching notes TXT export.
 - `MvpVotes.kt` - serialization and parsing for MVP vote data.
 - `UserFacingException.kt` - failures that carry a message (a string resource) for the user.
 
@@ -111,10 +114,15 @@ The AI package is used by the Training tab (every sport):
 - `DrillParsing.kt` - prompt construction and response parsing.
 - `DrillTextGenerators.kt` - provider-specific text generation implementations
   for Gemini, Anthropic, OpenAI, and custom OpenAI-compatible services.
+- `AiSettingsStore.kt` - the selected provider, endpoint, and API keys, with
+  keys encrypted by an Android Keystore key.
+- `LocalNetworkAccess.kt` - when the Other provider points at a server on the
+  local network, which needs Android 17's local network permission.
 
-API keys are supplied by the user in Settings and stored using encrypted
-preferences. A Gemini build-time fallback may be supplied through
-`GEMINI_API_KEY` in `local.properties`.
+API keys are supplied by the user in Settings and encrypted on the device
+(`AiSettingsStore`, which also moves over settings from older versions). A
+Gemini build-time fallback may be supplied through `GEMINI_API_KEY` in
+`local.properties`.
 
 ## Android resources
 
@@ -139,7 +147,8 @@ res/
 │   └── themes.xml
 └── xml/
     ├── backup_rules.xml
-    └── data_extraction_rules.xml
+    ├── data_extraction_rules.xml
+    └── network_security_config.xml
 ```
 
 `values/strings.xml` holds all the app's text: screen text, messages, errors,
@@ -155,20 +164,33 @@ codes, the event notes such as "Finished Period 2", which the event log shows
 translated), CSV column headers, and the prompt sent to the AI provider.
 
 `AndroidManifest.xml` declares the launcher activity, application label, icon,
-backup behavior, and required network permission.
+backup behavior, network security config, and permissions: internet access for
+the AI providers, and local network access (Android 17+) for a server on the
+local network.
+
+`network_security_config.xml` allows plain http so the Other provider can
+reach a local server; `DrillTextGenerators.kt` refuses any plain http request
+that isn't to the local network.
 
 ## Tests
 
-JVM unit tests are under `app/src/test/` and cover:
+All tests are under `app/src/test/` and run on the JVM
+(`./gradlew testDebugUnitTest`), with no emulator. Those needing Android use
+Robolectric:
 
-- AI drill parsing
-- event types and descriptions
-- MVP vote serialization
-- player game statistics
-- sport-specific configuration
+- `ai/` - drill prompt and parsing, provider response parsing, endpoint URL
+  checks, local network detection, and the encrypted settings store.
+- `data/` - the repository against an in-memory Room database, database
+  migrations (from the exported schemas), backup format and restore, CSV
+  import and export, event types, game totals, and MVP votes.
+- `ui/` - player and season stats, playing-time targets, sport configuration,
+  confirmation and other message text, the clock editor, keep-screen-on, and
+  Compose UI tests of screens (`ScreenBehaviourTest`).
 
-Instrumented Android tests are under `app/src/androidTest/`. Test and lint
-commands are also run by `.github/workflows/android-ci.yml`.
+There are no instrumented (`androidTest`) tests. CI
+(`.github/workflows/android-ci.yml`) runs the tests, lint, and a release
+build on every push and pull request to master, and builds a signed release
+bundle on pushes when the signing secrets are set (see README, "Publishing").
 
 ## Build and dependency configuration
 
@@ -177,7 +199,10 @@ commands are also run by `.github/workflows/android-ci.yml`.
 - Root `build.gradle.kts` declares shared Android, Kotlin Compose, and KSP
   plugins.
 - `app/build.gradle.kts` configures SDK levels, application ID, build types,
-  Compose, Room/KSP, and runtime dependencies.
+  Compose, Room/KSP, and runtime dependencies. It also derives the version
+  (`versionCode` from the commit count, `versionName` from the latest `vX.Y.Z`
+  tag), signs release builds when an upload key is supplied, and builds the
+  transition build over the old app ID with `-PlegacyAppId`.
 - `gradle/libs.versions.toml` centralizes dependency versions and aliases.
 - Release builds use R8 minification and resource shrinking.
 
