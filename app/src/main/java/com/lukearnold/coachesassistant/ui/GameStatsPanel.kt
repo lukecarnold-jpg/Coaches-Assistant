@@ -7,8 +7,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import com.lukearnold.coachesassistant.data.*
+import java.util.Date
 
 @Composable
 fun GameStatsPanel(
@@ -18,6 +20,8 @@ fun GameStatsPanel(
     /** Each available player's equal share of playing time at a given clock time (see fairShare). */
     fairShareAt: (gameTimeMillis: Long) -> FairShare? = { null },
     events: List<GameEventEntity> = emptyList(),
+    /** The game [events] belong to, for when each happened (period and clock). */
+    eventsGame: GameEntity? = null,
     playerById: Map<Long, PlayerEntity> = emptyMap(),
     opponentName: String = "",
     infraction: Infraction = Infraction.FOUL,
@@ -203,6 +207,9 @@ fun GameStatsPanel(
         }
 
         SectionCard(title = stringResource(R.string.recent_events)) {
+            val periods = remember(events) { eventPeriods(events) }
+            // The phone's time format, including its 12/24-hour setting.
+            val timeOfDay = android.text.format.DateFormat.getTimeFormat(LocalContext.current)
             if (events.isEmpty()) {
                 EmptyMessage(stringResource(R.string.no_events_yet))
             } else {
@@ -226,7 +233,12 @@ fun GameStatsPanel(
                                         fontWeight = FontWeight.Medium
                                     )
                                     Text(
-                                        text = "${formatTime(event.timestamp)} | ${formatDuration(event.gameTimeMillis)}",
+                                        text = stringResource(
+                                            R.string.event_when,
+                                            eventsGame?.periodLabel(periods[event.id] ?: 1)?.asString().orEmpty(),
+                                            clockReading(event.gameTimeMillis, eventsGame?.periodDurationMillis ?: 0L),
+                                            timeOfDay.format(Date(event.timestamp)),
+                                        ).trim(),
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
