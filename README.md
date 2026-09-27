@@ -177,6 +177,17 @@ RELEASE_KEY_PASSWORD=...
 
 To have CI build the signed bundle on every push to `master`, add these repository secrets (Settings → Secrets and variables → Actions): `RELEASE_KEYSTORE_BASE64` (the output of `base64 -i ~/keys/coaches-assistant-upload.jks`), `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, and `RELEASE_KEY_PASSWORD`. The bundle is attached to the workflow run as the `release-bundle` artifact. Without the secrets, that step is skipped.
 
+### Privacy policy and Play listing
+
+Play requires a privacy policy URL. A draft is in [`docs/privacy-policy.md`](docs/privacy-policy.md): fill in the contact email and effective date, then host it at a public URL. This repo is private, so it can't be linked from here; any public page works (a website, Google Sites, a public GitHub Gist, or GitHub Pages from a public repo).
+
+For Play's **Data safety** form, the relevant facts (review them against Google's current definitions before submitting):
+
+- Everything the coach enters (rosters, games, notes) stays on the device; the app has no server, accounts, ads, analytics, or crash reporting.
+- The only network traffic is generating drills: the selected sport and age group, plus the user's own API key, go to the AI provider the user chose. No player or game data is sent.
+- Data is encrypted in transit (all built-in providers use HTTPS; plain HTTP is only allowed to a server on the user's local network).
+- Users can delete their data in the app (Settings → Delete data) or by uninstalling.
+
 ## Testing
 
 CI (`.github/workflows/android-ci.yml`) runs on every push and PR to `master`: the unit and UI tests, lint, and a minified release build.
