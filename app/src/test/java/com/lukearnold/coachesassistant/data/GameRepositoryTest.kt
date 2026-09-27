@@ -574,6 +574,19 @@ class GameRepositoryTest {
     }
 
     @Test
+    fun players_areOrderedByNumber_withNumberlessPlayersLast() = runBlocking {
+        repository.addPlayer(Sport.BASKETBALL, "zoe", null)
+        repository.addPlayer(Sport.BASKETBALL, "Kit", 95)
+        repository.addPlayer(Sport.BASKETBALL, "Amy", null)
+        repository.addPlayer(Sport.BASKETBALL, "Tommy", 2)
+
+        assertEquals(
+            listOf("Tommy", "Kit", "Amy", "zoe"),
+            repository.playersForSport(Sport.BASKETBALL).first().map { it.name },
+        )
+    }
+
+    @Test
     fun addFoul_removesFoulsDownToZeroButNoFurther() = runBlocking {
         val playerIds = addPlayers(2)
         val game = newGame()
