@@ -145,6 +145,7 @@ res/
 │   └── themes.xml
 ├── values-night/
 │   └── themes.xml
+├── resources.properties              # The default strings' language (English)
 └── xml/
     ├── backup_rules.xml
     ├── data_extraction_rules.xml
@@ -157,7 +158,12 @@ read it with `stringResource(R.string...)`; text built in code (snackbar
 messages, confirmations, event descriptions, errors) is a `UiText` (a resource
 and its arguments) that's turned into words only when shown, so it follows a
 change of language. To translate the app, add `values-<lang>/strings.xml` with
-the same names; anything left out falls back to English.
+the same names; anything left out falls back to English. Set its
+`content_language_tag` to the language's tag (e.g. `fr`), so AI drills are
+requested in that language. The build generates the list of the app's
+languages from these folders (`generateLocaleConfig`, with English as the
+default from `res/resources.properties`), so a new translation also appears in
+Android's per-app language setting (Android 13+).
 
 A few things stay in English on purpose: what's stored (players' position
 codes, the event notes such as "Finished Period 2", which the event log shows

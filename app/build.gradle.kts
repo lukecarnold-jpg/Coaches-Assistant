@@ -126,6 +126,13 @@ android {
         buildConfig = true
     }
 
+    androidResources {
+        // Lists the app's languages (from the values-<lang> folders, plus English from
+        // res/resources.properties) so Android offers a per-app language choice in Settings once
+        // there's a translation.
+        generateLocaleConfig = true
+    }
+
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
