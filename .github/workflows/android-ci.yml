@@ -11,6 +11,10 @@ jobs:
     # Pinned rather than ubuntu-latest (which moves to Ubuntu 26 on 2026-10-19), so the build
     # environment only changes when this line does.
     runs-on: ubuntu-24.04
+    env:
+      # Whether the release-signing secrets are configured, without exposing the secret itself to
+      # every step (secrets can't be used in step `if:` conditions directly).
+      HAS_RELEASE_KEYSTORE: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' }}
 
     steps:
       - name: Checkout
@@ -39,6 +43,29 @@ jobs:
       # catches missing keep rules (and other release-only breakage) before a real release does.
       - name: Build release APK
         run: ./gradlew assembleRelease
+
+      # A signed bundle for Google Play, on pushes to master once the signing secrets are set
+      # (repo Settings -> Secrets and variables -> Actions): RELEASE_KEYSTORE_BASE64 (the upload
+      # keystore, base64-encoded), RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD.
+      # See README, "Publishing".
+      - name: Build signed release bundle
+        if: github.event_name == 'push' && env.HAS_RELEASE_KEYSTORE == 'true'
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          RELEASE_STORE_FILE="$RUNNER_TEMP/release.jks" ./gradlew bundleRelease
+          rm "$RUNNER_TEMP/release.jks"
+
+      - name: Upload signed release bundle
+        if: github.event_name == 'push' && env.HAS_RELEASE_KEYSTORE == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-bundle
+          path: app/build/outputs/bundle/release/*.aab
 
       - name: Upload test and lint reports
         if: always()
