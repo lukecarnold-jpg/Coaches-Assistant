@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -56,10 +58,10 @@ fun GameControlPanel(
 
     if (showEndGameConfirm) {
         ConfirmDialog(
-            title = "End this game?",
+            title = stringResource(R.string.end_this_game_question),
             message = endGameConfirmMessage(selectedGame),
-            confirmLabel = "End game",
-            dismissLabel = "Keep playing",
+            confirmLabel = stringResource(R.string.end_game),
+            dismissLabel = stringResource(R.string.keep_playing),
             onConfirm = {
                 showEndGameConfirm = false
                 onEndGame()
@@ -69,9 +71,9 @@ fun GameControlPanel(
     }
     if (showNextPeriodConfirm) {
         ConfirmDialog(
-            title = "Next period?",
+            title = stringResource(R.string.next_period_question),
             message = nextPeriodConfirmMessage(selectedGame),
-            confirmLabel = "Next period",
+            confirmLabel = stringResource(R.string.next_period),
             onConfirm = {
                 showNextPeriodConfirm = false
                 onAdvancePeriod()
@@ -80,7 +82,7 @@ fun GameControlPanel(
         )
     }
 
-    SectionCard(title = "Game clock & score") {
+    SectionCard(title = stringResource(R.string.game_clock_score)) {
         Text(
             text = "Period: ${selectedGame.periodLabel()}",
             style = MaterialTheme.typography.titleMedium,
@@ -102,7 +104,7 @@ fun GameControlPanel(
             ) {
                 if (selectedGame.currentPeriod < selectedGame.periodCount) {
                     OutlinedButton(onClick = { showNextPeriodConfirm = true }, modifier = Modifier.weight(1f)) {
-                        Text("Next Period")
+                        Text(stringResource(R.string.next_period_title))
                     }
                 }
                 Button(
@@ -110,7 +112,7 @@ fun GameControlPanel(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("End Game")
+                    Text(stringResource(R.string.end_game_title))
                 }
             }
 
@@ -118,7 +120,7 @@ fun GameControlPanel(
                 onClick = onManageAttendance,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Manage Attendance (Flag Absent)")
+                Text(stringResource(R.string.manage_attendance_flag_absent))
             }
         } else {
             Card(
@@ -126,7 +128,7 @@ fun GameControlPanel(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
             ) {
                 Text(
-                    "GAME FINISHED",
+                    stringResource(R.string.game_finished),
                     modifier = Modifier.padding(layout.smallGap).align(Alignment.CenterHorizontally),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
@@ -142,7 +144,7 @@ fun GameControlPanel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Us", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.us), style = MaterialTheme.typography.labelMedium)
                 Text(
                     text = selectedGame.teamScore.toString(),
                     style = MaterialTheme.typography.displayMedium,
@@ -159,7 +161,7 @@ fun GameControlPanel(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = selectedGame.opponent.ifBlank { "Them" },
+                    text = selectedGame.opponent.ifBlank { stringResource(R.string.them) },
                     style = MaterialTheme.typography.labelMedium
                 )
                 Text(
@@ -190,14 +192,14 @@ fun GameControlPanel(
                 onClick = onExportGame,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Export game CSV")
+                Text(stringResource(R.string.export_game_csv))
             }
 
             OutlinedButton(
                 onClick = { exportRosterLauncher.launch("players.csv") },
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Export roster CSV")
+                Text(stringResource(R.string.export_roster_csv))
             }
         }
     }
@@ -208,7 +210,7 @@ fun GameControlPanel(
         EmptyMessage("You need at least $requiredOnCourt players in the roster before you can set the lineup.")
     } else {
         if (onCourtIds.size < requiredOnCourt) {
-            SectionCard(title = "Set starting lineup") {
+            SectionCard(title = stringResource(R.string.set_starting_lineup)) {
                 Text("Select exactly $requiredOnCourt players.")
                 Spacer(Modifier.height(layout.smallGap))
 
@@ -242,11 +244,11 @@ fun GameControlPanel(
                     onClick = { onSetLineup(startingLineupSelection.toList()) },
                     enabled = startingLineupSelection.size == requiredOnCourt
                 ) {
-                    Text("Save starting lineup")
+                    Text(stringResource(R.string.save_starting_lineup))
                 }
             }
         } else {
-            SectionCard(title = "Players on court") {
+            SectionCard(title = stringResource(R.string.players_on_court)) {
                 Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                     onCourtStats.forEach { stat ->
                         PlayerActionCard(
@@ -264,8 +266,8 @@ fun GameControlPanel(
             }
 
             if (!selectedGame.isFinished) {
-                SectionCard(title = "Substitution") {
-                    Text("Select players to come out and players to come in.")
+                SectionCard(title = stringResource(R.string.substitution)) {
+                    Text(stringResource(R.string.select_players_to_come_out_and_players_to_come_i))
                     if (pendingIn.size != pendingOut.size) {
                         Text(
                             "Selection mismatch: ${pendingOut.size} out, ${pendingIn.size} in",
@@ -307,7 +309,7 @@ fun GameControlPanel(
                     Spacer(Modifier.height(layout.tinyGap))
 
                     if (benchStats.isEmpty()) {
-                        EmptyMessage("No bench players available.")
+                        EmptyMessage(stringResource(R.string.no_bench_players_available))
                     } else {
                         Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
                             benchSubOrder(benchStats).forEach { stat ->
@@ -358,9 +360,9 @@ fun GameClock(
 
     if (showResetConfirm) {
         ConfirmDialog(
-            title = "Reset the clock?",
+            title = stringResource(R.string.reset_the_clock_question),
             message = resetClockConfirmMessage(game),
-            confirmLabel = "Reset",
+            confirmLabel = stringResource(R.string.reset),
             onConfirm = {
                 showResetConfirm = false
                 onResetTimer()
@@ -386,11 +388,12 @@ fun GameClock(
             if (!game.isFinished) {
                 Row {
                     IconButton(onClick = { isEditing = !isEditing }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Edit time")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.edit_time))
                     }
+                    val resetClockLabel = stringResource(R.string.reset_clock)
                     IconButton(
                         onClick = { showResetConfirm = true },
-                        modifier = Modifier.semantics { contentDescription = "Reset clock" },
+                        modifier = Modifier.semantics { contentDescription = resetClockLabel },
                     ) {
                         Text("🔄", style = MaterialTheme.typography.titleLarge, modifier = Modifier.clearAndSetSemantics {})
                     }
@@ -411,7 +414,7 @@ fun GameClock(
                             contentDescription = null
                         )
                         Spacer(Modifier.width(layout.smallGap))
-                        Text(if (timerLastStartedAt != null) "Stop" else "Start")
+                        Text(if (timerLastStartedAt != null) stringResource(R.string.stop) else stringResource(R.string.start))
                     }
                 }
             }
@@ -432,13 +435,13 @@ fun GameClock(
                 OutlinedTextField(
                     value = minutesText,
                     onValueChange = { minutesText = it.filter { c -> c.isDigit() } },
-                    label = { Text("Min left") },
+                    label = { Text(stringResource(R.string.min_left)) },
                     modifier = Modifier.weight(1f)
                 )
                 OutlinedTextField(
                     value = secondsText,
                     onValueChange = { secondsText = it.filter { c -> c.isDigit() } },
-                    label = { Text("Sec left") },
+                    label = { Text(stringResource(R.string.sec_left)) },
                     modifier = Modifier.weight(1f)
                 )
                 Button(
@@ -449,7 +452,7 @@ fun GameClock(
                         isEditing = false
                     }
                 ) {
-                    Text("Set")
+                    Text(stringResource(R.string.set))
                 }
             }
         }

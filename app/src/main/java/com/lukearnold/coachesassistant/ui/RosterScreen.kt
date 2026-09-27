@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -62,9 +64,9 @@ fun RosterScreen(
 
     pendingRemoval?.let { player ->
         ConfirmDialog(
-            title = "Remove this player?",
+            title = stringResource(R.string.remove_this_player_question),
             message = removePlayerConfirmMessage(player),
-            confirmLabel = "Remove",
+            confirmLabel = stringResource(R.string.remove),
             onConfirm = {
                 pendingRemoval = null
                 onDeletePlayer(player.id)
@@ -95,7 +97,7 @@ fun RosterScreen(
         verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
     ) {
         Text(
-            text = "Team roster",
+            text = stringResource(R.string.team_roster),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
@@ -253,7 +255,7 @@ fun RosterForm(
         OutlinedTextField(
             value = name,
             onValueChange = onNameChange,
-            label = { Text("Player name") },
+            label = { Text(stringResource(R.string.player_name)) },
             modifier = Modifier.fillMaxWidth(),
             isError = showError && name.isBlank(),
         )
@@ -261,7 +263,7 @@ fun RosterForm(
         OutlinedTextField(
             value = jerseyNumber,
             onValueChange = onJerseyNumberChange,
-            label = { Text("Jersey number (optional)") },
+            label = { Text(stringResource(R.string.jersey_number_optional)) },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -282,7 +284,7 @@ fun RosterForm(
                 )
             ) {
                 Text(
-                    text = "Player Name is required.",
+                    text = stringResource(R.string.player_name_is_required),
                     modifier = Modifier.padding(layout.cardPadding),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
@@ -298,7 +300,7 @@ fun RosterForm(
                 onClick = onAddPlayer,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Add player")
+                Text(stringResource(R.string.add_player))
             }
         }
 
@@ -310,14 +312,14 @@ fun RosterForm(
                 onClick = onExportPlayers,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Export roster CSV")
+                Text(stringResource(R.string.export_roster_csv))
             }
 
             OutlinedButton(
                 onClick = onImportPlayers,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Import roster CSV")
+                Text(stringResource(R.string.import_roster_csv))
             }
         }
     }
@@ -340,7 +342,7 @@ fun RosterList(
     onDeletePlayer: (Long) -> Unit,
 ) {
     if (players.isEmpty()) {
-        EmptyMessage("No players yet. Add your roster first.")
+        EmptyMessage(stringResource(R.string.no_players_yet_add_your_roster_first))
     } else {
         players.forEach { player ->
             if (editingPlayer?.id == player.id) {
@@ -356,13 +358,13 @@ fun RosterList(
                         OutlinedTextField(
                             value = editName,
                             onValueChange = onEditNameChange,
-                            label = { Text("Player name") },
+                            label = { Text(stringResource(R.string.player_name)) },
                             modifier = Modifier.fillMaxWidth()
                         )
                         OutlinedTextField(
                             value = editJerseyNumber,
                             onValueChange = onEditJerseyNumberChange,
-                            label = { Text("Jersey number (optional)") },
+                            label = { Text(stringResource(R.string.jersey_number_optional)) },
                             modifier = Modifier.fillMaxWidth()
                         )
                         if (squadPositions.isNotEmpty()) {
@@ -380,13 +382,13 @@ fun RosterList(
                                 onClick = { onSaveUpdate(player) },
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Save")
+                                Text(stringResource(R.string.save))
                             }
                             TextButton(
                                 onClick = onCancelEdit,
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Cancel")
+                                Text(stringResource(R.string.cancel))
                             }
                         }
                     }
@@ -419,13 +421,13 @@ fun RosterList(
                             TextButton(
                                 onClick = { onStartEdit(player) }
                             ) {
-                                Text("Edit")
+                                Text(stringResource(R.string.edit))
                             }
                             TextButton(
                                 onClick = { onDeletePlayer(player.id) },
                                 colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                             ) {
-                                Text("Remove")
+                                Text(stringResource(R.string.remove))
                             }
                         }
                     }
@@ -444,7 +446,7 @@ fun PositionSelector(
     val layout = LocalResponsiveLayout.current
 
     Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap)) {
-        Text("Position (optional)", style = MaterialTheme.typography.labelMedium)
+        Text(stringResource(R.string.position_optional), style = MaterialTheme.typography.labelMedium)
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
             verticalArrangement = Arrangement.spacedBy(layout.smallGap),

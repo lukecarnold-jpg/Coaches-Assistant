@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,9 +46,9 @@ fun GameStatsPanel(
 
     pendingDelete?.let { game ->
         ConfirmDialog(
-            title = "Delete this game?",
+            title = stringResource(R.string.delete_this_game_question),
             message = deleteGameConfirmMessage(game),
-            confirmLabel = "Delete",
+            confirmLabel = stringResource(R.string.delete),
             onConfirm = {
                 pendingDelete = null
                 onDeleteGame(game.id)
@@ -56,11 +58,11 @@ fun GameStatsPanel(
     }
 
     if (!onlyStats) {
-        SectionCard(title = "Create a game") {
+        SectionCard(title = stringResource(R.string.create_a_game)) {
             OutlinedTextField(
                 value = gameTitle,
                 onValueChange = onGameTitleChange,
-                label = { Text("Game title") },
+                label = { Text(stringResource(R.string.game_title)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -69,13 +71,13 @@ fun GameStatsPanel(
             OutlinedTextField(
                 value = opponent,
                 onValueChange = onOpponentChange,
-                label = { Text("Opponent") },
+                label = { Text(stringResource(R.string.opponent)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(Modifier.height(layout.smallGap))
 
-            Text("Periods", style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(R.string.periods), style = MaterialTheme.typography.labelMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 PERIOD_COUNT_OPTIONS.forEach { (count, label) ->
                     FilterChip(
@@ -91,20 +93,20 @@ fun GameStatsPanel(
             OutlinedTextField(
                 value = periodMins,
                 onValueChange = { onPeriodMinsChange(it.filter { c -> c.isDigit() }) },
-                label = { Text("Period duration (minutes)") },
+                label = { Text(stringResource(R.string.period_duration_minutes)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(Modifier.height(layout.smallGap))
 
             Button(onClick = onCreateGame) {
-                Text("Create game")
+                Text(stringResource(R.string.create_game))
             }
         }
 
-        SectionCard(title = "Games") {
+        SectionCard(title = stringResource(R.string.games)) {
             if (games.isEmpty()) {
-                EmptyMessage("No games yet.")
+                EmptyMessage(stringResource(R.string.no_games_yet))
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                     games.forEach { game ->
@@ -125,16 +127,16 @@ fun GameStatsPanel(
                             },
                             actions = {
                                 TextButton(onClick = { onSelectGame(game.id) }) {
-                                    Text(if (selected) "Selected" else "Select")
+                                    Text(if (selected) stringResource(R.string.game_selected) else stringResource(R.string.select))
                                 }
                                 TextButton(onClick = { onExportGame(game.id) }) {
-                                    Text("Export")
+                                    Text(stringResource(R.string.export))
                                 }
                                 TextButton(
                                     onClick = { pendingDelete = game },
                                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                                 ) {
-                                    Text("Delete")
+                                    Text(stringResource(R.string.delete))
                                 }
                             },
                         )
@@ -145,9 +147,9 @@ fun GameStatsPanel(
     }
 
     if (!onlyManagement) {
-        SectionCard(title = "Game stats") {
+        SectionCard(title = stringResource(R.string.game_stats)) {
             if (stats.isEmpty()) {
-                EmptyMessage("No stats yet.")
+                EmptyMessage(stringResource(R.string.no_stats_yet))
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                     stats.forEach { stat ->
@@ -163,7 +165,7 @@ fun GameStatsPanel(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    StatusBadge(if (stat.onCourt) "ON COURT" else "BENCH")
+                                    StatusBadge(if (stat.onCourt) stringResource(R.string.on_court) else stringResource(R.string.bench))
                                     val now = gameTimeMillis()
                                     Text(
                                         text = formatDuration(
@@ -197,9 +199,9 @@ fun GameStatsPanel(
             }
         }
 
-        SectionCard(title = "Recent events") {
+        SectionCard(title = stringResource(R.string.recent_events)) {
             if (events.isEmpty()) {
-                EmptyMessage("No events yet.")
+                EmptyMessage(stringResource(R.string.no_events_yet))
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                     events.forEach { event ->

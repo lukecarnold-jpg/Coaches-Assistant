@@ -140,6 +140,13 @@ res/
     └── data_extraction_rules.xml
 ```
 
+`values/strings.xml` holds the app name and all static screen text (labels,
+buttons, headings, dialog titles, accessibility labels), read with
+`stringResource(R.string...)`. To translate the app, add `values-<lang>/strings.xml`
+with the same names. Text built in code (snackbar and confirmation messages,
+errors) and sport data (sport names, scoring labels, positions) are still in
+Kotlin and would need moving too.
+
 `AndroidManifest.xml` declares the launcher activity, application label, icon,
 backup behavior, and required network permission.
 

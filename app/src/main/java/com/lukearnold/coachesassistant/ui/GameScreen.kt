@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -142,7 +144,7 @@ fun GameScreen(
                         }
                     )
                 } else {
-                    EmptyMessage("Select or create a game to start tracking.")
+                    EmptyMessage(stringResource(R.string.select_or_create_a_game_to_start_tracking))
                 }
             }
 
@@ -200,7 +202,7 @@ fun GameScreen(
             verticalArrangement = Arrangement.spacedBy(layout.sectionGap)
         ) {
             Text(
-                text = "Game tracker",
+                text = stringResource(R.string.game_tracker),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )

@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.R
+import androidx.compose.ui.res.stringResource
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -29,13 +31,13 @@ fun TrainingScreen(
     val layout = LocalResponsiveLayout.current
     val uiState by trainingViewModel.uiState.collectAsState()
     val ageGroups = listOf(
-        "Ages 5-6",
-        "Under 8's",
-        "Under 10's",
-        "Under 12's",
-        "Under 14's",
-        "Under 16's",
-        "Under 18's",
+        stringResource(R.string.ages_5_6),
+        stringResource(R.string.under_8_s),
+        stringResource(R.string.under_10_s),
+        stringResource(R.string.under_12_s),
+        stringResource(R.string.under_14_s),
+        stringResource(R.string.under_16_s),
+        stringResource(R.string.under_18_s),
     )
     
     var expanded by remember { mutableStateOf(value = false) }
@@ -63,7 +65,7 @@ fun TrainingScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Training drills",
+                    text = stringResource(R.string.training_drills),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                 )
@@ -73,7 +75,7 @@ fun TrainingScreen(
                     shape = RoundedCornerShape(layout.cardCornerRadius),
                 ) {
                     Text(
-                        "COMING SOON",
+                        stringResource(R.string.coming_soon),
                         modifier = Modifier.padding(horizontal = layout.smallGap, vertical = layout.tinyGap),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
@@ -91,9 +93,9 @@ fun TrainingScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
                 ) {
-                    SectionCard(title = "Coming Soon") {
+                    SectionCard(title = stringResource(R.string.coming_soon_title)) {
                         Text(
-                            "We are currently developing interactive training modules, video demonstrations, and progress tracking for all age groups. Stay tuned!",
+                            stringResource(R.string.we_are_currently_developing_interactive_training),
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
@@ -135,7 +137,7 @@ fun TrainingScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Training drills",
+                    text = stringResource(R.string.training_drills),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                 )
@@ -145,7 +147,7 @@ fun TrainingScreen(
                     shape = RoundedCornerShape(layout.cardCornerRadius),
                 ) {
                     Text(
-                        "COMING SOON",
+                        stringResource(R.string.coming_soon),
                         modifier = Modifier.padding(horizontal = layout.smallGap, vertical = layout.tinyGap),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
@@ -167,9 +169,9 @@ fun TrainingScreen(
                 isLoading = uiState is TrainingUiState.Loading,
             )
 
-            SectionCard(title = "Coming Soon") {
+            SectionCard(title = stringResource(R.string.coming_soon_title)) {
                 Text(
-                    "We are currently developing interactive training modules, video demonstrations, and progress tracking for all age groups. Stay tuned!",
+                    stringResource(R.string.we_are_currently_developing_interactive_training),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -192,7 +194,7 @@ fun TrainingSelectionPanel(
 ) {
     val layout = LocalResponsiveLayout.current
 
-    SectionCard(title = "Select age group") {
+    SectionCard(title = stringResource(R.string.select_age_group)) {
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = onExpandedChange,
@@ -202,7 +204,7 @@ fun TrainingSelectionPanel(
                 value = selectedAgeGroup,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Age group") },
+                label = { Text(stringResource(R.string.age_group)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                 modifier = Modifier
@@ -231,7 +233,7 @@ fun TrainingSelectionPanel(
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading,
         ) {
-            Text("Generate AI Drills")
+            Text(stringResource(R.string.generate_ai_drills))
         }
     }
 }
@@ -290,7 +292,7 @@ fun DrillCard(drill: Drill) {
             )
             
             Text(
-                text = "Description",
+                text = stringResource(R.string.description),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -302,7 +304,7 @@ fun DrillCard(drill: Drill) {
             HorizontalDivider(modifier = Modifier.padding(vertical = layout.tinyGap))
             
             Text(
-                text = "Teaching Points",
+                text = stringResource(R.string.teaching_points),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold,
             )
