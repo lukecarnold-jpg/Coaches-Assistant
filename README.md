@@ -142,9 +142,18 @@ $BT/apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android --ks-ke
 adb install -r release.apk
 ```
 
-`versionCode` is the number of commits in the checked-out history (`git rev-list --count HEAD`), so it goes up with every commit on `master`, whose history is linear because PRs are rebase-merged. Build from a full clone: a shallow clone gets a too-low code (with a warning), and a copy with no `.git` falls back to `1`. To set it explicitly, pass `-PversionCode=N`, e.g. `./gradlew assembleRelease -PversionCode=150`. `versionName` is still set by hand in `app/build.gradle.kts`.
+`versionCode` is the number of commits in the checked-out history (`git rev-list --count HEAD`), so it goes up with every commit on `master`, whose history is linear because PRs are rebase-merged. Build from a full clone: a shallow clone gets a too-low code (with a warning), and a copy with no `.git` falls back to `1`. To set it explicitly, pass `-PversionCode=N`, e.g. `./gradlew assembleRelease -PversionCode=150`. `versionName` comes from the latest `vX.Y.Z` git tag (see Publishing → Releasing).
 
 ## Publishing
+
+### Releasing
+
+`versionName` comes from git tags: tag the commit you release as `vX.Y.Z` and builds of it are named `X.Y.Z`; builds of later commits are named e.g. `X.Y.Z-dev.3` (three commits past the release), so they can't be mistaken for it. With no tag yet it's `1.0`; `-PversionName=...` overrides it.
+
+```sh
+git tag v1.0.0 && git push origin v1.0.0
+./gradlew bundleRelease   # from the tagged commit
+```
 
 ### Signing
 

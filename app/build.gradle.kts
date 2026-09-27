@@ -32,6 +32,20 @@ val appVersionCode: Int = providers.gradleProperty("versionCode").orNull?.toInt(
     }
 
 /**
+ * versionName comes from the latest release tag (vX.Y.Z, e.g. "v1.2.0" -> "1.2.0"). A build of a
+ * later commit gets how far past it it is ("1.2.0-dev.5"), so it can't be mistaken for the release.
+ * Pass -PversionName=... to set it explicitly; with no release tag yet it's "1.0".
+ */
+val appVersionName: String = providers.gradleProperty("versionName").orNull
+    ?: gitOutput("describe", "--tags", "--match", "v[0-9]*", "--long")
+        ?.let { Regex("""^v(.+)-(\d+)-g[0-9a-f]+$""").find(it) }
+        ?.let { match ->
+            val (release, commitsSince) = match.destructured
+            if (commitsSince == "0") release else "$release-dev.$commitsSince"
+        }
+    ?: "1.0"
+
+/**
  * Release signing, for uploading to Google Play. The keystore and its passwords are never
  * committed: each value is read from a Gradle property (e.g. in ~/.gradle/gradle.properties), an
  * environment variable (as CI sets from its secrets), or the gitignored local.properties. With none
@@ -73,7 +87,7 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = appVersionCode
-        versionName = "1.0"
+        versionName = appVersionName
 
         val apiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
         buildConfigField("String", "GEMINI_API_KEY", "\"$apiKey\"")
