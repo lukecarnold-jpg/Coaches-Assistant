@@ -315,6 +315,8 @@
     <string name="event_finished_period">Finished Period %1$d</string>
     <string name="event_game_ended">Game Ended</string>
     <string name="event_type">Type: %1$s</string>
+    <!-- When an event happened: its period, the game clock then, and the time of day, e.g. "Q2 07:00 · 3:41 PM". -->
+    <string name="event_when">%1$s %2$s · %3$s</string>
     <string name="points">Points</string>
 
     <!-- Game screens, with values filled in -->

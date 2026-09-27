@@ -2,7 +2,7 @@ package com.lukearnold.coachesassistant.ui
 
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.*
-import java.text.SimpleDateFormat
+import java.text.DateFormat
 import java.util.*
 
 /**
@@ -61,10 +61,31 @@ fun eventDescription(
 
 private val FINISHED_PERIOD_NOTE = Regex("""Finished Period (\d+)""")
 
-fun formatTime(timestamp: Long): String {
-    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-    return formatter.format(Date(timestamp))
+/** A date and time, e.g. when a game finished, in the language's usual format. */
+fun formatTime(timestamp: Long): String =
+    DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.getDefault()).format(Date(timestamp))
+
+/**
+ * Which period each of [events] happened in, by event id: one more than the periods finished
+ * before it. A period's own end-of-period event counts as in that period.
+ */
+fun eventPeriods(events: List<GameEventEntity>): Map<Long, Int> {
+    var period = 1
+    return events.sortedWith(compareBy({ it.timestamp }, { it.id })).associate { event ->
+        (event.id to period).also { if (event.type == EventType.PERIOD_CHANGE.name) period++ }
+    }
 }
+
+/**
+ * How the game clock read [elapsedMillis] into a period: the time left, since the clock counts
+ * down, or the time played if periods have no set length.
+ */
+fun clockReading(elapsedMillis: Long, periodDurationMillis: Long): String =
+    if (periodDurationMillis > 0) {
+        formatDuration(periodDurationMillis - capToPeriod(elapsedMillis, periodDurationMillis))
+    } else {
+        formatDuration(maxOf(0L, elapsedMillis))
+    }
 
 fun formatDuration(millis: Long): String {
     val totalSeconds = millis / 1000
