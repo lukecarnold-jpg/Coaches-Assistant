@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -569,6 +570,20 @@ class GameRepositoryTest {
 
         assertEquals(null, repository.substitute(game.id, playerInId = playerIds[0], playerOutId = playerIds[5]))
         assertEquals(null, repository.addOpponentScore(game.id, -1)) // would go below zero
+        assertEquals(null, repository.addFoul(game.id, playerIds[0], adjustment = -1)) // likewise
+    }
+
+    @Test
+    fun addFoul_removesFoulsDownToZeroButNoFurther() = runBlocking {
+        val playerIds = addPlayers(2)
+        val game = newGame()
+        repository.addFoul(game.id, playerIds[0])
+        repository.addFoul(game.id, playerIds[1])
+
+        assertNotNull(repository.addFoul(game.id, playerIds[0], adjustment = -1))
+        assertEquals(null, repository.addFoul(game.id, playerIds[0], adjustment = -1))
+        // The other player's foul doesn't count toward this one's.
+        assertEquals(3, database.gameEventDao().getByGame(game.id).size)
     }
 
     @Test

@@ -158,7 +158,8 @@ fun calculatePlayerGameStats(
             PlayerGameStat(
                 player = player,
                 points = pointsByPlayer[player.id] ?: 0,
-                fouls = foulsByPlayer[player.id] ?: 0,
+                // Never below zero, even if undoing a foul leaves more removals than additions.
+                fouls = (foulsByPlayer[player.id] ?: 0).coerceAtLeast(0),
                 mvpVotes = mvpVotesMap[player.id] ?: 0,
                 timesSubbedOff = timesSubbedOffByPlayer[player.id] ?: 0,
                 onCourt = isOnCourt,
