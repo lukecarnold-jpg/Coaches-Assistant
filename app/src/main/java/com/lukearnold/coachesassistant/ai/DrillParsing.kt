@@ -1,12 +1,25 @@
 package com.lukearnold.coachesassistant.ai
 
 import com.lukearnold.coachesassistant.data.Sport
+import java.util.Locale
 
-/** Same instruction works across providers, since parsing keys off the literal labels below. */
-fun buildDrillPrompt(sport: Sport, ageGroup: String): String =
-    "Generate exactly 3 age-appropriate ${sport.promptName()} drills for $ageGroup players. " +
+/**
+ * Same instruction works across providers, since parsing keys off the literal labels below. The
+ * prompt is always English; for any other [languageTag] (the app's language, e.g. "fr") it asks
+ * for the drills in that language, with the labels still in English so they can be parsed.
+ */
+fun buildDrillPrompt(sport: Sport, ageGroup: String, languageTag: String = "en"): String {
+    val prompt = "Generate exactly 3 age-appropriate ${sport.promptName()} drills for $ageGroup players. " +
         "Format each drill with a 'TITLE:', 'DESCRIPTION:', and 'TEACHING POINTS:' on new lines. " +
         "Keep descriptions concise and appropriate for the age group."
+    val language = Locale.forLanguageTag(languageTag).getDisplayLanguage(Locale.ENGLISH)
+    return if (language.isBlank() || language == "English") {
+        prompt
+    } else {
+        "$prompt Write the titles, descriptions, and teaching points in $language, but keep the labels " +
+            "'TITLE:', 'DESCRIPTION:', and 'TEACHING POINTS:' in English exactly as written."
+    }
+}
 
 fun parseDrills(text: String): List<Drill> {
     val drills = mutableListOf<Drill>()

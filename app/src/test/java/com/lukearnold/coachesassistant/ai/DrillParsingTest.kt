@@ -2,6 +2,7 @@ package com.lukearnold.coachesassistant.ai
 
 import com.lukearnold.coachesassistant.data.Sport
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -79,5 +80,31 @@ class DrillParsingTest {
         assertTrue(buildDrillPrompt(Sport.AFL, "Under 12's").contains("Australian rules football (AFL) drills"))
         assertTrue(buildDrillPrompt(Sport.TOUCH_FOOTBALL, "Ages 5-6").contains("touch football (touch rugby) drills"))
     }
-}
 
+    @Test
+    fun buildDrillPrompt_inEnglish_saysNothingAboutLanguage() {
+        assertEquals(buildDrillPrompt(Sport.BASKETBALL, "Under 10's"), buildDrillPrompt(Sport.BASKETBALL, "Under 10's", "en"))
+        assertEquals(buildDrillPrompt(Sport.BASKETBALL, "Under 10's"), buildDrillPrompt(Sport.BASKETBALL, "Under 10's", "en-AU"))
+        assertFalse(buildDrillPrompt(Sport.BASKETBALL, "Under 10's").contains("Write the"))
+    }
+
+    @Test
+    fun buildDrillPrompt_inAnotherLanguage_asksForItButKeepsTheLabelsEnglish() {
+        val prompt = buildDrillPrompt(Sport.SOCCER, "Moins de 10 ans", "fr")
+
+        assertTrue(prompt.contains("Write the titles, descriptions, and teaching points in French"))
+        assertTrue(prompt.contains("keep the labels 'TITLE:', 'DESCRIPTION:', and 'TEACHING POINTS:' in English"))
+        assertTrue(buildDrillPrompt(Sport.SOCCER, "Sub-10", "pt-BR").contains("in Portuguese"))
+    }
+
+    @Test
+    fun parseDrills_readsDrillsWrittenInAnotherLanguage() {
+        val text = """
+            TITLE: Passes en triangle
+            DESCRIPTION: Trois joueurs se passent le ballon.
+            TEACHING POINTS: Regarder le partenaire avant de passer.
+        """.trimIndent()
+
+        assertEquals(listOf(Drill("Passes en triangle", "Trois joueurs se passent le ballon.", "Regarder le partenaire avant de passer.")), parseDrills(text))
+    }
+}

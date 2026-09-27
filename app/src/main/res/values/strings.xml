@@ -1,5 +1,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Coaches Assistant</string>
+    <!-- The language of this set of strings, as a language tag ("fr", "pt-BR"). Generated drills
+         are requested in this language, so a translation must set it to its own. -->
+    <string name="content_language_tag">en</string>
     <!-- Launcher label for the transition build installed over the old app (see app/build.gradle.kts).
          Referenced only through the appLabel manifest placeholder, which lint can't see. -->
     <string name="app_name_legacy" tools:ignore="UnusedResources">Old Coaches Assistant</string>
