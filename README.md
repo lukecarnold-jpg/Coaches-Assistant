@@ -144,6 +144,30 @@ adb install -r release.apk
 
 `versionCode` is the number of commits in the checked-out history (`git rev-list --count HEAD`), so it goes up with every commit on `master`, whose history is linear because PRs are rebase-merged. Build from a full clone: a shallow clone gets a too-low code (with a warning), and a copy with no `.git` falls back to `1`. To set it explicitly, pass `-PversionCode=N`, e.g. `./gradlew assembleRelease -PversionCode=150`. `versionName` is still set by hand in `app/build.gradle.kts`.
 
+## Publishing
+
+### Signing
+
+Google Play needs release builds signed with your **upload key**. Create one once and keep it, and its passwords, somewhere safe and out of this repo (with Play App Signing, Google holds the actual app-signing key and a lost upload key can be reset):
+
+```sh
+keytool -genkeypair -keystore ~/keys/coaches-assistant-upload.jks -alias upload \
+  -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Then give the build four values, from any one of: `~/.gradle/gradle.properties` (outside the repo), environment variables, or the gitignored `local.properties`:
+
+```properties
+RELEASE_STORE_FILE=/Users/you/keys/coaches-assistant-upload.jks
+RELEASE_STORE_PASSWORD=...
+RELEASE_KEY_ALIAS=upload
+RELEASE_KEY_PASSWORD=...
+```
+
+`./gradlew bundleRelease` then produces a signed `app/build/outputs/bundle/release/app-release.aab` to upload to Play. With none of the values set, release builds stay unsigned; with only some set, the build stops and says which are missing.
+
+To have CI build the signed bundle on every push to `master`, add these repository secrets (Settings → Secrets and variables → Actions): `RELEASE_KEYSTORE_BASE64` (the output of `base64 -i ~/keys/coaches-assistant-upload.jks`), `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, and `RELEASE_KEY_PASSWORD`. The bundle is attached to the workflow run as the `release-bundle` artifact. Without the secrets, that step is skipped.
+
 ## Testing
 
 CI (`.github/workflows/android-ci.yml`) runs on every push and PR to `master`: the unit and UI tests, lint, and a minified release build.

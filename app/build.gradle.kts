@@ -32,6 +32,28 @@ val appVersionCode: Int = providers.gradleProperty("versionCode").orNull?.toInt(
     }
 
 /**
+ * Release signing, for uploading to Google Play. The keystore and its passwords are never
+ * committed: each value is read from a Gradle property (e.g. in ~/.gradle/gradle.properties), an
+ * environment variable (as CI sets from its secrets), or the gitignored local.properties. With none
+ * set, release builds stay unsigned, as before; with only some set, the build fails rather than
+ * silently producing an unsigned release. See README, "Publishing".
+ */
+fun releaseSigningValue(name: String): String? =
+    providers.gradleProperty(name).orNull
+        ?: providers.environmentVariable(name).orNull
+        ?: localProperties.getProperty(name)
+
+val releaseSigningNames = listOf("RELEASE_STORE_FILE", "RELEASE_STORE_PASSWORD", "RELEASE_KEY_ALIAS", "RELEASE_KEY_PASSWORD")
+val releaseSigning: Map<String, String>? = releaseSigningNames.associateWith { releaseSigningValue(it) }.let { values ->
+    val missing = values.filterValues { it.isNullOrBlank() }.keys
+    when {
+        missing.size == values.size -> null
+        missing.isNotEmpty() -> throw GradleException("Release signing is partly configured; also set: ${missing.joinToString()}")
+        else -> values.mapValues { it.value!! }
+    }
+}
+
+/**
  * The app used to be installed as com.example.basketballrotation. Android can't update that install
  * to the new ID, and apps can't read each other's data, so moving to the new app goes through a
  * transition build: `./gradlew installDebug -PlegacyAppId` installs this code *over* the old app
@@ -57,8 +79,20 @@ android {
         buildConfigField("String", "GEMINI_API_KEY", "\"$apiKey\"")
     }
 
+    signingConfigs {
+        releaseSigning?.let { values ->
+            create("release") {
+                storeFile = rootProject.file(values.getValue("RELEASE_STORE_FILE"))
+                storePassword = values.getValue("RELEASE_STORE_PASSWORD")
+                keyAlias = values.getValue("RELEASE_KEY_ALIAS")
+                keyPassword = values.getValue("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
