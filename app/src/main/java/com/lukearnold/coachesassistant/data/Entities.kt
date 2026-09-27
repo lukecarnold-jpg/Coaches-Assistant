@@ -16,6 +16,19 @@ enum class EventType {
     PERIOD_CHANGE,
     GAME_END;
 
+    /** Whether the event log can correct this event's points: scores and infraction adjustments. */
+    val hasEditablePoints: Boolean
+        get() = this == SCORE || this == OPPONENT_SCORE || this == FOUL
+
+    /**
+     * Whether this event can be removed (or undone) on its own. A substitution is removed by
+     * swapping its players back. Lineup, period, and game-end events change more than the event
+     * itself (the whole lineup, the period, the clock), and playing time is counted from them, so
+     * they stay.
+     */
+    val isRemovable: Boolean
+        get() = this == SUBSTITUTION || this == SCORE || this == OPPONENT_SCORE || this == FOUL || this == MVP_VOTE
+
     companion object {
         fun fromRaw(raw: String): EventType = entries.firstOrNull { it.name == raw } ?: SCORE
     }

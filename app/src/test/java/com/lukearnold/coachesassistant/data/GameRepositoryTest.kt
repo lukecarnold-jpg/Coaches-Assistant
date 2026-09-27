@@ -177,6 +177,25 @@ class GameRepositoryTest {
     }
 
     @Test
+    fun updateEvent_leavesLineupEventsAndTeamAdjustmentMarkersAlone() = runBlocking {
+        val playerIds = addPlayers(5)
+        val game = newGame()
+        repository.selectStartingLineup(game.id, playerIds, maxSize = 5)
+        repository.addTeamScore(game.id, playerId = null, points = 2)
+        val events = database.gameEventDao().getByGame(game.id)
+        val lineup = events.single { it.type == EventType.START_LINEUP.name }
+        val adjustment = events.single { it.type == EventType.SCORE.name }
+
+        repository.updateEvent(lineup.copy(note = "oops"))
+        repository.updateEvent(adjustment.copy(points = 3, note = "oops"))
+
+        assertEquals(lineup, database.gameEventDao().getById(lineup.id))
+        val updatedAdjustment = database.gameEventDao().getById(adjustment.id)!!
+        assertEquals(3, updatedAdjustment.points) // the points still change
+        assertEquals(TEAM_ADJUSTMENT_NOTE, updatedAdjustment.note)
+    }
+
+    @Test
     fun updateEvent_adjustsTeamScoreByTheDifference() = runBlocking {
         val playerIds = addPlayers(1)
         val game = newGame()
@@ -190,14 +209,14 @@ class GameRepositoryTest {
     }
 
     @Test
-    fun deleteEvent_reversesItsScoreContribution() = runBlocking {
+    fun removingAnEvent_reversesItsScoreContribution() = runBlocking {
         val playerIds = addPlayers(1)
         val game = newGame()
         repository.addTeamScore(game.id, playerIds[0], 2)
         repository.addTeamScore(game.id, playerIds[0], 3)
         val events = database.gameEventDao().getByGame(game.id).filter { it.type == EventType.SCORE.name }
 
-        repository.deleteEvent(events.first())
+        assertTrue(repository.undoEvents(listOf(events.first().id)))
 
         val updated = database.gameDao().getById(game.id)!!
         assertEquals(3, updated.teamScore)
@@ -338,14 +357,14 @@ class GameRepositoryTest {
     }
 
     @Test
-    fun deleteEvent_forAnMvpVote_removesItFromTheTally() = runBlocking {
+    fun removingAnMvpVote_removesItFromTheTally() = runBlocking {
         val playerIds = addPlayers(1)
         val game = newGame()
         repository.addMvpVote(game.id, playerIds[0])
         repository.addMvpVote(game.id, playerIds[0])
         assertEquals(mapOf(playerIds[0] to 2), MvpVotes.parse(database.gameDao().getById(game.id)!!.mvpVotesJson))
 
-        repository.deleteEvent(database.gameEventDao().getByGame(game.id).first())
+        assertTrue(repository.undoEvents(listOf(database.gameEventDao().getByGame(game.id).first().id)))
 
         assertEquals(mapOf(playerIds[0] to 1), MvpVotes.parse(database.gameDao().getById(game.id)!!.mvpVotesJson))
     }
@@ -557,7 +576,7 @@ class GameRepositoryTest {
         val playerIds = addPlayers(1)
         val game = newGame()
         val foul = repository.addFoul(game.id, playerIds[0])!!
-        repository.deleteEvent(database.gameEventDao().getById(foul)!!)
+        database.gameEventDao().deleteById(foul)
 
         assertFalse(repository.undoEvents(listOf(foul)))
     }

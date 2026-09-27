@@ -257,10 +257,14 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         }
     }
 
+    /**
+     * Removes [event] from the log the same way Undo would (see GameRepository.undoEvents): a
+     * substitution swaps its players back, and it's refused if they've moved since.
+     */
     fun deleteEvent(event: GameEventEntity) {
         viewModelScope.launch {
-            repository.deleteEvent(event)
-            _messages.emit(UiMessage(uiText(R.string.msg_event_removed)))
+            val removed = repository.undoEvents(listOf(event.id))
+            _messages.emit(UiMessage(uiText(if (removed) R.string.msg_event_removed else R.string.msg_event_cant_remove)))
         }
     }
 
