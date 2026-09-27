@@ -57,7 +57,7 @@ fun GameScreen(
     var periodCount by rememberSaveable(sport) { mutableIntStateOf(sportConfig.defaultPeriodCount) }
     var periodMins by rememberSaveable(sport) { mutableStateOf(sportConfig.defaultPeriodMinutes.toString()) }
     var showAttendanceDialog by remember { mutableStateOf(false) }
-    var showNotesDialog by remember { mutableStateOf(false) }
+    var showNotesDialog by rememberSaveable { mutableStateOf(false) }
 
     val exportGame = rememberIdFileExportLauncher(mimeType = "text/csv", onExport = onExportGame)
     val exportNotes = rememberIdFileExportLauncher(mimeType = "text/plain", onExport = onExportNotes)
@@ -333,10 +333,11 @@ fun GameScreen(
             notes = selectedGame.notes,
             onDismiss = { showNotesDialog = false },
             onSave = { newNotes ->
-                onUpdateNotes(newNotes)
+                if (newNotes != selectedGame.notes) onUpdateNotes(newNotes)
                 showNotesDialog = false
             },
-            onExport = {
+            onExport = { newNotes ->
+                if (newNotes != selectedGame.notes) onUpdateNotes(newNotes)
                 exportNotes(selectedGame.id, "notes_${selectedGame.id}.txt")
             }
         )
