@@ -29,8 +29,7 @@ export, and persistence infrastructure.
 ├── gradlew / gradlew.bat              # Gradle wrapper entry points
 ├── README.md                          # Product overview, setup, and feature documentation
 ├── DEVELOPMENT_HISTORY.md             # Version and implementation history
-├── STRUCTURE.md                       # This guide
-└── STRUCTURE_DIAGRAM.png              # Visual overview (see STRUCTURE_DIAGRAM_PHILOSOPHY.md)
+└── STRUCTURE.md                       # This guide
 ```
 
 Generated build output is written to `build/` and `app/build/`. Local
@@ -214,13 +213,37 @@ bundle on pushes when the signing secrets are set (see README, "Publishing").
 
 ## Main runtime flow
 
-```text
-MainActivity
-  -> sport selection or SportApp
-  -> AppViewModel / TrainingViewModel
-  -> GameRepository
-  -> Room DAOs
-  -> AppDatabase
+```mermaid
+flowchart LR
+    MainActivity["MainActivity<br/>sport selection · SportApp tabs"]
+
+    subgraph ui["ui/"]
+        Screens["Roster · Game · Training<br/>History · Settings screens"]
+        AppVM["AppViewModel<br/>(one per sport)"]
+        TrainingVM["TrainingViewModel"]
+    end
+
+    subgraph data["data/"]
+        Repo["GameRepository"]
+        Files["BackupIo · GameCsvIo<br/>backup, CSV, notes files"]
+        Room[("Room: basketball_rotation.db v13<br/>players · games · game_events · game_players")]
+    end
+
+    subgraph ai["ai/"]
+        Settings["AiSettingsStore<br/>Keystore-encrypted keys"]
+        Generators["DrillTextGenerators<br/>Gemini · Anthropic · OpenAI · Other"]
+    end
+
+    MainActivity --> Screens
+    Screens --> AppVM
+    Screens --> TrainingVM
+    AppVM --> Repo
+    AppVM --> Files
+    Repo --> Room
+    Files --> Room
+    TrainingVM --> Settings
+    TrainingVM --> Generators
+    Generators --> Providers(["AI provider API<br/>or a local server"])
 ```
 
 The selected sport is persisted independently from roster and game data.
