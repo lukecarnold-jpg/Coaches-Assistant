@@ -7,7 +7,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -63,30 +62,12 @@ fun TrainingScreen(
 
     if (isExpanded) {
         Column(modifier = modifier.padding(layout.screenPadding)) {
-            Row(
+            Text(
+                text = stringResource(R.string.training_drills),
                 modifier = Modifier.fillMaxWidth().padding(bottom = layout.sectionGap),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.training_drills),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                )
-
-                Surface(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(layout.cardCornerRadius),
-                ) {
-                    Text(
-                        stringResource(R.string.coming_soon),
-                        modifier = Modifier.padding(horizontal = layout.smallGap, vertical = layout.tinyGap),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    )
-                }
-            }
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(layout.sectionGap),
@@ -97,13 +78,6 @@ fun TrainingScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
                 ) {
-                    SectionCard(title = stringResource(R.string.coming_soon_title)) {
-                        Text(
-                            stringResource(R.string.we_are_currently_developing_interactive_training),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
-
                     TrainingSelectionPanel(
                         selectedAgeGroup = selectedAgeGroup,
                         expanded = expanded,
@@ -135,30 +109,11 @@ fun TrainingScreen(
                 .padding(layout.screenPadding),
             verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.training_drills),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                
-                Surface(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(layout.cardCornerRadius),
-                ) {
-                    Text(
-                        stringResource(R.string.coming_soon),
-                        modifier = Modifier.padding(horizontal = layout.smallGap, vertical = layout.tinyGap),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    )
-                }
-            }
+            Text(
+                text = stringResource(R.string.training_drills),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
 
             TrainingSelectionPanel(
                 selectedAgeGroup = selectedAgeGroup,
@@ -172,13 +127,6 @@ fun TrainingScreen(
                 onGenerateClick = generate,
                 isLoading = uiState is TrainingUiState.Loading,
             )
-
-            SectionCard(title = stringResource(R.string.coming_soon_title)) {
-                Text(
-                    stringResource(R.string.we_are_currently_developing_interactive_training),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
 
             TrainingResultsPanel(uiState = uiState, sport = sport)
         }

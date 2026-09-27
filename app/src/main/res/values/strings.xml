@@ -106,9 +106,6 @@
     <string name="under_16_s">Under 16\'s</string>
     <string name="under_18_s">Under 18\'s</string>
     <string name="training_drills">Training drills</string>
-    <string name="coming_soon">COMING SOON</string>
-    <string name="coming_soon_title">Coming Soon</string>
-    <string name="we_are_currently_developing_interactive_training">We are currently developing interactive training modules, video demonstrations, and progress tracking for all age groups. Stay tuned!</string>
     <string name="select_age_group">Select age group</string>
     <string name="age_group">Age group</string>
     <string name="generate_ai_drills">Generate AI Drills</string>
