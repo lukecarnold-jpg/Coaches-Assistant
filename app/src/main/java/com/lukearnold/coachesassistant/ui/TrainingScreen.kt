@@ -45,18 +45,19 @@ fun TrainingScreen(
     // Kept as the resource, so the choice survives a change of language; the prompt gets its text.
     var selectedAgeGroup by rememberSaveable { mutableIntStateOf(ageGroups.first()) }
     val selectedAgeGroupText = stringResource(selectedAgeGroup)
+    val languageTag = stringResource(R.string.content_language_tag)
 
     // A local AI server needs local network access on Android 17+; ask for it first if needed.
     val localNetworkPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
-        if (granted) trainingViewModel.generateDrills(sport, selectedAgeGroupText) else trainingViewModel.reportLocalNetworkDenied()
+        if (granted) trainingViewModel.generateDrills(sport, selectedAgeGroupText, languageTag) else trainingViewModel.reportLocalNetworkDenied()
     }
     val generate = {
         if (trainingViewModel.localNetworkPermissionNeeded()) {
             localNetworkPermissionLauncher.launch(ACCESS_LOCAL_NETWORK)
         } else {
-            trainingViewModel.generateDrills(sport, selectedAgeGroupText)
+            trainingViewModel.generateDrills(sport, selectedAgeGroupText, languageTag)
         }
     }
 

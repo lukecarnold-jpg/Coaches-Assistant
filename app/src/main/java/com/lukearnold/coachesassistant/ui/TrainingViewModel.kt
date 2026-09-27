@@ -90,7 +90,8 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         _uiState.value = TrainingUiState.Error(uiText(R.string.local_network_denied))
     }
 
-    fun generateDrills(sport: Sport, ageGroup: String) {
+    /** Asks for drills in [languageTag], the language the app is showing (see buildDrillPrompt). */
+    fun generateDrills(sport: Sport, ageGroup: String, languageTag: String) {
         val provider = _selectedProvider.value
         val apiKey = effectiveApiKey(provider)
         // The Other provider may be a local server that doesn't need a key.
@@ -107,7 +108,7 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _uiState.value = TrainingUiState.Loading
             try {
-                val text = textGeneratorFor(provider, customEndpoint).generateText(buildDrillPrompt(sport, ageGroup), apiKey)
+                val text = textGeneratorFor(provider, customEndpoint).generateText(buildDrillPrompt(sport, ageGroup, languageTag), apiKey)
                 val drills = parseDrills(text)
                 _uiState.value = if (drills.isEmpty()) {
                     TrainingUiState.Error(uiText(R.string.drills_parse_failed))
