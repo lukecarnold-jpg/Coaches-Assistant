@@ -9,16 +9,17 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlayerDao {
-    @Query("SELECT * FROM players ORDER BY jerseyNumber, name COLLATE NOCASE")
+    // By number, then name; players without a number come last (SQLite would otherwise put them first).
+    @Query("SELECT * FROM players ORDER BY jerseyNumber IS NULL, jerseyNumber, name COLLATE NOCASE")
     fun observeAll(): Flow<List<PlayerEntity>>
 
-    @Query("SELECT * FROM players ORDER BY jerseyNumber, name COLLATE NOCASE")
+    @Query("SELECT * FROM players ORDER BY jerseyNumber IS NULL, jerseyNumber, name COLLATE NOCASE")
     suspend fun getAll(): List<PlayerEntity>
 
-    @Query("SELECT * FROM players WHERE sport = :sport ORDER BY jerseyNumber, name COLLATE NOCASE")
+    @Query("SELECT * FROM players WHERE sport = :sport ORDER BY jerseyNumber IS NULL, jerseyNumber, name COLLATE NOCASE")
     fun observeAllBySport(sport: String): Flow<List<PlayerEntity>>
 
-    @Query("SELECT * FROM players WHERE sport = :sport ORDER BY jerseyNumber, name COLLATE NOCASE")
+    @Query("SELECT * FROM players WHERE sport = :sport ORDER BY jerseyNumber IS NULL, jerseyNumber, name COLLATE NOCASE")
     suspend fun getAllBySport(sport: String): List<PlayerEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
