@@ -372,10 +372,12 @@ fun GameClock(
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
+        // The controls move below the time when they don't fit beside it (e.g. with large text),
+        // rather than squeezing the Start button until its label breaks.
+        FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            itemVerticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = formatDuration(remainingTime),
@@ -414,7 +416,7 @@ fun GameClock(
                             contentDescription = null
                         )
                         Spacer(Modifier.width(layout.smallGap))
-                        Text(if (timerLastStartedAt != null) stringResource(R.string.stop) else stringResource(R.string.start))
+                        Text(if (timerLastStartedAt != null) stringResource(R.string.stop) else stringResource(R.string.start), maxLines = 1)
                     }
                 }
             }
