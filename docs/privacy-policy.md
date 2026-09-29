@@ -8,7 +8,7 @@ Coaches Assistant is an app for sports coaches to manage team rosters, track gam
 
 - Your rosters, games, and notes stay on your device.
 - The app has no accounts, no advertising, no analytics, and no crash reporting.
-- The only information sent over the internet is when you generate training drills: the sport and age group you pick go to the AI provider you chose, using your own API key.
+- The only information sent over the internet is when you generate training drills: the sport and age group you pick (and the app's language, if it isn't English) go to the AI provider you chose, using your own API key.
 
 ## Information stored on your device
 
@@ -24,7 +24,8 @@ This information is not sent to us or to anyone else. We do not operate a server
 
 When you tap **Generate AI Drills**, the app sends a request to the AI provider you selected in Settings (Google Gemini, Anthropic Claude, OpenAI ChatGPT, or another OpenAI-compatible service you configure). The request contains:
 
-- the **sport** and the **age group** you selected, in a short instruction asking for drills; and
+- the **sport** and the **age group** you selected, in a short instruction asking for drills;
+- the **language** the app is shown in, if it isn't English, so the drills come back in that language; and
 - **your API key** for that provider, which it needs to accept the request.
 
 No player names, game data, notes, or other information from the app is included. The provider's own privacy policy governs how it handles these requests. If you configure a server on your local network (for example, one you run yourself), the request goes only to that server.
