@@ -30,6 +30,23 @@ class PlayerGameStatsTest {
     )
 
     @Test
+    fun joiningAndLeavingWithoutASwap_countOnlyTheTimeOnCourt() {
+        // Alex starts alone; Sam arrives late at 2:00; Alex goes off injured at 5:00; clock at 8:00.
+        val events = listOf(
+            GameEventEntity(gameId = 1, timestamp = 0, type = EventType.START_LINEUP.name, note = "1", gameTimeMillis = 0),
+            GameEventEntity(gameId = 1, timestamp = 1, type = EventType.SUBSTITUTION.name, playerId = 2, gameTimeMillis = 120_000),
+            GameEventEntity(gameId = 1, timestamp = 2, type = EventType.SUBSTITUTION.name, relatedPlayerId = 1, gameTimeMillis = 300_000),
+        )
+
+        val stats = calculatePlayerGameStats(listOf(player1, player2), game(runningTimeMillis = 480_000L), GameLineup(onCourtIds = setOf(2)), events)
+            .associateBy { it.player.id }
+
+        assertEquals(300_000L, stats.getValue(1).totalTimeMillis) // 0:00-5:00
+        assertEquals(360_000L, stats.getValue(2).totalTimeMillis) // 2:00-8:00, still on
+        assertEquals(1, stats.getValue(1).timesSubbedOff)
+    }
+
+    @Test
     fun fouls_neverShowBelowZero() {
         // e.g. a foul added, removed, then the addition undone, leaving only the removal.
         val removal = GameEventEntity(gameId = 1, timestamp = 1, type = EventType.FOUL.name, playerId = 1, points = -1)

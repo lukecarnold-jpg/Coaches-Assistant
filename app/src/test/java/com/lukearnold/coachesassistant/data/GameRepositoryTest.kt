@@ -606,6 +606,42 @@ class GameRepositoryTest {
     }
 
     @Test
+    fun substitute_canJoinAShortCourtWithoutASwap_butNotAFullOne() = runBlocking {
+        val playerIds = addPlayers(6)
+        val game = newGame(onCourtSize = 5)
+        repository.selectStartingLineup(game.id, playerIds.take(4), maxSize = 5) // one short
+
+        assertNotNull(repository.substitute(game.id, playerInId = playerIds[4], playerOutId = null))
+        assertEquals(playerIds.take(5).toSet(), repository.getLineup(game.id).onCourtIds)
+        // Now full: another join needs someone to come off.
+        assertEquals(null, repository.substitute(game.id, playerInId = playerIds[5], playerOutId = null))
+    }
+
+    @Test
+    fun substitute_canTakeAPlayerOffWithoutAReplacement_andUndoPutsThemBack() = runBlocking {
+        val playerIds = addPlayers(5)
+        val game = newGame(onCourtSize = 5)
+        repository.selectStartingLineup(game.id, playerIds, maxSize = 5)
+
+        val off = repository.substitute(game.id, playerInId = null, playerOutId = playerIds[0])!!
+        assertEquals(playerIds.drop(1).toSet(), repository.getLineup(game.id).onCourtIds)
+
+        assertTrue(repository.undoEvents(listOf(off)))
+        assertEquals(playerIds.toSet(), repository.getLineup(game.id).onCourtIds)
+    }
+
+    @Test
+    fun substitute_refusesPlayersWhoArentHere_orAChangeOfNobody() = runBlocking {
+        val playerIds = addPlayers(5)
+        val game = newGame(onCourtSize = 5)
+        repository.selectStartingLineup(game.id, playerIds.take(3), maxSize = 5)
+        repository.updateAbsentPlayers(game.id, listOf(playerIds[4]))
+
+        assertEquals(null, repository.substitute(game.id, playerInId = playerIds[4], playerOutId = null))
+        assertEquals(null, repository.substitute(game.id, playerInId = null, playerOutId = null))
+    }
+
+    @Test
     fun addFoul_removesFoulsDownToZeroButNoFurther() = runBlocking {
         val playerIds = addPlayers(2)
         val game = newGame()

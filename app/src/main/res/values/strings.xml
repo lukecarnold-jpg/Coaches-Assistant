@@ -69,7 +69,7 @@
     <string name="save_starting_lineup">Save starting lineup</string>
     <string name="players_on_court">Players on court</string>
     <string name="substitution">Substitution</string>
-    <string name="select_players_to_come_out_and_players_to_come_i">Select players to come out and players to come in.</string>
+    <string name="select_players_to_come_out_and_players_to_come_i">Select players to come out and players to come in. A player can also come on without a swap, or go off without a replacement.</string>
     <string name="no_bench_players_available">No bench players available.</string>
     <string name="reset_the_clock_question">Reset the clock?</string>
     <string name="reset">Reset</string>
@@ -306,6 +306,8 @@
     <!-- Event log -->
     <string name="event_starting_lineup">Starting lineup: %1$s</string>
     <string name="event_substitution">%1$s in for %2$s</string>
+    <string name="event_comes_on">%1$s comes on</string>
+    <string name="event_goes_off">%1$s goes off</string>
     <string name="event_score">%1$s %2$s</string>
     <string name="team_adjustment">Team adjustment</string>
     <string name="removed_player">Removed player</string>
@@ -326,7 +328,6 @@
         <item quantity="one">Select exactly %d player.</item>
         <item quantity="other">Select exactly %d players.</item>
     </plurals>
-    <string name="selection_mismatch" tools:ignore="PluralsCandidate">Selection mismatch: %1$d out, %2$d in</string>
     <string name="players_coming_out">Players coming out (%1$d)</string>
     <string name="players_coming_in">Players coming in (%1$d) · furthest behind first</string>
     <plurals name="confirm_rotation">
@@ -528,4 +529,22 @@
     <string name="minimum_on_court_reset">Reset to the rules (%1$d)</string>
     <string name="fewer">Fewer</string>
     <string name="more">More</string>
+
+    <!-- Substitutions with unequal numbers coming on and going off -->
+    <plurals name="rotation_joining">
+        <item quantity="one">%d joins the court without a swap.</item>
+        <item quantity="other">%d join the court without a swap.</item>
+    </plurals>
+    <plurals name="rotation_leaving">
+        <item quantity="one">%d goes off without a replacement.</item>
+        <item quantity="other">%d go off without a replacement.</item>
+    </plurals>
+    <plurals name="rotation_court_full">
+        <item quantity="one">There\'s room on court for only %d more.</item>
+        <item quantity="other">There\'s room on court for only %d more.</item>
+    </plurals>
+    <string name="rotation_court_already_full">The court is full: pick someone to come off for each player coming on.</string>
+    <string name="rotation_court_empty">At least one player has to stay on court.</string>
+    <!-- Appended to rotation_leaving, e.g. "That leaves 4 on court, below the minimum of 5." -->
+    <string name="rotation_below_minimum">That leaves %1$d on court, below the minimum of %2$d.</string>
 </resources>

@@ -31,7 +31,8 @@ fun GameScreen(
     onSetLineup: (List<Long>) -> Unit,
     /** The fewest players the team can take the field with (see SportConfig.minimumOnCourt). */
     minimumOnCourt: Int,
-    onSubstitute: (pairs: List<Pair<Long, Long>>) -> Unit,
+    /** Players coming on and going off; see AppViewModel.substitute for how they pair up. */
+    onSubstitute: (playersIn: List<Long>, playersOut: List<Long>) -> Unit,
     onAddPlayerScore: (playerId: Long, points: Int) -> Unit,
     onAdjustTeamScore: (points: Int) -> Unit,
     onAddOpponentScore: (points: Int) -> Unit,
@@ -145,13 +146,9 @@ fun GameScreen(
                             if (pendingIn.contains(id)) pendingIn.remove(id) else pendingIn.add(id)
                         },
                         onSubstitute = {
-                            val inIds = pendingIn.toList()
-                            val outIds = pendingOut.toList()
-                            if (inIds.size == outIds.size && inIds.isNotEmpty()) {
-                                onSubstitute(inIds.zip(outIds))
-                                pendingIn.clear()
-                                pendingOut.clear()
-                            }
+                            onSubstitute(pendingIn.toList(), pendingOut.toList())
+                            pendingIn.clear()
+                            pendingOut.clear()
                         }
                     )
                 } else {
@@ -290,13 +287,9 @@ fun GameScreen(
                         if (pendingIn.contains(id)) pendingIn.remove(id) else pendingIn.add(id)
                     },
                 ) {
-                    val inIds = pendingIn.toList()
-                    val outIds = pendingOut.toList()
-                    if (inIds.size == outIds.size && inIds.isNotEmpty()) {
-                        onSubstitute(inIds.zip(outIds))
-                        pendingIn.clear()
-                        pendingOut.clear()
-                    }
+                    onSubstitute(pendingIn.toList(), pendingOut.toList())
+                    pendingIn.clear()
+                    pendingOut.clear()
                 }
 
                 GameStatsPanel(

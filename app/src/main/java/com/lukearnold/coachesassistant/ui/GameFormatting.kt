@@ -29,7 +29,15 @@ fun eventDescription(
             uiText(R.string.event_starting_lineup, names)
         }
 
-        EventType.SUBSTITUTION -> uiText(R.string.event_substitution, playerLabel(event.playerId), playerLabel(event.relatedPlayerId))
+        EventType.SUBSTITUTION -> when {
+            event.playerId != null && event.relatedPlayerId != null ->
+                uiText(R.string.event_substitution, playerLabel(event.playerId), playerLabel(event.relatedPlayerId))
+            // One side missing: joined without a swap, went off without a replacement, or the
+            // other player has since been removed from the roster.
+            event.playerId != null -> uiText(R.string.event_comes_on, playerLabel(event.playerId))
+            event.relatedPlayerId != null -> uiText(R.string.event_goes_off, playerLabel(event.relatedPlayerId))
+            else -> uiText(R.string.event_substitution, "", "")
+        }
 
         EventType.SCORE -> {
             val label = when {

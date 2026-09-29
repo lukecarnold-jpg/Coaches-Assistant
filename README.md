@@ -32,6 +32,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Starting lineup selection from the players who are here (not marked absent), sized to the sport's on-court count; when everyone here plays (a full side with no subs, or fewer), they start ticked
   - Short-handed play: with fewer players here than a full side, the team can still take the field down to the sport's minimum (e.g. 7 for soccer under IFAB Law 3, 13 for Gaelic football, 5 for basketball), and the app says so when there aren't enough. Each sport's minimum defaults to its rules and can be changed in Settings for competitions that differ
   - Live substitutions and multi-sub workflows, with numbered badges showing which bench player is paired with which outgoing court player
+  - Uneven changes: a player can come on without a swap (e.g. arriving late to a short-handed side, up to a full side) or go off without a replacement (e.g. injured), with a note when that leaves the side below its minimum; these show in the event log as "comes on" / "goes off" and can be undone like any substitution
   - Countdown timer with start, stop, reset, and manual adjustment; it stops itself when the period runs out, and game time is never counted past the end of a period
   - Per-player on-court shift timer that starts from 0 the moment a player is subbed on and freezes when they're subbed off, tracked against the game clock rather than wall-clock time
   - Game stats cards lead with an ON COURT/BENCH status badge and a live time (current shift length while on court, elapsed bench time since their last sub-off while benched)
@@ -204,6 +205,7 @@ The automated tests cover:
 Last checked by hand on the Pixel 10 Pro emulator (API 37) in September 2026:
 
 - A live game: clock auto-stop and keep-screen-on, playing-time labels, scoring and substitution undo, End Game and other confirmations
+- Substitutions: joining a short court without a swap, going off without a replacement (below the minimum), and undoing it
 - Fielding: the lineup offering only players who are here, pre-ticking them when all play, too few to field a team, and a short-handed lineup after lowering the minimum
 - Game Day mode: granting Modes access, silencing (priority-only Do Not Disturb), staying on after the app is closed, and turning off from its button, End Game, or deleting the game
 - Backup and restore, including onto a wiped app; the transition build migrating the old app's data and restoring it into the new app
