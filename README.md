@@ -29,7 +29,8 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Game management
   - Create, select, and delete games
   - Flexible periods (2 halves, 3 periods, or 4 quarters) with configurable durations, defaulted per sport (e.g. 3 periods for Ice Hockey)
-  - Starting lineup selection, sized to the sport's on-court count
+  - Starting lineup selection from the players who are here (not marked absent), sized to the sport's on-court count; when everyone here plays (a full side with no subs, or fewer), they start ticked
+  - Short-handed play: with fewer players here than a full side, the team can still take the field down to the sport's minimum (e.g. 7 for soccer under IFAB Law 3, 13 for Gaelic football, 5 for basketball), and the app says so when there aren't enough. Each sport's minimum defaults to its rules and can be changed in Settings for competitions that differ
   - Live substitutions and multi-sub workflows, with numbered badges showing which bench player is paired with which outgoing court player
   - Countdown timer with start, stop, reset, and manual adjustment; it stops itself when the period runs out, and game time is never counted past the end of a period
   - Per-player on-court shift timer that starts from 0 the moment a player is subbed on and freezes when they're subbed off, tracked against the game clock rather than wall-clock time
@@ -60,6 +61,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, OpenAI ChatGPT, or a custom OpenAI-compatible endpoint
 - Settings tab
   - "Switch sport" returns to the sport landing screen
+  - "Minimum players to field a team" for the current sport, from 1 to a full side, defaulting to the sport's rules
   - "Keep screen on while the clock runs" (on by default) stops the phone locking mid-game; the normal screen timeout returns as soon as the clock stops
   - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device with an AES-256-GCM key held in the Android Keystore (`ai/AiSettingsStore.kt`)
   - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
@@ -202,6 +204,7 @@ The automated tests cover:
 Last checked by hand on the Pixel 10 Pro emulator (API 37) in September 2026:
 
 - A live game: clock auto-stop and keep-screen-on, playing-time labels, scoring and substitution undo, End Game and other confirmations
+- Fielding: the lineup offering only players who are here, pre-ticking them when all play, too few to field a team, and a short-handed lineup after lowering the minimum
 - Game Day mode: granting Modes access, silencing (priority-only Do Not Disturb), staying on after the app is closed, and turning off from its button, End Game, or deleting the game
 - Backup and restore, including onto a wiped app; the transition build migrating the old app's data and restoring it into the new app
 - The Other provider against a local Ollama server over plain http, including the Android 17 local network permission

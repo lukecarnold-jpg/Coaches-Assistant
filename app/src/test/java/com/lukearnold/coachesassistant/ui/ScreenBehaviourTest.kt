@@ -227,4 +227,32 @@ class ScreenBehaviourTest {
         compose.onNodeWithText("Export TXT", substring = true).performClick()
         assertEquals(listOf("Zone in Q4"), exported)
     }
+
+    @Test
+    fun startingLineup_offersOnlyPlayersWhoAreHere_andCanPlayShortHanded() {
+        val here = listOf(tommy, PlayerEntity(id = 8, name = "Kit", jerseyNumber = 95), PlayerEntity(id = 9, name = "Beau", jerseyNumber = 93))
+        val saved = mutableListOf<List<Long>>()
+        val selection = androidx.compose.runtime.mutableStateListOf<Long>()
+        compose.setContent {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                // Four needed for a full side, three here, and three is enough (the minimum).
+                StartingLineupPicker(here, onCourtSize = 4, minimumOnCourt = 3, selection = selection, onSetLineup = { saved += it })
+            }
+        }
+
+        compose.onNodeWithText("short of a full 4", substring = true).assertExists()
+        compose.onNodeWithText("#95 Kit").assertIsOn() // with no choice to make, everyone here starts ticked
+        compose.onNodeWithText("Save starting lineup").performScrollTo().performClick()
+        assertEquals(listOf(listOf(7L, 8L, 9L)), saved)
+    }
+
+    @Test
+    fun startingLineup_belowTheMinimum_saysThereArentEnough() {
+        compose.setContent {
+            StartingLineupPicker(listOf(tommy), onCourtSize = 5, minimumOnCourt = 5, selection = mutableListOf(), onSetLineup = {})
+        }
+
+        compose.onNodeWithText("Only 1 player is here, and you need at least 5", substring = true).assertExists()
+        compose.onNodeWithText("Save starting lineup").assertDoesNotExist()
+    }
 }

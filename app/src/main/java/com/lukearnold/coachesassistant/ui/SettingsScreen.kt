@@ -2,6 +2,10 @@ package com.lukearnold.coachesassistant.ui
 
 import com.lukearnold.coachesassistant.R
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import android.net.Uri
@@ -75,6 +79,9 @@ fun SettingsScreen(
     onRestore: (Uri) -> Unit = {},
     keepScreenOnWhileClockRuns: Boolean = true,
     onKeepScreenOnWhileClockRunsChange: (Boolean) -> Unit = {},
+    /** The current sport's minimum players to field a team (see SportConfig.minimumOnCourt). */
+    minimumOnCourt: Int? = null,
+    onMinimumOnCourtChange: (Int) -> Unit = {},
 ) {
     val layout = LocalResponsiveLayout.current
     var showConfirm by remember { mutableStateOf(value = false) }
@@ -127,6 +134,10 @@ fun SettingsScreen(
                 Spacer(Modifier.height(layout.smallGap))
                 Button(onClick = onSwitchSport) {
                     Text(stringResource(R.string.switch_sport))
+                }
+                if (minimumOnCourt != null) {
+                    Spacer(Modifier.height(layout.sectionGap))
+                    MinimumOnCourtSetting(currentSport, minimumOnCourt, onMinimumOnCourtChange)
                 }
             }
         }
@@ -444,3 +455,37 @@ private fun DataDeletionOption(
         Checkbox(checked = checked, onCheckedChange = null)
     }
 }
+
+/**
+ * The fewest players [sport]'s team can take the field with: a − / + stepper from 1 to a full
+ * side, starting at the sport's rules, with a way back to them.
+ */
+@Composable
+private fun MinimumOnCourtSetting(sport: Sport, minimum: Int, onChange: (Int) -> Unit) {
+    val config = sport.config
+    Text(stringResource(R.string.minimum_on_court_title), style = MaterialTheme.typography.titleSmall)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        val fewer = stringResource(R.string.fewer)
+        val more = stringResource(R.string.more)
+        IconButton(onClick = { onChange(minimum - 1) }, enabled = minimum > 1, modifier = Modifier.semantics { contentDescription = fewer }) {
+            Text("−", style = MaterialTheme.typography.titleLarge, modifier = Modifier.clearAndSetSemantics {})
+        }
+        Text(
+            pluralStringResource(R.plurals.minimum_on_court_value, minimum, minimum, config.onCourtSize),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        IconButton(onClick = { onChange(minimum + 1) }, enabled = minimum < config.onCourtSize, modifier = Modifier.semantics { contentDescription = more }) {
+            Text("+", style = MaterialTheme.typography.titleLarge, modifier = Modifier.clearAndSetSemantics {})
+        }
+    }
+    Text(
+        stringResource(R.string.minimum_on_court_explanation, stringResource(sport.label), config.minimumOnCourt),
+        style = MaterialTheme.typography.bodySmall,
+    )
+    if (minimum != config.minimumOnCourt) {
+        TextButton(onClick = { onChange(config.minimumOnCourt) }) {
+            Text(stringResource(R.string.minimum_on_court_reset, config.minimumOnCourt))
+        }
+    }
+}
+

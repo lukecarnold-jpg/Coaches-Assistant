@@ -36,7 +36,10 @@ fun GameControlPanel(
     onCourtIds: Set<Long>,
     onExportGame: () -> Unit,
     exportRosterLauncher: androidx.activity.result.ActivityResultLauncher<String>,
-    players: List<PlayerEntity>,
+    /** Players on the roster who aren't marked absent from this game. */
+    availablePlayers: List<PlayerEntity>,
+    /** The fewest players the team can take the field with (see SportConfig.minimumOnCourt). */
+    minimumOnCourt: Int,
     startingLineupSelection: MutableList<Long>,
     onSetLineup: (List<Long>) -> Unit,
     onCourtStats: List<PlayerGameStat>,
@@ -210,141 +213,106 @@ fun GameControlPanel(
         }
     }
 
-    val requiredOnCourt = sportConfig.onCourtSize
-
-    if (players.size < requiredOnCourt) {
-        EmptyMessage(pluralStringResource(R.plurals.need_players_for_lineup, requiredOnCourt, requiredOnCourt))
+    if (onCourtIds.isEmpty()) {
+        StartingLineupPicker(
+            availablePlayers = availablePlayers,
+            onCourtSize = sportConfig.onCourtSize,
+            minimumOnCourt = minimumOnCourt,
+            selection = startingLineupSelection,
+            onSetLineup = onSetLineup,
+        )
     } else {
-        if (onCourtIds.size < requiredOnCourt) {
-            SectionCard(title = stringResource(R.string.set_starting_lineup)) {
-                Text(pluralStringResource(R.plurals.select_exactly_players, requiredOnCourt, requiredOnCourt))
+        SectionCard(title = stringResource(R.string.players_on_court)) {
+            Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+                onCourtStats.forEach { stat ->
+                    PlayerActionCard(
+                        stat = stat,
+                        sportConfig = sportConfig,
+                        onAddScore = onAddPlayerScore,
+                        onAddFoul = onAddFoul,
+                        onAddMvpVote = onAddMvpVote,
+                        gameTimeMillis = gameTimeMillis,
+                        fairShareAt = fairShareAt,
+                        enabled = !selectedGame.isFinished
+                    )
+                }
+            }
+        }
+
+        if (!selectedGame.isFinished) {
+            SectionCard(title = stringResource(R.string.substitution)) {
+                Text(stringResource(R.string.select_players_to_come_out_and_players_to_come_i))
+                if (pendingIn.size != pendingOut.size) {
+                    Text(
+                        stringResource(R.string.selection_mismatch, pendingOut.size, pendingIn.size),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
                 Spacer(Modifier.height(layout.smallGap))
 
-                players.forEach { player ->
-                    val checked = startingLineupSelection.contains(player.id)
+                Text(
+                    text = stringResource(R.string.players_coming_out, pendingOut.size),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.height(layout.tinyGap))
 
-                    // The whole row is one toggle, so tapping the name works and screen readers
-                    // announce the player's name with the checked state.
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .toggleable(value = checked, role = Role.Checkbox) { newValue ->
-                                if (newValue && (startingLineupSelection.size < requiredOnCourt)) {
-                                    startingLineupSelection.add(player.id)
-                                }
-                                if (!newValue) {
-                                    startingLineupSelection.remove(player.id)
-                                }
+                Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
+                    onCourtStats.forEach { stat ->
+                        val outIndex = pendingOut.indexOf(stat.player.id)
+                        val now = gameTimeMillis()
+                        SelectablePlayerRow(
+                            text = stat.player.displayLabel(),
+                            selected = outIndex >= 0,
+                            badgeNumber = if (outIndex >= 0) outIndex + 1 else null,
+                            trailingText = fairShareAt(now)?.let { paceLabel(it.behindMillis(stat.totalTimeAt(now))).asString() },
+                        ) {
+                            onPlayerOutClick(stat.player.id)
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(layout.sectionGap))
+
+                Text(
+                    text = stringResource(R.string.players_coming_in, pendingIn.size),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.height(layout.tinyGap))
+
+                if (benchStats.isEmpty()) {
+                    EmptyMessage(stringResource(R.string.no_bench_players_available))
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
+                        benchSubOrder(benchStats).forEach { stat ->
+                            val inIndex = pendingIn.indexOf(stat.player.id)
+                            val now = gameTimeMillis()
+                            SelectablePlayerRow(
+                                text = stat.player.displayLabel(),
+                                selected = inIndex >= 0,
+                                badgeNumber = if (inIndex >= 0) inIndex + 1 else null,
+                                trailingText = fairShareAt(now)?.let { paceLabel(it.behindMillis(stat.totalTimeAt(now))).asString() },
+                            ) {
+                                onPlayerInClick(stat.player.id)
                             }
-                            .padding(vertical = layout.tinyGap),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Checkbox(checked = checked, onCheckedChange = null)
-                        Text(player.displayLabel())
+                        }
                     }
                 }
 
                 Spacer(Modifier.height(layout.smallGap))
 
                 Button(
-                    onClick = { onSetLineup(startingLineupSelection.toList()) },
-                    enabled = startingLineupSelection.size == requiredOnCourt
+                    onClick = onSubstitute,
+                    enabled = (pendingIn.isNotEmpty()) && (pendingIn.size == pendingOut.size)
                 ) {
-                    Text(stringResource(R.string.save_starting_lineup))
-                }
-            }
-        } else {
-            SectionCard(title = stringResource(R.string.players_on_court)) {
-                Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
-                    onCourtStats.forEach { stat ->
-                        PlayerActionCard(
-                            stat = stat,
-                            sportConfig = sportConfig,
-                            onAddScore = onAddPlayerScore,
-                            onAddFoul = onAddFoul,
-                            onAddMvpVote = onAddMvpVote,
-                            gameTimeMillis = gameTimeMillis,
-                            fairShareAt = fairShareAt,
-                            enabled = !selectedGame.isFinished
-                        )
-                    }
-                }
-            }
-
-            if (!selectedGame.isFinished) {
-                SectionCard(title = stringResource(R.string.substitution)) {
-                    Text(stringResource(R.string.select_players_to_come_out_and_players_to_come_i))
-                    if (pendingIn.size != pendingOut.size) {
-                        Text(
-                            stringResource(R.string.selection_mismatch, pendingOut.size, pendingIn.size),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-                    Spacer(Modifier.height(layout.smallGap))
-
-                    Text(
-                        text = stringResource(R.string.players_coming_out, pendingOut.size),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.height(layout.tinyGap))
-
-                    Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
-                        onCourtStats.forEach { stat ->
-                            val outIndex = pendingOut.indexOf(stat.player.id)
-                            val now = gameTimeMillis()
-                            SelectablePlayerRow(
-                                text = stat.player.displayLabel(),
-                                selected = outIndex >= 0,
-                                badgeNumber = if (outIndex >= 0) outIndex + 1 else null,
-                                trailingText = fairShareAt(now)?.let { paceLabel(it.behindMillis(stat.totalTimeAt(now))).asString() },
-                            ) {
-                                onPlayerOutClick(stat.player.id)
-                            }
-                        }
-                    }
-
-                    Spacer(Modifier.height(layout.sectionGap))
-
-                    Text(
-                        text = stringResource(R.string.players_coming_in, pendingIn.size),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.height(layout.tinyGap))
-
-                    if (benchStats.isEmpty()) {
-                        EmptyMessage(stringResource(R.string.no_bench_players_available))
-                    } else {
-                        Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap + 2.dp)) {
-                            benchSubOrder(benchStats).forEach { stat ->
-                                val inIndex = pendingIn.indexOf(stat.player.id)
-                                val now = gameTimeMillis()
-                                SelectablePlayerRow(
-                                    text = stat.player.displayLabel(),
-                                    selected = inIndex >= 0,
-                                    badgeNumber = if (inIndex >= 0) inIndex + 1 else null,
-                                    trailingText = fairShareAt(now)?.let { paceLabel(it.behindMillis(stat.totalTimeAt(now))).asString() },
-                                ) {
-                                    onPlayerInClick(stat.player.id)
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(Modifier.height(layout.smallGap))
-
-                    Button(
-                        onClick = onSubstitute,
-                        enabled = (pendingIn.isNotEmpty()) && (pendingIn.size == pendingOut.size)
-                    ) {
-                        Text(pluralStringResource(R.plurals.confirm_rotation, pendingIn.size, pendingIn.size))
-                    }
+                    Text(pluralStringResource(R.plurals.confirm_rotation, pendingIn.size, pendingIn.size))
                 }
             }
         }
     }
+
 }
 
 @Composable
@@ -474,3 +442,75 @@ fun elapsedFromRemaining(remainingMillis: Long, periodDurationMillis: Long): Lon
     if (periodDurationMillis > 0) (periodDurationMillis - remainingMillis).coerceIn(0L, periodDurationMillis)
     else maxOf(0L, remainingMillis)
 
+/**
+ * Picks the starting lineup from the players who are here ([availablePlayers]). With enough for
+ * a full side it's exactly [onCourtSize]; with fewer it's short-handed, down to [minimumOnCourt]
+ * (see lineupRule); below that there's no lineup to pick. When there's no choice to make, everyone
+ * here starts ticked.
+ */
+@Composable
+fun StartingLineupPicker(
+    availablePlayers: List<PlayerEntity>,
+    onCourtSize: Int,
+    minimumOnCourt: Int,
+    selection: MutableList<Long>,
+    onSetLineup: (List<Long>) -> Unit,
+) {
+    val layout = LocalResponsiveLayout.current
+    val rule = lineupRule(availablePlayers.size, onCourtSize, minimumOnCourt)
+    val availableIds = availablePlayers.map { it.id }
+
+    LaunchedEffect(selection, availableIds, rule) {
+        val noChoice = rule !is LineupRule.TooFew && availableIds.size <= onCourtSize
+        if (noChoice && selection.isEmpty()) selection.addAll(availableIds)
+    }
+
+    if (rule is LineupRule.TooFew) {
+        EmptyMessage(pluralStringResource(R.plurals.lineup_too_few, rule.available, rule.available, rule.minimum))
+        return
+    }
+
+    SectionCard(title = stringResource(R.string.set_starting_lineup)) {
+        Text(
+            when (rule) {
+                is LineupRule.ShortHanded ->
+                    pluralStringResource(R.plurals.lineup_short_handed, rule.available, rule.available, rule.fullSize, rule.minimum)
+                else -> pluralStringResource(R.plurals.select_exactly_players, onCourtSize, onCourtSize)
+            },
+        )
+        Spacer(Modifier.height(layout.smallGap))
+
+        availablePlayers.forEach { player ->
+            val checked = selection.contains(player.id)
+
+            // The whole row is one toggle, so tapping the name works and screen readers
+            // announce the player's name with the checked state.
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .toggleable(value = checked, role = Role.Checkbox) { newValue ->
+                        if (newValue && selection.size < minOf(onCourtSize, availablePlayers.size)) {
+                            selection.add(player.id)
+                        }
+                        if (!newValue) {
+                            selection.remove(player.id)
+                        }
+                    }
+                    .padding(vertical = layout.tinyGap),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(checked = checked, onCheckedChange = null)
+                Text(player.displayLabel())
+            }
+        }
+
+        Spacer(Modifier.height(layout.smallGap))
+
+        Button(
+            onClick = { onSetLineup(selection.filter { it in availableIds }) },
+            enabled = rule.allows(selection.count { it in availableIds }),
+        ) {
+            Text(stringResource(R.string.save_starting_lineup))
+        }
+    }
+}
