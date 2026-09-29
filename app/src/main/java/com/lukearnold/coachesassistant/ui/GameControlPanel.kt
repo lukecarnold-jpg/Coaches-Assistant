@@ -159,11 +159,14 @@ fun GameControlPanel(
                     style = MaterialTheme.typography.displayMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Row {
-                    // A team-level correction: it isn't taken off any particular player (each
-                    // player's card has its own -1 for that).
-                    IconButton(onClick = { onAdjustTeamScore(-1) }) {
-                        Text("-1", style = MaterialTheme.typography.bodySmall)
+                // Live scoring only: a finished game's score is corrected through the event log.
+                if (!selectedGame.isFinished) {
+                    Row {
+                        // A team-level correction: it isn't taken off any particular player (each
+                        // player's card has its own -1 for that).
+                        IconButton(onClick = { onAdjustTeamScore(-1) }) {
+                            Text("-1", style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 }
             }
@@ -178,13 +181,15 @@ fun GameControlPanel(
                     style = MaterialTheme.typography.displayMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Row {
-                    IconButton(onClick = { onAddOpponentScore(-1) }) {
-                        Text("-1", style = MaterialTheme.typography.bodySmall)
-                    }
-                    sportConfig.scoringOptions.forEach { option ->
-                        IconButton(onClick = { onAddOpponentScore(option.points) }) {
-                            Text("+${option.points}", style = MaterialTheme.typography.bodySmall)
+                if (!selectedGame.isFinished) {
+                    Row {
+                        IconButton(onClick = { onAddOpponentScore(-1) }) {
+                            Text("-1", style = MaterialTheme.typography.bodySmall)
+                        }
+                        sportConfig.scoringOptions.forEach { option ->
+                            IconButton(onClick = { onAddOpponentScore(option.points) }) {
+                                Text("+${option.points}", style = MaterialTheme.typography.bodySmall)
+                            }
                         }
                     }
                 }
@@ -213,7 +218,10 @@ fun GameControlPanel(
         }
     }
 
-    if (onCourtIds.isEmpty()) {
+    if (selectedGame.isFinished) {
+        // Nothing to set up or change on court once the game is over; stats and the event log
+        // (for corrections) are below.
+    } else if (onCourtIds.isEmpty()) {
         StartingLineupPicker(
             availablePlayers = availablePlayers,
             onCourtSize = sportConfig.onCourtSize,
