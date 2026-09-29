@@ -151,6 +151,7 @@ private fun SportApp(
     val players by appViewModel.players.collectAsState()
     val games by appViewModel.games.collectAsState()
     val selectedGame by appViewModel.selectedGame.collectAsState()
+    val gameDayGameId by appViewModel.gameDayGameId.collectAsState()
     val context = LocalContext.current
     var keepScreenOnWhileClockRuns by remember { mutableStateOf(DisplayPreferences.keepScreenOnWhileClockRuns(context)) }
     KeepScreenOn(shouldKeepScreenOn(selectedGame, keepScreenOnWhileClockRuns))
@@ -260,6 +261,9 @@ private fun SportApp(
                         onExportPlayers = appViewModel::exportPlayersCsv,
                         onAdvancePeriod = appViewModel::advancePeriod,
                         onEndGame = appViewModel::endGame,
+                        gameDayActive = selectedGame?.id != null && selectedGame?.id == gameDayGameId,
+                        onStartGameDay = appViewModel::startGameDay,
+                        onStopGameDay = appViewModel::stopGameDay,
                         onUpdateAbsentPlayers = appViewModel::updateAbsentPlayers,
                         onUpdateNotes = appViewModel::updateGameNotes,
                         onExportNotes = appViewModel::exportGameNotesTxt,

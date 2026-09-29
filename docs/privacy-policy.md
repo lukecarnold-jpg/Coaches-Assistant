@@ -38,6 +38,7 @@ No player names, game data, notes, or other information from the app is included
 
 - **Internet:** to reach the AI provider when you generate drills.
 - **Local network access (Android 17 and later):** only requested if you set up an AI server on your local network, so the app can reach it.
+- **Do Not Disturb access:** only requested if you use Game Day mode, so the app can silence notifications during a game. The app turns on its own "Game day" mode and never reads your notifications.
 
 ## Children
 

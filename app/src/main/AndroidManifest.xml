@@ -5,6 +5,9 @@
     <!-- Android 17+: needed to reach a local AI server (the Other provider); requested at runtime,
          only when the configured endpoint is on the local network. See ai/LocalNetworkAccess.kt. -->
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+    <!-- Game Day mode's Do Not Disturb rule; the user grants access in system settings. See
+         ui/GameDayMode.kt. -->
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
     <application
         android:allowBackup="true"
