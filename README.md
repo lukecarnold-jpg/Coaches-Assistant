@@ -188,7 +188,7 @@ Play requires a privacy policy URL. A draft is in [`docs/privacy-policy.md`](doc
 For Play's **Data safety** form, the relevant facts (review them against Google's current definitions before submitting):
 
 - Everything the coach enters (rosters, games, notes) stays on the device; the app has no server, accounts, ads, analytics, or crash reporting.
-- The only network traffic is generating drills: the selected sport and age group, plus the user's own API key, go to the AI provider the user chose. No player or game data is sent.
+- The only network traffic is generating drills: the selected sport and age group (and the app's language, when it isn't English), plus the user's own API key, go to the AI provider the user chose. No player or game data is sent.
 - Data is encrypted in transit (all built-in providers use HTTPS; plain HTTP is only allowed to a server on the user's local network).
 - Users can delete their data in the app (Settings → Delete data) or by uninstalling.
 
@@ -246,7 +246,7 @@ Last checked by hand on the Pixel 10 Pro emulator (API 37) in September 2026:
   - `CustomEndpointConfig.kt` — user-supplied endpoint URL and model name for the "Other" provider
   - `Drill.kt` — the parsed-drill domain model
   - `DrillParsing.kt` — pure prompt-building and response-parsing functions (unit tested)
-  - `DrillTextGenerators.kt` — one `DrillTextGenerator` implementation per provider (Gemini via its SDK; Anthropic, OpenAI, and Other via direct REST calls, with Other and OpenAI sharing an `openAiCompatibleRequest` helper)
+  - `DrillTextGenerators.kt` — one `DrillTextGenerator` implementation per provider, each a direct REST call (Other and OpenAI share an `openAiCompatibleRequest` helper)
 - Data layer
   - Entities: `app/src/main/java/com/lukearnold/coachesassistant/data/Entities.kt`
   - DAOs: `app/src/main/java/com/lukearnold/coachesassistant/data/Dao.kt`
