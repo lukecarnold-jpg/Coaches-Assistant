@@ -1,5 +1,8 @@
 package com.lukearnold.coachesassistant
 
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.foundation.text.TextAutoSize
 import com.lukearnold.coachesassistant.ui.GameClockNotification
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -218,7 +221,7 @@ private fun SportApp(
                             startTabDecided = true
                         },
                         icon = spec.icon,
-                        label = { Text(stringResource(spec.label)) },
+                        label = { NavLabel(stringResource(spec.label)) },
                     )
                 }
             }
@@ -238,7 +241,7 @@ private fun SportApp(
                                     startTabDecided = true
                                 },
                                 icon = spec.icon,
-                                label = { Text(stringResource(spec.label)) },
+                                label = { NavLabel(stringResource(spec.label)) },
                             )
                         }
                     }
@@ -369,3 +372,18 @@ private fun SportApp(
         }
     }
 }
+
+/**
+ * A navigation label on one line, shrinking to fit with large text sizes rather than breaking
+ * mid-word ("Settin / gs") in the narrow space each tab has.
+ */
+@Composable
+private fun NavLabel(text: String) {
+    Text(
+        text,
+        maxLines = 1,
+        softWrap = false,
+        autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = LocalTextStyle.current.fontSize),
+    )
+}
+

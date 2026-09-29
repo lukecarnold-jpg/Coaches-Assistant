@@ -84,7 +84,8 @@ fun GameStatsPanel(
             Spacer(Modifier.height(layout.smallGap))
 
             Text(stringResource(R.string.periods), style = MaterialTheme.typography.labelMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+            // Wraps onto another line when the chips don't fit (e.g. with large text).
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 PERIOD_COUNT_OPTIONS.forEach { (count, label) ->
                     FilterChip(
                         selected = periodCount == count,
