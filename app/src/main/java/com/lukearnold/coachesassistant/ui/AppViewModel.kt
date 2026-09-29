@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -58,17 +59,30 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 1)
     val messages = _messages.asSharedFlow()
 
-    val players = repository.playersForSport(sport).stateIn(
+    // Null until the database first answers, so "not loaded yet" isn't mistaken for "none".
+    private val loadedPlayers: StateFlow<List<PlayerEntity>?> =
+        repository.playersForSport(sport).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    private val loadedGames: StateFlow<List<GameEntity>?> =
+        repository.gamesForSport(sport).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val players: StateFlow<List<PlayerEntity>> = loadedPlayers.map { it.orEmpty() }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
         emptyList(),
     )
 
-    val games = repository.gamesForSport(sport).stateIn(
+    val games: StateFlow<List<GameEntity>> = loadedGames.map { it.orEmpty() }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
         emptyList(),
     )
+
+    /**
+     * Whether this sport's players and games have loaded, so screens can wait rather than briefly
+     * showing "No players yet" (or "no games") while the database is still being read.
+     */
+    val isLoaded: StateFlow<Boolean> = combine(loadedPlayers, loadedGames) { players, games -> players != null && games != null }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     val selectedGame: StateFlow<GameEntity?> =
         @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
