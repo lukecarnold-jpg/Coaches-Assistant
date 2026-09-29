@@ -42,6 +42,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Event editing and deletion
   - Undo from the snackbar after a score, team or opponent adjustment, infraction, MVP vote, or substitution (a batch of subs undoes as one); a substitution is only undone if its players are still where it put them
   - End-game workflow
+  - Game Day mode (Android 10+): a button on the Game screen silences notifications until that game's End Game (or the game is deleted). It's the app's own "Game day" Do Not Disturb mode, letting through calls from starred contacts, repeat callers, and alarms; the first time, the app explains and opens the system screen to grant Do Not Disturb (Modes) access
 - Game history
   - Dedicated History tab listing all finished games, newest first
   - Season summary at the top: win/loss/tie record, points for and against (with per-game averages), and each roster player's games played, total and average minutes, points, infractions, and MVP votes across every finished game for the sport
@@ -57,7 +58,6 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Expanded screens with navigation rail and split panels
 - Training tab (every sport)
   - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, OpenAI ChatGPT, or a custom OpenAI-compatible endpoint
-  - Coming-soon placeholders for future training modules
 - Settings tab
   - "Switch sport" returns to the sport landing screen
   - "Keep screen on while the clock runs" (on by default) stops the phone locking mid-game; the normal screen timeout returns as soon as the clock stops
@@ -202,6 +202,7 @@ The automated tests cover:
 Last checked by hand on the Pixel 10 Pro emulator (API 37) in September 2026:
 
 - A live game: clock auto-stop and keep-screen-on, playing-time labels, scoring and substitution undo, End Game and other confirmations
+- Game Day mode: granting Modes access, silencing (priority-only Do Not Disturb), staying on after the app is closed, and turning off from its button, End Game, or deleting the game
 - Backup and restore, including onto a wiped app; the transition build migrating the old app's data and restoring it into the new app
 - The Other provider against a local Ollama server over plain http, including the Android 17 local network permission
 - Light and dark mode, and the minified release build (signed with the debug key) through the flows above

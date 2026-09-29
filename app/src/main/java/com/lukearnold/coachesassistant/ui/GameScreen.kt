@@ -43,6 +43,10 @@ fun GameScreen(
     onExportPlayers: (Uri) -> Unit,
     onAdvancePeriod: () -> Unit,
     onEndGame: () -> Unit,
+    /** Whether Game Day mode is on for the selected game (see GameDayMode). */
+    gameDayActive: Boolean = false,
+    onStartGameDay: () -> Unit = {},
+    onStopGameDay: () -> Unit = {},
     onUpdateAbsentPlayers: (List<Long>) -> Unit,
     onUpdateNotes: (String) -> Unit,
     onExportNotes: (Long, Uri) -> Unit,
@@ -123,6 +127,9 @@ fun GameScreen(
                         onAddMvpVote = onAddMvpVote,
                         onAdvancePeriod = onAdvancePeriod,
                         onEndGame = onEndGame,
+                        gameDayActive = gameDayActive,
+                        onStartGameDay = onStartGameDay,
+                        onStopGameDay = onStopGameDay,
                         onManageAttendance = { showAttendanceDialog = true },
                         pendingOut = pendingOut,
                         onPlayerOutClick = { id ->
@@ -264,6 +271,9 @@ fun GameScreen(
                     onAddMvpVote = onAddMvpVote,
                     onAdvancePeriod = onAdvancePeriod,
                     onEndGame = onEndGame,
+                    gameDayActive = gameDayActive,
+                    onStartGameDay = onStartGameDay,
+                    onStopGameDay = onStopGameDay,
                     onManageAttendance = { showAttendanceDialog = true },
                     pendingOut = pendingOut,
                     onPlayerOutClick = { id ->

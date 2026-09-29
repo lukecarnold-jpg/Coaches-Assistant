@@ -490,4 +490,21 @@
     <string name="notes_file_date">Date: %1$s</string>
     <string name="notes_file_score" tools:ignore="PluralsCandidate">Score: Us %1$d – %2$d %3$s</string>
     <string name="notes_file_heading">--- COACHING NOTES ---</string>
+
+    <!-- Game Day mode -->
+    <string name="game_day_turn_on">🔕 Silence notifications until End Game</string>
+    <string name="game_day_turn_off">🔔 Turn Game Day mode off</string>
+    <string name="game_day_on_explanation">Game Day mode is on: notifications are silenced until you end this game. Calls from starred contacts, repeat callers, and alarms still get through.</string>
+    <string name="game_day_access_title">Allow Do Not Disturb access</string>
+    <string name="game_day_access_explanation">To silence notifications during the game, Coaches Assistant needs Do Not Disturb access (called Modes access on newer phones). On the next screen, choose Coaches Assistant, allow it, then come back.</string>
+    <string name="open_settings">Open settings</string>
+    <!-- The Do Not Disturb mode's name, as listed with the phone's other modes. -->
+    <string name="game_day_rule_name">Game day</string>
+    <!-- Shown by the system while the mode is on, and as what turns it on. -->
+    <string name="game_day_condition">Game in progress</string>
+    <string name="game_day_trigger">From when you turn it on in Coaches Assistant until the game ends</string>
+    <string name="msg_game_day_on">Game Day mode on: notifications are silenced until you end the game.</string>
+    <string name="msg_game_day_off">Game Day mode off.</string>
+    <string name="msg_game_finalized_game_day_off">Game finalized and court reset. Notifications are back on.</string>
+    <string name="msg_game_day_no_access">Game Day mode needs Do Not Disturb access.</string>
 </resources>

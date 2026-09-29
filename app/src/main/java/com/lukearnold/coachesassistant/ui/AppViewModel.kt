@@ -37,6 +37,10 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     private val repository = GameRepository(AppDatabase.getInstance(application))
     private val csvIo = GameCsvIo(AppDatabase.getInstance(application))
     private val backupIo = BackupIo(AppDatabase.getInstance(application))
+    private val gameDayMode = GameDayMode.get(application)
+
+    /** The game Game Day mode is silencing notifications for (any sport's), or null if it's off. */
+    val gameDayGameId: StateFlow<Long?> = gameDayMode.activeGameId
 
     private val selectedGameId = MutableStateFlow<Long?>(null)
     private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 1)
@@ -107,6 +111,14 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         )
 
     init {
+        // Game Day mode lasts until its game ends. End Game turns it off directly; this also covers
+        // the game being deleted, cleared, or replaced by a restore, in any sport.
+        viewModelScope.launch {
+            repository.games.collect { allGames ->
+                gameDayMode.stopUnlessPlaying(allGames.filter { !it.isFinished }.map { it.id })
+            }
+        }
+
         viewModelScope.launch {
             games.collect { gameList ->
                 val currentSelection = selectedGameId.value
@@ -253,8 +265,23 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         val gameId = selectedGame.value?.id ?: return
         viewModelScope.launch {
             repository.endGame(gameId)
-            _messages.emit(UiMessage(uiText(R.string.msg_game_finalized)))
+            val wasGameDay = gameDayMode.activeGameId.value == gameId
+            if (wasGameDay) gameDayMode.stop()
+            _messages.emit(UiMessage(uiText(if (wasGameDay) R.string.msg_game_finalized_game_day_off else R.string.msg_game_finalized)))
         }
+    }
+
+    /** Silences notifications until the selected game ends (see GameDayMode). */
+    fun startGameDay() {
+        val game = selectedGame.value ?: return
+        if (game.isFinished) return
+        val started = gameDayMode.start(game.id)
+        _messages.tryEmit(UiMessage(uiText(if (started) R.string.msg_game_day_on else R.string.msg_game_day_no_access)))
+    }
+
+    fun stopGameDay() {
+        gameDayMode.stop()
+        _messages.tryEmit(UiMessage(uiText(R.string.msg_game_day_off)))
     }
 
     fun updateAbsentPlayers(playerIds: List<Long>) {

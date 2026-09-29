@@ -44,6 +44,9 @@ fun GameControlPanel(
     onAddMvpVote: (Long) -> Unit,
     onAdvancePeriod: () -> Unit,
     onEndGame: () -> Unit,
+    gameDayActive: Boolean,
+    onStartGameDay: () -> Unit,
+    onStopGameDay: () -> Unit,
     onManageAttendance: () -> Unit,
     pendingOut: List<Long>,
     onPlayerOutClick: (Long) -> Unit,
@@ -116,6 +119,8 @@ fun GameControlPanel(
                     Text(stringResource(R.string.end_game_title))
                 }
             }
+
+            GameDayModeButton(active = gameDayActive, onStart = onStartGameDay, onStop = onStopGameDay)
 
             OutlinedButton(
                 onClick = onManageAttendance,
