@@ -642,6 +642,34 @@ class GameRepositoryTest {
     }
 
     @Test
+    fun aFinishedGame_takesNoLiveActions_butStillTakesCorrectionsAndNotes() = runBlocking {
+        val playerIds = addPlayers(6)
+        val game = newGame(onCourtSize = 5)
+        repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
+        repository.addTeamScore(game.id, playerIds[0], 2)
+        repository.endGame(game.id)
+        val eventsAtEnd = database.gameEventDao().getByGame(game.id).size
+
+        repository.selectStartingLineup(game.id, playerIds.take(5), maxSize = 5)
+        assertEquals(null, repository.addTeamScore(game.id, playerIds[0], 2))
+        assertEquals(null, repository.addOpponentScore(game.id, 1))
+        assertEquals(null, repository.addFoul(game.id, playerIds[0]))
+        assertEquals(null, repository.substitute(game.id, playerIds[5], null))
+        repository.toggleTimer(game.id)
+        repository.advancePeriod(game.id)
+        assertEquals(eventsAtEnd, database.gameEventDao().getByGame(game.id).size)
+        assertEquals(null, database.gameDao().getById(game.id)!!.timerLastStartedAt)
+
+        // Correcting the final score through the event log still works, as do notes.
+        val score = database.gameEventDao().getByGame(game.id).single { it.type == EventType.SCORE.name }
+        repository.updateEvent(score.copy(points = 3))
+        repository.updateGameNotes(game.id, "Good defence")
+        val after = database.gameDao().getById(game.id)!!
+        assertEquals(3, after.teamScore)
+        assertEquals("Good defence", after.notes)
+    }
+
+    @Test
     fun addFoul_removesFoulsDownToZeroButNoFurther() = runBlocking {
         val playerIds = addPlayers(2)
         val game = newGame()

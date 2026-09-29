@@ -4,6 +4,11 @@ import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+/**
+ * Live-game actions (period changes, lineups, substitutions, scores, infractions, and the clock)
+ * do nothing to a finished game. Notes, attendance, MVP votes, and corrections through the event
+ * log still apply after the game.
+ */
 class GameRepository(
     private val database: AppDatabase,
 ) {
@@ -80,7 +85,7 @@ class GameRepository(
 
     suspend fun advancePeriod(gameId: Long) {
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction
+            val game = gameDao.getById(gameId)?.takeUnless { it.isFinished } ?: return@withTransaction
             if (game.currentPeriod < game.periodCount) {
                 // Record the end of the previous period
                 gameEventDao.insert(
@@ -167,7 +172,7 @@ class GameRepository(
 
     suspend fun selectStartingLineup(gameId: Long, playerIds: List<Long>, maxSize: Int = 5) {
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction
+            val game = gameDao.getById(gameId)?.takeUnless { it.isFinished } ?: return@withTransaction
             val normalizedIds = playerIds.asSequence().distinct().take(maxSize).toList()
 
             saveLineup(gameId, getLineup(gameId).copy(onCourtIds = normalizedIds.toSet()))
@@ -192,7 +197,7 @@ class GameRepository(
      */
     suspend fun substitute(gameId: Long, playerInId: Long?, playerOutId: Long?): Long? =
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction null
+            val game = gameDao.getById(gameId)?.takeUnless { it.isFinished } ?: return@withTransaction null
             val lineup = getLineup(gameId)
 
             if (playerInId == null && playerOutId == null) return@withTransaction null
@@ -236,7 +241,7 @@ class GameRepository(
 
     private suspend fun insertScore(gameId: Long, type: EventType, playerId: Long?, points: Int, note: String): Long? =
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction null
+            val game = gameDao.getById(gameId)?.takeUnless { it.isFinished } ?: return@withTransaction null
             val currentScore = if (type == EventType.OPPONENT_SCORE) game.opponentScore else game.teamScore
             if (currentScore + points < 0) return@withTransaction null
 
@@ -261,7 +266,7 @@ class GameRepository(
      */
     suspend fun addFoul(gameId: Long, playerId: Long, adjustment: Int = 1): Long? =
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction null
+            val game = gameDao.getById(gameId)?.takeUnless { it.isFinished } ?: return@withTransaction null
             val fouls = gameEventDao.getByGame(gameId)
                 .filter { it.type == EventType.FOUL.name && it.playerId == playerId }
                 .sumOf { it.points }
@@ -280,7 +285,7 @@ class GameRepository(
 
     suspend fun toggleTimer(gameId: Long) {
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction
+            val game = gameDao.getById(gameId)?.takeUnless { it.isFinished } ?: return@withTransaction
             val now = System.currentTimeMillis()
 
             if (game.timerLastStartedAt == null) {
@@ -320,7 +325,7 @@ class GameRepository(
      */
     suspend fun setGameTime(gameId: Long, timeMillis: Long): Long? =
         database.withTransaction {
-            val game = gameDao.getById(gameId) ?: return@withTransaction null
+            val game = gameDao.getById(gameId)?.takeUnless { it.isFinished } ?: return@withTransaction null
             val target = capToPeriod(timeMillis, game.periodDurationMillis)
             val earliest = latestEventTimeThisPeriod(gameEventDao.getByGame(gameId), game.periodDurationMillis)
             if (target < earliest) return@withTransaction earliest
