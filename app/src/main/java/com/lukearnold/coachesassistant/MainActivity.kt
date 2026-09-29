@@ -164,6 +164,16 @@ private fun SportApp(
     val customAiEndpoint by trainingViewModel.customEndpoint.collectAsState()
 
     var currentTab by rememberSaveable(sport) { mutableStateOf(AppTab.ROSTER.name) }
+    // Open on the Game tab if a game is in progress (e.g. reopening the app mid-game), unless the
+    // user has already picked a tab. Decided once per sport, and kept across rotation.
+    var startTabDecided by rememberSaveable(sport) { mutableStateOf(false) }
+    LaunchedEffect(appViewModel) {
+        if (startTabDecided) return@LaunchedEffect
+        val inProgress = appViewModel.hasGameInProgress()
+        // Checked again: the user may have picked a tab while that was loading.
+        if (inProgress && !startTabDecided) currentTab = AppTab.GAME.name
+        startTabDecided = true
+    }
     val snackbarHostState = remember { SnackbarHostState() }
 
     val responsiveLayout = LocalResponsiveLayout.current
@@ -190,7 +200,10 @@ private fun SportApp(
                 navTabSpecs.forEach { spec ->
                     NavigationRailItem(
                         selected = (currentTab == spec.tab.name),
-                        onClick = { currentTab = spec.tab.name },
+                        onClick = {
+                            currentTab = spec.tab.name
+                            startTabDecided = true
+                        },
                         icon = spec.icon,
                         label = { Text(stringResource(spec.label)) },
                     )
@@ -207,7 +220,10 @@ private fun SportApp(
                         navTabSpecs.forEach { spec ->
                             NavigationBarItem(
                                 selected = (currentTab == spec.tab.name),
-                                onClick = { currentTab = spec.tab.name },
+                                onClick = {
+                                    currentTab = spec.tab.name
+                                    startTabDecided = true
+                                },
                                 icon = spec.icon,
                                 label = { Text(stringResource(spec.label)) },
                             )

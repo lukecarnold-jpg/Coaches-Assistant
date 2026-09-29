@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -158,6 +159,9 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             }
         }
     }
+
+    /** Whether this sport has a game that hasn't ended, read from the database (not the UI state). */
+    suspend fun hasGameInProgress(): Boolean = repository.gamesForSport(sport).first().any { !it.isFinished }
 
     fun selectGame(gameId: Long) {
         selectedGameId.value = gameId
