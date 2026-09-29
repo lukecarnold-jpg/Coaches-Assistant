@@ -79,6 +79,8 @@ fun SettingsScreen(
     onRestore: (Uri) -> Unit = {},
     keepScreenOnWhileClockRuns: Boolean = true,
     onKeepScreenOnWhileClockRunsChange: (Boolean) -> Unit = {},
+    clockNotification: Boolean = false,
+    onClockNotificationChange: (Boolean) -> Unit = {},
     /** The current sport's minimum players to field a team (see SportConfig.minimumOnCourt). */
     minimumOnCourt: Int? = null,
     onMinimumOnCourtChange: (Int) -> Unit = {},
@@ -158,6 +160,20 @@ fun SettingsScreen(
                     checked = keepScreenOnWhileClockRuns,
                     onCheckedChange = onKeepScreenOnWhileClockRunsChange,
                 )
+            }
+            Spacer(Modifier.height(layout.smallGap))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.game_clock_notification_setting))
+                    Text(
+                        stringResource(R.string.game_clock_notification_setting_description),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                Switch(checked = clockNotification, onCheckedChange = onClockNotificationChange)
             }
         }
 

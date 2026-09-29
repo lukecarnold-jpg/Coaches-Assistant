@@ -41,7 +41,8 @@ fun ConfirmDialog(
     )
 }
 
-private fun GameEntity.scoreLine(): UiText =
+/** "Us 4 – 2 Rivals" (or "Them" with no opponent name). */
+fun GameEntity.scoreLine(): UiText =
     if (opponent.isBlank()) uiText(R.string.score_line_no_opponent, teamScore, opponentScore)
     else uiText(R.string.score_line, teamScore, opponentScore, opponent)
 

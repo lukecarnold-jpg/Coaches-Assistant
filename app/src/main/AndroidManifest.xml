@@ -8,6 +8,8 @@
     <!-- Game Day mode's Do Not Disturb rule; the user grants access in system settings. See
          ui/GameDayMode.kt. -->
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <!-- The optional game clock notification (Settings → Display); requested when it's turned on. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -27,6 +29,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver
+            android:name=".ui.StopGameClockReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>
