@@ -488,6 +488,16 @@
     <string name="notes_file_score" tools:ignore="PluralsCandidate">Score: Us %1$d – %2$d %3$s</string>
     <string name="notes_file_heading">--- COACHING NOTES ---</string>
 
+    <!-- The game clock notification -->
+    <string name="game_clock_notification_setting">Show the running clock in notifications</string>
+    <string name="game_clock_notification_setting_description">While a game clock runs, a silent notification shows the period, score, and time left, including on the lock screen, with a button to stop the clock.</string>
+    <string name="game_clock_notification_channel">Game clock</string>
+    <string name="game_clock_notification_channel_description">The running game clock, while a period is being played.</string>
+    <!-- e.g. "Game 2 · Q3" -->
+    <string name="game_clock_notification_title">%1$s · %2$s</string>
+    <string name="game_clock_notification_stop">Stop clock</string>
+    <string name="msg_notifications_denied">Notifications are off for Coaches Assistant, so the clock can\'t be shown there.</string>
+
     <!-- Game Day mode -->
     <string name="game_day_turn_on">🔕 Silence notifications until End Game</string>
     <string name="game_day_turn_off">🔔 Turn Game Day mode off</string>

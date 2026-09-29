@@ -64,6 +64,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - "Switch sport" returns to the sport landing screen
   - "Minimum players to field a team" for the current sport, from 1 to a full side, defaulting to the sport's rules
   - "Keep screen on while the clock runs" (on by default) stops the phone locking mid-game; the normal screen timeout returns as soon as the clock stops
+  - "Show the running clock in notifications" (off by default; asks for the notifications permission on Android 13+): while a clock runs, a silent notification shows the game, period, score, and a live countdown, including on the lock screen, with a Stop clock button. The system counts it down, so it stays right with the app closed, and it disappears when the clock stops or the period ends
   - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device with an AES-256-GCM key held in the Android Keystore (`ai/AiSettingsStore.kt`)
   - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
   - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic, OpenAI, and the "Other" provider have no build-time fallback
@@ -207,6 +208,7 @@ Last checked by hand on the Pixel 10 Pro emulator (API 37) in September 2026:
 - A live game: clock auto-stop and keep-screen-on, playing-time labels, scoring and substitution undo, End Game and other confirmations
 - Substitutions: joining a short court without a swap, going off without a replacement (below the minimum), and undoing it
 - Fielding: the lineup offering only players who are here, pre-ticking them when all play, too few to field a team, and a short-handed lineup after lowering the minimum
+- The game clock notification: the permission prompt, the live countdown in the shade, and Stop clock stopping the app's clock
 - Game Day mode: granting Modes access, silencing (priority-only Do Not Disturb), staying on after the app is closed, and turning off from its button, End Game, or deleting the game
 - Backup and restore, including onto a wiped app; the transition build migrating the old app's data and restoring it into the new app
 - The Other provider against a local Ollama server over plain http, including the Android 17 local network permission

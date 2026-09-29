@@ -67,6 +67,7 @@ presentation helpers:
 - `GameFormatting.kt` - event descriptions, period labels, and time formatting.
 - `LiveGameClock.kt` - the Game screen's single live clock ticker, shared by the game clock, player cards, and stats.
 - `KeepScreenOn.kt` - keeps the screen awake while a game clock runs, and the setting that controls it.
+- `GameClockNotification.kt` - the optional running-clock notification (a system-counted countdown with a Stop clock action) and its receiver.
 - `GameDayMode.kt` - Game Day mode: the app's own Do Not Disturb rule, on from its button until the game ends, and the button with its access prompt.
 - `PlayingTime.kt` - equal-share playing-time targets, pace labels, and the bench substitution order.
 - `Fielding.kt` - how many players a starting lineup can have given who's here (full side, short-handed down to the sport's minimum, or too few), and the per-sport minimum setting.
@@ -173,8 +174,10 @@ translated), CSV column headers, and the prompt sent to the AI provider.
 `AndroidManifest.xml` declares the launcher activity, application label, icon,
 backup behavior, network security config, and permissions: internet access for
 the AI providers, local network access (Android 17+) for a server on the
-local network, and Do Not Disturb access for Game Day mode (granted by the user
-in system settings).
+local network, Do Not Disturb access for Game Day mode (granted by the user
+in system settings), and notifications (Android 13+) for the optional game
+clock notification. It also declares the receiver for that notification's
+Stop clock action.
 
 `network_security_config.xml` allows plain http so the Other provider can
 reach a local server; `DrillTextGenerators.kt` refuses any plain http request

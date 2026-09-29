@@ -1,5 +1,10 @@
 package com.lukearnold.coachesassistant
 
+import com.lukearnold.coachesassistant.ui.GameClockNotification
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import android.os.Build
+import android.Manifest
 import com.lukearnold.coachesassistant.R
 import androidx.annotation.StringRes
 import androidx.compose.ui.res.stringResource
@@ -155,6 +160,14 @@ private fun SportApp(
     val minimumOnCourt by appViewModel.minimumOnCourt.collectAsState()
     val context = LocalContext.current
     var keepScreenOnWhileClockRuns by remember { mutableStateOf(DisplayPreferences.keepScreenOnWhileClockRuns(context)) }
+    var clockNotification by remember {
+        mutableStateOf(GameClockNotification.isEnabled(context) && GameClockNotification.canPost(context))
+    }
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        appViewModel.setClockNotificationEnabled(granted)
+        clockNotification = granted
+        if (!granted) appViewModel.reportNotificationsDenied()
+    }
     KeepScreenOn(shouldKeepScreenOn(selectedGame, keepScreenOnWhileClockRuns))
     val lineup by appViewModel.selectedGameLineup.collectAsState()
     val events by appViewModel.selectedGameEvents.collectAsState()
@@ -332,6 +345,19 @@ private fun SportApp(
                         onRestore = appViewModel::restoreBackup,
                         minimumOnCourt = minimumOnCourt,
                         onMinimumOnCourtChange = appViewModel::setMinimumOnCourt,
+                        clockNotification = clockNotification,
+                        onClockNotificationChange = { enabled ->
+                            if (enabled && !GameClockNotification.canPost(context) &&
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                            ) {
+                                notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            } else if (enabled && !GameClockNotification.canPost(context)) {
+                                appViewModel.reportNotificationsDenied() // switched off in system settings
+                            } else {
+                                appViewModel.setClockNotificationEnabled(enabled)
+                                clockNotification = enabled
+                            }
+                        },
                         keepScreenOnWhileClockRuns = keepScreenOnWhileClockRuns,
                         onKeepScreenOnWhileClockRunsChange = { enabled ->
                             DisplayPreferences.setKeepScreenOnWhileClockRuns(context, enabled)

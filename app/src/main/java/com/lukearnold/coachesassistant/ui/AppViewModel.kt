@@ -128,6 +128,8 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         viewModelScope.launch {
             repository.games.collect { allGames ->
                 gameDayMode.stopUnlessPlaying(allGames.filter { !it.isFinished }.map { it.id })
+                // Every sport's running clocks, so the notification follows whichever is running.
+                GameClockNotification.sync(getApplication(), allGames)
             }
         }
 
@@ -300,6 +302,16 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             GameDayMode.StartResult.FAILED -> R.string.msg_game_day_failed
         }
         _messages.tryEmit(UiMessage(uiText(message)))
+    }
+
+    /** Turns the game clock notification on or off, updating what's shown now. */
+    fun setClockNotificationEnabled(enabled: Boolean) {
+        GameClockNotification.setEnabled(getApplication(), enabled)
+        viewModelScope.launch { GameClockNotification.sync(getApplication(), repository.games.first()) }
+    }
+
+    fun reportNotificationsDenied() {
+        _messages.tryEmit(UiMessage(uiText(R.string.msg_notifications_denied)))
     }
 
     fun stopGameDay() {
