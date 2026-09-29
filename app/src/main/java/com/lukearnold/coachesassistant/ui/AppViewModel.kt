@@ -277,8 +277,12 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         viewModelScope.launch {
             repository.endGame(gameId)
             val wasGameDay = gameDayMode.activeGameId.value == gameId
-            if (wasGameDay) gameDayMode.stop()
-            _messages.emit(UiMessage(uiText(if (wasGameDay) R.string.msg_game_finalized_game_day_off else R.string.msg_game_finalized)))
+            val message = when {
+                !wasGameDay -> R.string.msg_game_finalized
+                gameDayMode.stop() -> R.string.msg_game_finalized_game_day_off
+                else -> R.string.msg_game_day_stop_failed
+            }
+            _messages.emit(UiMessage(uiText(message)))
         }
     }
 
@@ -286,13 +290,17 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     fun startGameDay() {
         val game = selectedGame.value ?: return
         if (game.isFinished) return
-        val started = gameDayMode.start(game.id)
-        _messages.tryEmit(UiMessage(uiText(if (started) R.string.msg_game_day_on else R.string.msg_game_day_no_access)))
+        val message = when (gameDayMode.start(game.id)) {
+            GameDayMode.StartResult.STARTED -> R.string.msg_game_day_on
+            GameDayMode.StartResult.NO_ACCESS -> R.string.msg_game_day_no_access
+            GameDayMode.StartResult.FAILED -> R.string.msg_game_day_failed
+        }
+        _messages.tryEmit(UiMessage(uiText(message)))
     }
 
     fun stopGameDay() {
-        gameDayMode.stop()
-        _messages.tryEmit(UiMessage(uiText(R.string.msg_game_day_off)))
+        val stopped = gameDayMode.stop()
+        _messages.tryEmit(UiMessage(uiText(if (stopped) R.string.msg_game_day_off else R.string.msg_game_day_stop_failed)))
     }
 
     fun updateAbsentPlayers(playerIds: List<Long>) {

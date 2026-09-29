@@ -504,6 +504,8 @@
     <string name="msg_game_day_off">Game Day mode off.</string>
     <string name="msg_game_finalized_game_day_off">Game finalized and court reset. Notifications are back on.</string>
     <string name="msg_game_day_no_access">Game Day mode needs Do Not Disturb access.</string>
+    <string name="msg_game_day_failed">Couldn\'t turn on Game Day mode. Check Do Not Disturb (Modes) access in your phone\'s Settings.</string>
+    <string name="msg_game_day_stop_failed">Couldn\'t turn Game Day mode off. Turn off Do Not Disturb from your phone\'s quick settings.</string>
 
     <!-- Fielding a team with the players who are here -->
     <plurals name="lineup_too_few">

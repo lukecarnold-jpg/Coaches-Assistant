@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -34,7 +33,7 @@ class GameDayModeTest {
         shadowOf(notificationManager).setNotificationPolicyAccessGranted(false)
         val gameDay = gameDay()
 
-        assertFalse(gameDay.start(gameId = 5))
+        assertEquals(GameDayMode.StartResult.NO_ACCESS, gameDay.start(gameId = 5))
         assertEquals(null, gameDay.activeGameId.value)
         shadowOf(notificationManager).setNotificationPolicyAccessGranted(true) // to look at the rules
         assertTrue(notificationManager.automaticZenRules.isEmpty())
@@ -42,7 +41,7 @@ class GameDayModeTest {
 
     @Test
     fun start_addsTheAppsOwnPriorityOnlyRule_andRemembersTheGame() {
-        assertTrue(gameDay().start(gameId = 5))
+        assertEquals(GameDayMode.StartResult.STARTED, gameDay().start(gameId = 5))
 
         val rule = notificationManager.automaticZenRules.values.single()
         assertEquals("Game day", rule.name)
@@ -71,5 +70,15 @@ class GameDayModeTest {
         gameDay.stopUnlessPlaying(listOf(4)) // ended, deleted, or cleared
         assertEquals(null, gameDay.activeGameId.value)
         assertEquals(null, gameDay().activeGameId.value)
+    }
+
+    @Test
+    fun accessRevokedWhileOn_stillTurnsOffCleanly() {
+        val gameDay = gameDay()
+        gameDay.start(gameId = 5)
+        shadowOf(notificationManager).setNotificationPolicyAccessGranted(false) // the user revoked it
+
+        assertTrue(gameDay.stop())
+        assertEquals(null, gameDay.activeGameId.value)
     }
 }

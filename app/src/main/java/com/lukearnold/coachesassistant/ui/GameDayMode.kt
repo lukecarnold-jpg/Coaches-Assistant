@@ -61,21 +61,34 @@ class GameDayMode internal constructor(
 
     fun hasAccess(): Boolean = notificationManager.isNotificationPolicyAccessGranted
 
-    /** Turns Game Day mode on for [gameId]; returns false (doing nothing) without Do Not Disturb access. */
-    fun start(gameId: Long): Boolean {
-        if (!isSupported || !hasAccess()) return false
-        setRuleActive(true)
+    /** How turning Game Day mode on went. */
+    enum class StartResult { STARTED, NO_ACCESS, FAILED }
+
+    /**
+     * Turns Game Day mode on for [gameId]. Without Do Not Disturb access it does nothing; if the
+     * system refuses (access revoked just then, or the phone's limit on app-made modes reached),
+     * it reports that rather than crashing mid-game.
+     */
+    fun start(gameId: Long): StartResult {
+        if (!isSupported || !hasAccess()) return StartResult.NO_ACCESS
+        if (runCatching { setRuleActive(true) }.isFailure) return StartResult.FAILED
         prefs.edit { putLong(KEY_GAME_ID, gameId) }
         _activeGameId.value = gameId
-        return true
+        return StartResult.STARTED
     }
 
-    /** Turns Game Day mode off, whichever game it was for. */
-    fun stop() {
-        if (_activeGameId.value == null) return
-        if (isSupported && hasAccess()) setRuleActive(false)
+    /**
+     * Turns Game Day mode off, whichever game it was for. Returns false if the system wouldn't
+     * turn the mode off (it's forgotten here either way, so the user can turn off Do Not Disturb
+     * themselves). Without Do Not Disturb access there's nothing to turn off: revoking access
+     * removes the app's modes.
+     */
+    fun stop(): Boolean {
+        if (_activeGameId.value == null) return true
+        val stopped = if (isSupported && hasAccess()) runCatching { setRuleActive(false) }.isSuccess else true
         prefs.edit { remove(KEY_GAME_ID) }
         _activeGameId.value = null
+        return stopped
     }
 
     /** Turns Game Day mode off if its game isn't among [gamesInProgress] (every sport's unfinished games). */
