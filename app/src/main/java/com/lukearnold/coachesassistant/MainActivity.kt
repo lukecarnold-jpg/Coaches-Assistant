@@ -161,6 +161,7 @@ private fun SportApp(
     val selectedGame by appViewModel.selectedGame.collectAsState()
     val gameDayGameId by appViewModel.gameDayGameId.collectAsState()
     val minimumOnCourt by appViewModel.minimumOnCourt.collectAsState()
+    val isLoaded by appViewModel.isLoaded.collectAsState()
     val context = LocalContext.current
     var keepScreenOnWhileClockRuns by remember { mutableStateOf(DisplayPreferences.keepScreenOnWhileClockRuns(context)) }
     var clockNotification by remember {
@@ -254,7 +255,10 @@ private fun SportApp(
                     .padding(paddingValues),
             ) {
                 val tab = AppTab.entries.find { it.name == currentTab } ?: AppTab.ROSTER
-                when (tab) {
+                // The roster, game, and history tabs wait for their data (usually a split second)
+                // rather than flashing their "none yet" messages.
+                val waitingForData = !isLoaded && tab in setOf(AppTab.ROSTER, AppTab.GAME, AppTab.HISTORY)
+                if (!waitingForData) when (tab) {
                     AppTab.ROSTER -> RosterScreen(
                         modifier = Modifier.fillMaxSize(),
                         isExpanded = isExpanded,
