@@ -101,4 +101,14 @@ class GameEventDescriptionTest {
             uiText(R.string.msg_backup_saved, pluralText(R.plurals.player_count, 1), pluralText(R.plurals.game_count, 3)).english(),
         )
     }
+
+    @Test
+    fun substitutionWithOneSide_readsAsComingOnOrGoingOff() {
+        val sam = PlayerEntity(id = 4, name = "Sam", jerseyNumber = 4)
+        val join = GameEventEntity(gameId = 1, timestamp = 0, type = EventType.SUBSTITUTION.name, playerId = 4)
+        val leave = GameEventEntity(gameId = 1, timestamp = 0, type = EventType.SUBSTITUTION.name, relatedPlayerId = 4)
+
+        assertEquals("#4 Sam comes on", eventDescription(join, mapOf(4L to sam)).english())
+        assertEquals("#4 Sam goes off", eventDescription(leave, mapOf(4L to sam)).english())
+    }
 }

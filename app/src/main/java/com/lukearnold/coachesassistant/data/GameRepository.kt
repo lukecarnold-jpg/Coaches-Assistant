@@ -183,17 +183,27 @@ class GameRepository(
         }
     }
 
-    /** Swaps [playerInId] on for [playerOutId]; returns the event's id, or null if it wasn't a valid swap. */
-    suspend fun substitute(gameId: Long, playerInId: Long, playerOutId: Long): Long? =
+    /**
+     * Puts [playerInId] on and takes [playerOutId] off as one substitution. Either may be null: a
+     * player joining without a swap (e.g. arriving late to a short-handed side), or going off
+     * without a replacement (e.g. injured). Returns the event's id, or null if it isn't a valid
+     * change now: the player coming on must be here and on the bench, the one going off must be on
+     * court, and the court can't go over a full side.
+     */
+    suspend fun substitute(gameId: Long, playerInId: Long?, playerOutId: Long?): Long? =
         database.withTransaction {
             val game = gameDao.getById(gameId) ?: return@withTransaction null
             val lineup = getLineup(gameId)
 
-            if (!lineup.onCourtIds.contains(playerOutId) || lineup.onCourtIds.contains(playerInId)) {
+            if (playerInId == null && playerOutId == null) return@withTransaction null
+            if (playerOutId != null && playerOutId !in lineup.onCourtIds) return@withTransaction null
+            if (playerInId != null && (playerInId in lineup.onCourtIds || playerInId in lineup.absentIds)) {
                 return@withTransaction null
             }
+            val onCourt = lineup.onCourtIds - setOfNotNull(playerOutId) + setOfNotNull(playerInId)
+            if (onCourt.size > game.onCourtSize) return@withTransaction null
 
-            saveLineup(gameId, lineup.copy(onCourtIds = lineup.onCourtIds - playerOutId + playerInId))
+            saveLineup(gameId, lineup.copy(onCourtIds = onCourt))
             gameEventDao.insert(
                 GameEventEntity(
                     gameId = gameId,
@@ -395,11 +405,18 @@ class GameRepository(
         val type = EventType.fromRaw(event.type)
         if (!type.isRemovable) return false
         if (type == EventType.SUBSTITUTION) {
-            val playerIn = event.playerId ?: return false
-            val playerOut = event.relatedPlayerId ?: return false
+            // Either side may be missing: a join without a swap, going off without a replacement,
+            // or a player since deleted from the roster.
+            val playerIn = event.playerId
+            val playerOut = event.relatedPlayerId
+            if (playerIn == null && playerOut == null) return false
             val lineup = getLineup(event.gameId)
-            if (playerIn !in lineup.onCourtIds || playerOut in lineup.onCourtIds) return false
-            saveLineup(event.gameId, lineup.copy(onCourtIds = lineup.onCourtIds - playerIn + playerOut))
+            if (playerIn != null && playerIn !in lineup.onCourtIds) return false
+            if (playerOut != null && playerOut in lineup.onCourtIds) return false
+            val onCourt = lineup.onCourtIds - setOfNotNull(playerIn) + setOfNotNull(playerOut)
+            val game = gameDao.getById(event.gameId) ?: return false
+            if (onCourt.size > game.onCourtSize) return false
+            saveLineup(event.gameId, lineup.copy(onCourtIds = onCourt))
         }
         gameEventDao.deleteById(eventId)
         recalculateTotals(event.gameId)

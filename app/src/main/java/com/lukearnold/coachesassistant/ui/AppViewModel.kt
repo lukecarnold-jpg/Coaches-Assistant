@@ -362,23 +362,33 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         }
     }
 
-    /** Makes each (player in, player out) swap in [pairs], offering one Undo for the whole batch. */
-    fun substitute(pairs: List<Pair<Long, Long>>) {
+    /**
+     * Brings [playersIn] on and takes [playersOut] off, offering one Undo for the whole batch. They
+     * pair up in order as swaps; any extra player coming on joins without a swap, and any extra
+     * going off leaves without a replacement (see GameRepository.substitute).
+     */
+    fun substitute(playersIn: List<Long>, playersOut: List<Long>) {
         val gameId = selectedGame.value?.id
         if (gameId == null) {
             _messages.tryEmit(UiMessage(uiText(R.string.msg_select_game_first)))
             return
         }
-        if (pairs.isEmpty()) {
+        if (playersIn.isEmpty() && playersOut.isEmpty()) {
             _messages.tryEmit(UiMessage(uiText(R.string.msg_pick_in_and_out)))
             return
         }
-        if (pairs.any { (playerIn, playerOut) -> playerIn == playerOut }) {
+        if (playersIn.any { it in playersOut }) {
             _messages.tryEmit(UiMessage(uiText(R.string.msg_in_and_out_same)))
             return
         }
+        val swaps = playersIn.zip(playersOut).map { (playerIn, playerOut) -> playerIn to playerOut }
+        // Swaps and departures first, so joins find room on the court.
+        val changes: List<Pair<Long?, Long?>> = swaps +
+            playersOut.drop(swaps.size).map { null to it } +
+            playersIn.drop(swaps.size).map { it to null }
 
         viewModelScope.launch {
+            val pairs = changes
             val eventIds = pairs.mapNotNull { (playerIn, playerOut) -> repository.substitute(gameId, playerIn, playerOut) }
             when {
                 eventIds.isEmpty() -> _messages.emit(UiMessage(uiText(R.string.msg_substitution_stale)))

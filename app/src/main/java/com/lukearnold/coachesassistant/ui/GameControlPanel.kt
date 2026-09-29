@@ -242,10 +242,27 @@ fun GameControlPanel(
         if (!selectedGame.isFinished) {
             SectionCard(title = stringResource(R.string.substitution)) {
                 Text(stringResource(R.string.select_players_to_come_out_and_players_to_come_i))
-                if (pendingIn.size != pendingOut.size) {
+                // Unequal picks are allowed: extras join without a swap or go off without a
+                // replacement, as long as the court stays between one player and a full side.
+                val courtAfter = onCourtIds.size - pendingOut.size + pendingIn.size
+                val fullSide = sportConfig.onCourtSize
+                val rotationNote = when {
+                    courtAfter > fullSide && onCourtIds.size >= fullSide -> stringResource(R.string.rotation_court_already_full)
+                    courtAfter > fullSide ->
+                        pluralStringResource(R.plurals.rotation_court_full, fullSide - onCourtIds.size, fullSide - onCourtIds.size)
+                    courtAfter < 1 -> stringResource(R.string.rotation_court_empty)
+                    pendingIn.size > pendingOut.size ->
+                        pluralStringResource(R.plurals.rotation_joining, pendingIn.size - pendingOut.size, pendingIn.size - pendingOut.size)
+                    pendingOut.size > pendingIn.size ->
+                        pluralStringResource(R.plurals.rotation_leaving, pendingOut.size - pendingIn.size, pendingOut.size - pendingIn.size) +
+                            if (courtAfter < minimumOnCourt) " " + stringResource(R.string.rotation_below_minimum, courtAfter, minimumOnCourt) else ""
+                    else -> null
+                }
+                val rotationValid = (pendingIn.isNotEmpty() || pendingOut.isNotEmpty()) && courtAfter in 1..fullSide
+                if (rotationNote != null) {
                     Text(
-                        stringResource(R.string.selection_mismatch, pendingOut.size, pendingIn.size),
-                        color = MaterialTheme.colorScheme.error,
+                        rotationNote,
+                        color = if (rotationValid) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
@@ -305,9 +322,10 @@ fun GameControlPanel(
 
                 Button(
                     onClick = onSubstitute,
-                    enabled = (pendingIn.isNotEmpty()) && (pendingIn.size == pendingOut.size)
+                    enabled = rotationValid
                 ) {
-                    Text(pluralStringResource(R.plurals.confirm_rotation, pendingIn.size, pendingIn.size))
+                    val changes = maxOf(pendingIn.size, pendingOut.size)
+                    Text(pluralStringResource(R.plurals.confirm_rotation, changes, changes))
                 }
             }
         }
