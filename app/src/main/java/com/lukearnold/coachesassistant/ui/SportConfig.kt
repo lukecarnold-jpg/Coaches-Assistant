@@ -46,6 +46,11 @@ enum class Infraction(
 /** The rotation/scoring rules a sport's game screen is configured with. */
 data class SportConfig(
     val onCourtSize: Int,
+    /**
+     * The fewest players a team can take the field with, from the sport's rules where they set one
+     * (otherwise a common competition rule, noted beside it). Coaches can change it in Settings.
+     */
+    val minimumOnCourt: Int,
     /** Position codes, as stored on players and in roster CSVs; see [positionLabel] for display. */
     val squadPositions: List<String>,
     /** Default number of periods: 2 halves, 3 periods, or 4 quarters. */
@@ -132,6 +137,7 @@ val Sport.config: SportConfig
     get() = when (this) {
         Sport.BASKETBALL -> SportConfig(
             onCourtSize = 5,
+            minimumOnCourt = 5, // FIBA: five to start.
             squadPositions = listOf("PG", "SG", "SF", "PF", "C"),
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 10,
@@ -145,6 +151,7 @@ val Sport.config: SportConfig
 
         Sport.NETBALL -> SportConfig(
             onCourtSize = 7,
+            minimumOnCourt = 5, // A team may take the court with five.
             squadPositions = listOf("GS", "GA", "WA", "C", "WD", "GD", "GK"),
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 15,
@@ -156,6 +163,7 @@ val Sport.config: SportConfig
 
         Sport.SOCCER -> SportConfig(
             onCourtSize = 11,
+            minimumOnCourt = 7, // IFAB Law 3.
             squadPositions = listOf("GK", "DEF", "MID", "FWD"),
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 45,
@@ -167,6 +175,7 @@ val Sport.config: SportConfig
 
         Sport.AFL -> SportConfig(
             onCourtSize = 18,
+            minimumOnCourt = 14, // No universal law; AFL Queensland community competitions start with 14.
             squadPositions = listOf(
                 "Full Forward", "Half Forward", "Midfield", "Half Back", "Full Back", "Ruck", "Interchange",
             ),
@@ -181,6 +190,7 @@ val Sport.config: SportConfig
 
         Sport.RUGBY_UNION -> SportConfig(
             onCourtSize = 15,
+            minimumOnCourt = 12, // World Rugby Law 3 leaves it to the match organiser.
             squadPositions = listOf(
                 "Prop", "Hooker", "Lock", "Flanker", "No.8", "Scrum-half", "Fly-half", "Centre", "Wing", "Fullback",
             ),
@@ -197,6 +207,7 @@ val Sport.config: SportConfig
 
         Sport.RUGBY_LEAGUE -> SportConfig(
             onCourtSize = 13,
+            minimumOnCourt = 9, // Rugby league laws: nine to start a match.
             squadPositions = listOf(
                 "Prop", "Hooker", "Second Row", "Lock", "Halfback", "Five-Eighth", "Centre", "Wing", "Fullback",
             ),
@@ -213,6 +224,7 @@ val Sport.config: SportConfig
 
         Sport.FUTSAL -> SportConfig(
             onCourtSize = 5,
+            minimumOnCourt = 3, // Futsal Law 3 (some competitions require four).
             squadPositions = listOf("GK", "FIX", "ALA", "PIVO"),
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
@@ -224,6 +236,7 @@ val Sport.config: SportConfig
 
         Sport.FIELD_HOCKEY -> SportConfig(
             onCourtSize = 11,
+            minimumOnCourt = 7, // The FIH rules set only a maximum; seven is a common competition minimum.
             squadPositions = listOf("GK", "DEF", "MID", "FWD"),
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 15,
@@ -235,6 +248,7 @@ val Sport.config: SportConfig
 
         Sport.ICE_HOCKEY -> SportConfig(
             onCourtSize = 6,
+            minimumOnCourt = 5, // IIHF: a goalkeeper and four skaters.
             squadPositions = listOf("G", "LD", "RD", "LW", "C", "RW"),
             defaultPeriodCount = 3,
             defaultPeriodMinutes = 20,
@@ -246,6 +260,7 @@ val Sport.config: SportConfig
 
         Sport.TOUCH_FOOTBALL -> SportConfig(
             onCourtSize = 6,
+            minimumOnCourt = 4, // FIT rules.
             squadPositions = listOf("Link", "Middle", "Wing"),
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
@@ -257,6 +272,7 @@ val Sport.config: SportConfig
 
         Sport.WATER_POLO -> SportConfig(
             onCourtSize = 7,
+            minimumOnCourt = 7, // World Aquatics: a team starts with seven.
             squadPositions = listOf("GK", "Driver", "Hole Set", "Wing", "Point"),
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 8,
@@ -268,6 +284,7 @@ val Sport.config: SportConfig
 
         Sport.HANDBALL -> SportConfig(
             onCourtSize = 7,
+            minimumOnCourt = 5, // IHF: five to start.
             squadPositions = listOf(
                 "GK", "Left Wing", "Left Back", "Centre Back", "Right Back", "Right Wing", "Pivot",
             ),
@@ -281,6 +298,7 @@ val Sport.config: SportConfig
 
         Sport.LACROSSE -> SportConfig(
             onCourtSize = 10,
+            minimumOnCourt = 8, // Competition rules (a team fielding fewer than eight forfeits).
             squadPositions = listOf("GK", "Defense", "Midfield", "Attack"),
             defaultPeriodCount = 4,
             defaultPeriodMinutes = 15,
@@ -292,6 +310,7 @@ val Sport.config: SportConfig
 
         Sport.GAELIC_FOOTBALL -> SportConfig(
             onCourtSize = 15,
+            minimumOnCourt = 13, // GAA Official Guide: a team may start with 13.
             squadPositions = listOf(
                 "GK", "Full Back", "Half Back", "Midfield", "Half Forward", "Full Forward",
             ),
@@ -306,6 +325,7 @@ val Sport.config: SportConfig
 
         Sport.FLAG_FOOTBALL -> SportConfig(
             onCourtSize = 5,
+            minimumOnCourt = 4, // IFAF flag rules.
             squadPositions = listOf("QB", "WR", "RB", "DB", "Rusher"),
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,
@@ -320,6 +340,7 @@ val Sport.config: SportConfig
 
         Sport.ULTIMATE_FRISBEE -> SportConfig(
             onCourtSize = 7,
+            minimumOnCourt = 5, // WFDF: at least five on the field.
             squadPositions = listOf("Handler", "Cutter", "Deep"),
             defaultPeriodCount = 2,
             defaultPeriodMinutes = 20,

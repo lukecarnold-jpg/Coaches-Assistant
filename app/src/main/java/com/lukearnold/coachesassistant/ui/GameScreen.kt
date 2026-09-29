@@ -29,6 +29,8 @@ fun GameScreen(
     onCreateGame: (title: String, opponent: String, periodCount: Int, periodMins: Int) -> Unit,
     onSelectGame: (Long) -> Unit,
     onSetLineup: (List<Long>) -> Unit,
+    /** The fewest players the team can take the field with (see SportConfig.minimumOnCourt). */
+    minimumOnCourt: Int,
     onSubstitute: (pairs: List<Pair<Long, Long>>) -> Unit,
     onAddPlayerScore: (playerId: Long, points: Int) -> Unit,
     onAdjustTeamScore: (points: Int) -> Unit,
@@ -89,6 +91,7 @@ fun GameScreen(
         { now -> selectedGame?.let { fairShare(it, stats.size, elapsedGameMillis(events, now, it.periodDurationMillis)) } }
     }
     val playerById = players.associateBy { it.id }
+    val availablePlayers = players.filter { it.id !in lineup.absentIds }
     val activeGames = games.filter { !it.isFinished }
 
     if (isExpanded) {
@@ -119,7 +122,8 @@ fun GameScreen(
                             exportGame(selectedGame.id, "game_${selectedGame.id}.csv")
                         },
                         exportRosterLauncher = exportRosterLauncher,
-                        players = players,
+                        availablePlayers = availablePlayers,
+                        minimumOnCourt = minimumOnCourt,
                         startingLineupSelection = startingLineupSelection,
                         onSetLineup = onSetLineup,
                         onCourtStats = onCourtStats,
@@ -263,7 +267,8 @@ fun GameScreen(
                         exportGame(selectedGame.id, "game_${selectedGame.id}.csv")
                     },
                     exportRosterLauncher = exportRosterLauncher,
-                    players = players,
+                    availablePlayers = availablePlayers,
+                    minimumOnCourt = minimumOnCourt,
                     startingLineupSelection = startingLineupSelection,
                     onSetLineup = onSetLineup,
                     onCourtStats = onCourtStats,

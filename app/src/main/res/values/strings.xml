@@ -322,10 +322,6 @@
     <string name="pace_on_pace">on pace</string>
     <string name="pace_behind">%1$s behind</string>
     <string name="pace_ahead">%1$s ahead</string>
-    <plurals name="need_players_for_lineup">
-        <item quantity="one">You need at least %d player in the roster before you can set the lineup.</item>
-        <item quantity="other">You need at least %d players in the roster before you can set the lineup.</item>
-    </plurals>
     <plurals name="select_exactly_players">
         <item quantity="one">Select exactly %d player.</item>
         <item quantity="other">Select exactly %d players.</item>
@@ -507,4 +503,29 @@
     <string name="msg_game_day_off">Game Day mode off.</string>
     <string name="msg_game_finalized_game_day_off">Game finalized and court reset. Notifications are back on.</string>
     <string name="msg_game_day_no_access">Game Day mode needs Do Not Disturb access.</string>
+
+    <!-- Fielding a team with the players who are here -->
+    <plurals name="lineup_too_few">
+        <item quantity="one">Only %1$d player is here, and you need at least %2$d to field a team. Mark players as here in Manage Attendance, or change the minimum in Settings.</item>
+        <item quantity="other">Only %1$d players are here, and you need at least %2$d to field a team. Mark players as here in Manage Attendance, or change the minimum in Settings.</item>
+    </plurals>
+    <plurals name="lineup_short_handed">
+        <item quantity="one">Only %1$d player is here, short of a full %2$d. Pick at least %3$d to play short-handed.</item>
+        <item quantity="other">Only %1$d players are here, short of a full %2$d. Pick at least %3$d to play short-handed.</item>
+    </plurals>
+    <plurals name="msg_lineup_short_handed_range">
+        <item quantity="one">Pick %1$d to %2$d player for the starting lineup.</item>
+        <item quantity="other">Pick %1$d to %2$d players for the starting lineup.</item>
+    </plurals>
+    <string name="msg_lineup_too_few">Not enough players are here to field a team.</string>
+    <string name="minimum_on_court_title">Minimum players to field a team</string>
+    <!-- e.g. "5 of 7 on court" -->
+    <plurals name="minimum_on_court_value">
+        <item quantity="one">%1$d of %2$d on court</item>
+        <item quantity="other">%1$d of %2$d on court</item>
+    </plurals>
+    <string name="minimum_on_court_explanation">With fewer players here than a full side, you can still start short-handed down to this number. %1$s\'s rules: %2$d. Change it if your competition allows a different number.</string>
+    <string name="minimum_on_court_reset">Reset to the rules (%1$d)</string>
+    <string name="fewer">Fewer</string>
+    <string name="more">More</string>
 </resources>

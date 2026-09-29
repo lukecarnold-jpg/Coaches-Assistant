@@ -152,6 +152,7 @@ private fun SportApp(
     val games by appViewModel.games.collectAsState()
     val selectedGame by appViewModel.selectedGame.collectAsState()
     val gameDayGameId by appViewModel.gameDayGameId.collectAsState()
+    val minimumOnCourt by appViewModel.minimumOnCourt.collectAsState()
     val context = LocalContext.current
     var keepScreenOnWhileClockRuns by remember { mutableStateOf(DisplayPreferences.keepScreenOnWhileClockRuns(context)) }
     KeepScreenOn(shouldKeepScreenOn(selectedGame, keepScreenOnWhileClockRuns))
@@ -247,6 +248,7 @@ private fun SportApp(
                         onCreateGame = appViewModel::createGame,
                         onSelectGame = appViewModel::selectGame,
                         onSetLineup = appViewModel::setStartingLineup,
+                        minimumOnCourt = minimumOnCourt,
                         onSubstitute = appViewModel::substitute,
                         onAddPlayerScore = appViewModel::addPlayerScore,
                         onAdjustTeamScore = appViewModel::adjustTeamScore,
@@ -312,6 +314,8 @@ private fun SportApp(
                         onSwitchSport = onSwitchSport,
                         onBackup = appViewModel::exportBackup,
                         onRestore = appViewModel::restoreBackup,
+                        minimumOnCourt = minimumOnCourt,
+                        onMinimumOnCourtChange = appViewModel::setMinimumOnCourt,
                         keepScreenOnWhileClockRuns = keepScreenOnWhileClockRuns,
                         onKeepScreenOnWhileClockRunsChange = { enabled ->
                             DisplayPreferences.setKeepScreenOnWhileClockRuns(context, enabled)

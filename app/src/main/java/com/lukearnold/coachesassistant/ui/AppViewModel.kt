@@ -39,6 +39,17 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     private val backupIo = BackupIo(AppDatabase.getInstance(application))
     private val gameDayMode = GameDayMode.get(application)
 
+    private val _minimumOnCourt = MutableStateFlow(FieldingPreferences.minimumOnCourt(application, sport))
+
+    /** The fewest players this sport's team takes the field with (see SportConfig.minimumOnCourt). */
+    val minimumOnCourt: StateFlow<Int> = _minimumOnCourt
+
+    fun setMinimumOnCourt(minimum: Int) {
+        val value = minimum.coerceIn(1, sport.config.onCourtSize)
+        FieldingPreferences.setMinimumOnCourt(getApplication(), sport, value)
+        _minimumOnCourt.value = value
+    }
+
     /** The game Game Day mode is silencing notifications for (any sport's), or null if it's off. */
     val gameDayGameId: StateFlow<Long?> = gameDayMode.activeGameId
 
@@ -331,13 +342,22 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             return
         }
         val requiredSize = sport.config.onCourtSize
-        if (playerIds.distinct().size != requiredSize) {
-            _messages.tryEmit(UiMessage(pluralText(R.plurals.msg_lineup_needs_players, requiredSize)))
+        val absent = selectedGameLineup.value.absentIds
+        val available = players.value.count { it.id !in absent }
+        val chosen = playerIds.distinct().filter { it !in absent }
+        val rule = lineupRule(available, requiredSize, _minimumOnCourt.value)
+        if (!rule.allows(chosen.size)) {
+            val message = when (rule) {
+                is LineupRule.Full -> pluralText(R.plurals.msg_lineup_needs_players, requiredSize)
+                is LineupRule.ShortHanded -> pluralText(R.plurals.msg_lineup_short_handed_range, rule.available, rule.minimum, rule.available)
+                is LineupRule.TooFew -> uiText(R.string.msg_lineup_too_few)
+            }
+            _messages.tryEmit(UiMessage(message))
             return
         }
 
         viewModelScope.launch {
-            repository.selectStartingLineup(gameId, playerIds, requiredSize)
+            repository.selectStartingLineup(gameId, chosen, requiredSize)
             _messages.emit(UiMessage(uiText(R.string.msg_lineup_saved)))
         }
     }
