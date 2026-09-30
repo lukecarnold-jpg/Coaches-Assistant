@@ -1,7 +1,8 @@
 # Project Structure
 
-Coaches Assistant is a single-module Android application built with Kotlin,
-Jetpack Compose, Room, and optional AI-generated training drills. The
+Coaches Assistant is an Android application (`:app`) built with Kotlin,
+Jetpack Compose, Room, and optional AI-generated training drills. A second
+module, `:baselineprofile`, generates its baseline profile. The
 application supports 16 sports while sharing the same roster, game, event,
 export, and persistence infrastructure.
 
