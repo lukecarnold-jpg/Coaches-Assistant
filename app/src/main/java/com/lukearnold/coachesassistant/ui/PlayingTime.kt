@@ -4,6 +4,7 @@ import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.EventType
 import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.GameEventEntity
+import com.lukearnold.coachesassistant.data.PlayerEntity
 import com.lukearnold.coachesassistant.data.capToPeriod
 import kotlin.math.abs
 
@@ -93,12 +94,23 @@ fun subSuggestion(
     bench: List<PlayerGameStat>,
     share: FairShare?,
     gameTimeMillis: Long,
+    /** Players never suggested, on or off (see subSuggestionExclusions). */
+    excluded: Set<Long> = emptySet(),
 ): SubSuggestion? {
     if (share == null) return null
-    val off = onCourt.maxByOrNull { -share.behindMillis(it.totalTimeAt(gameTimeMillis)) } ?: return null
-    val on = benchSubOrder(bench).firstOrNull() ?: return null
+    val off = onCourt.filter { it.player.id !in excluded }
+        .maxByOrNull { -share.behindMillis(it.totalTimeAt(gameTimeMillis)) } ?: return null
+    val on = benchSubOrder(bench.filter { it.player.id !in excluded }).firstOrNull() ?: return null
     val offAhead = -share.behindMillis(off.totalTimeAt(gameTimeMillis))
     val onBehind = share.behindMillis(on.totalTimeAt(gameTimeMillis))
     if (offAhead < SUB_SUGGESTION_MARGIN_MILLIS || onBehind < SUB_SUGGESTION_MARGIN_MILLIS) return null
     return SubSuggestion(off, on, offAhead, onBehind)
 }
+
+/**
+ * Players substitution suggestions leave out: the keeper, in sports where the keeper plays through
+ * (their position is [config]'s keeperPosition), since they'd otherwise always look "ahead".
+ */
+fun subSuggestionExclusions(players: List<PlayerEntity>, config: SportConfig): Set<Long> =
+    config.keeperPosition?.let { keeper -> players.filter { it.position == keeper }.map { it.id }.toSet() }.orEmpty()
+

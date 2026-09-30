@@ -111,7 +111,8 @@ fun GameControlPanel(
 
         if (suggestSubs && !selectedGame.isFinished) {
             val now = gameTimeMillis()
-            subSuggestion(onCourtStats, benchStats, fairShareAt(now), now)
+            val excluded = subSuggestionExclusions((onCourtStats + benchStats).map { it.player }, sportConfig)
+            subSuggestion(onCourtStats, benchStats, fairShareAt(now), now, excluded)
                 ?.takeUnless { s -> subSnooze?.let { it.key == s.key && now < it.untilGameTimeMillis } == true }
                 ?.let { suggestion ->
                     SubSuggestionBanner(
