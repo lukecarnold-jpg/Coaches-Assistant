@@ -1,5 +1,6 @@
 package com.lukearnold.coachesassistant
 
+import com.lukearnold.coachesassistant.ui.SubReminders
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.foundation.text.TextAutoSize
@@ -167,6 +168,16 @@ private fun SportApp(
     var clockNotification by remember {
         mutableStateOf(GameClockNotification.isEnabled(context) && GameClockNotification.canPost(context))
     }
+    var suggestSubs by remember { mutableStateOf(SubReminders.suggestEnabled(context)) }
+    var notifySubs by remember {
+        mutableStateOf(SubReminders.notifyEnabled(context) && GameClockNotification.canPost(context))
+    }
+    val subNotificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        SubReminders.setNotifyEnabled(context, granted)
+        notifySubs = granted
+        if (!granted) appViewModel.reportNotificationsDenied()
+    }
+    val subSnooze by appViewModel.subSnooze.collectAsState()
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         appViewModel.setClockNotificationEnabled(granted)
         clockNotification = granted
@@ -285,6 +296,10 @@ private fun SportApp(
                         onSelectGame = appViewModel::selectGame,
                         onSetLineup = appViewModel::setStartingLineup,
                         minimumOnCourt = minimumOnCourt,
+                        suggestSubs = suggestSubs,
+                        subSnooze = subSnooze,
+                        onSubNow = appViewModel::acceptSubSuggestion,
+                        onSubLater = appViewModel::snoozeSubSuggestion,
                         onSubstitute = appViewModel::substitute,
                         onAddPlayerScore = appViewModel::addPlayerScore,
                         onAdjustTeamScore = appViewModel::adjustTeamScore,
@@ -351,6 +366,24 @@ private fun SportApp(
                         onBackup = appViewModel::exportBackup,
                         onRestore = appViewModel::restoreBackup,
                         minimumOnCourt = minimumOnCourt,
+                        suggestSubs = suggestSubs,
+                        onSuggestSubsChange = { enabled ->
+                            SubReminders.setSuggestEnabled(context, enabled)
+                            suggestSubs = enabled
+                        },
+                        notifySubs = notifySubs,
+                        onNotifySubsChange = { enabled ->
+                            if (enabled && !GameClockNotification.canPost(context) &&
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                            ) {
+                                subNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            } else if (enabled && !GameClockNotification.canPost(context)) {
+                                appViewModel.reportNotificationsDenied() // switched off in system settings
+                            } else {
+                                SubReminders.setNotifyEnabled(context, enabled)
+                                notifySubs = enabled
+                            }
+                        },
                         onMinimumOnCourtChange = appViewModel::setMinimumOnCourt,
                         clockNotification = clockNotification,
                         onClockNotificationChange = { enabled ->

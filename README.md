@@ -37,6 +37,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Per-player on-court shift timer that starts from 0 the moment a player is subbed on and freezes when they're subbed off, tracked against the game clock rather than wall-clock time
   - Game stats cards lead with an ON COURT/BENCH status badge and a live time (current shift length while on court, elapsed bench time since their last sub-off while benched)
   - Equal-share playing-time targets: each available (non-absent) player's share of the game's on-court time, shown on player cards and game stats with how far they are behind or ahead of an even share so far; the substitution list puts the bench player furthest behind first
+  - Substitution suggestions: when a player on court is 2 minutes ahead of an even share and one on the bench is 2 minutes behind, a banner on the Game tab suggests swapping them ("#1 Ava off (02:30 ahead) · #6 Fay on (12:30 behind)"), with Sub now (undoable) and Later (hides that pair for another 2 minutes of play). Optionally also as a notification with a Sub now button, while the clock runs
   - Team and opponent score tracking, with the sport's scoring buttons available for both sides, and opponent-score events in the event log labeled with the actual opponent team name (falling back to "Opponent" only when no name was entered)
   - Per-player infraction logging (labeled Foul/Penalty/Card/Free Kick per sport) and MVP vote tracking
   - Per-game attendance management
@@ -63,6 +64,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Settings tab
   - "Switch sport" returns to the sport landing screen
   - "Minimum players to field a team" for the current sport, from 1 to a full side, defaulting to the sport's rules
+  - Substitutions: "Suggest substitutions" (on by default) and "Notify me when it's time to sub" (off by default; asks for the notifications permission on Android 13+). The notification is checked every 15 seconds while a clock runs and the app is open or in the background. Game Day mode silences it like any other app's, unless the coach allows Coaches Assistant in that mode's settings
   - "Keep screen on while the clock runs" (on by default) stops the phone locking mid-game; the normal screen timeout returns as soon as the clock stops
   - "Show the running clock in notifications" (off by default; asks for the notifications permission on Android 13+): while a clock runs, a silent notification shows the game, period, score, and a live countdown, including on the lock screen, with a Stop clock button. The system counts it down, so it stays right with the app closed, and it disappears when the clock stops or the period ends
   - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device with an AES-256-GCM key held in the Android Keystore (`ai/AiSettingsStore.kt`)
@@ -208,6 +210,7 @@ Last checked by hand on the Pixel 10 Pro emulator (API 37) in September 2026:
 - A live game: clock auto-stop and keep-screen-on, playing-time labels, scoring and substitution undo, End Game and other confirmations
 - Substitutions: joining a short court without a swap, going off without a replacement (below the minimum), and undoing it
 - Fielding: the lineup offering only players who are here, pre-ticking them when all play, too few to field a team, and a short-handed lineup after lowering the minimum
+- Substitution suggestions: the banner naming the pair at the predicted times, the notification arriving with the clock running, and its Sub now making the swap from the notification shade
 - The game clock notification: the permission prompt, the live countdown in the shade, and Stop clock stopping the app's clock
 - Game Day mode: granting Modes access, silencing (priority-only Do Not Disturb), staying on after the app is closed, and turning off from its button, End Game, or deleting the game
 - Backup and restore, including onto a wiped app; the transition build migrating the old app's data and restoring it into the new app

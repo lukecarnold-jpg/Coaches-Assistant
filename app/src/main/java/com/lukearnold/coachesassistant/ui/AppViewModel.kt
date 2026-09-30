@@ -19,6 +19,7 @@ import com.lukearnold.coachesassistant.data.PlayerEntity
 import com.lukearnold.coachesassistant.data.displayLabel
 import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.data.GameLineup
+import com.lukearnold.coachesassistant.data.currentGameTimeMillis
 import com.lukearnold.coachesassistant.data.remainingPeriodTimeMillis
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -136,7 +138,65 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             emptyList(),
         )
 
+    /** A substitution suggestion the coach put off, until the game clock reaches [untilGameTimeMillis]. */
+    data class SubSnooze(val key: Pair<Long, Long>, val untilGameTimeMillis: Long)
+
+    private val _subSnooze = MutableStateFlow<SubSnooze?>(null)
+    val subSnooze: StateFlow<SubSnooze?> = _subSnooze
+
+    /** "Later" on a suggestion: hides that pair for another [SUB_SUGGESTION_MARGIN_MILLIS] of play. */
+    fun snoozeSubSuggestion(key: Pair<Long, Long>, gameTimeMillis: Long) {
+        _subSnooze.value = SubSnooze(key, gameTimeMillis + SUB_SUGGESTION_MARGIN_MILLIS)
+        SubReminders.cancel(getApplication())
+    }
+
+    /** "Sub now" on a suggestion: the swap, with Undo like any substitution. */
+    fun acceptSubSuggestion(playerOn: Long, playerOff: Long) {
+        SubReminders.cancel(getApplication())
+        substitute(listOf(playerOn), listOf(playerOff))
+    }
+
+    private var lastNotifiedSub: Pair<Long, Long>? = null
+
+    /**
+     * Checks whether it's time to suggest a substitution for [gameId], and notifies if so (once
+     * per suggested pair). Reads the database directly, so it works while the screen is off.
+     */
+    private suspend fun checkForSubReminder(gameId: Long) {
+        val app = getApplication<Application>()
+        if (!SubReminders.suggestEnabled(app) || !SubReminders.notifyEnabled(app) || !GameClockNotification.canPost(app)) return
+        val game = repository.getGame(gameId)?.takeUnless { it.isFinished } ?: return
+        val events = repository.getEvents(gameId)
+        val stats = calculatePlayerGameStats(repository.getPlayers(sport), game, repository.getLineup(gameId), events)
+        val now = game.currentGameTimeMillis()
+        val share = fairShare(game, stats.size, elapsedGameMillis(events, now, game.periodDurationMillis))
+        val suggestion = subSuggestion(stats.filter { it.onCourt }, stats.filter { !it.onCourt }, share, now)
+            ?.takeUnless { s -> _subSnooze.value?.let { it.key == s.key && now < it.untilGameTimeMillis } == true }
+        if (suggestion == null) {
+            if (lastNotifiedSub != null) SubReminders.cancel(app)
+            lastNotifiedSub = null
+        } else if (suggestion.key != lastNotifiedSub) {
+            SubReminders.notify(app, gameId, suggestion)
+            lastNotifiedSub = suggestion.key
+        }
+    }
+
     init {
+        // While this sport has a clock running, check every 15 seconds whether to remind the coach
+        // to sub (see checkForSubReminder).
+        viewModelScope.launch {
+            repository.gamesForSport(sport)
+                .map { games -> games.firstOrNull { !it.isFinished && it.timerLastStartedAt != null }?.id }
+                .distinctUntilChanged()
+                .collectLatest { runningGameId ->
+                    if (runningGameId == null) return@collectLatest
+                    while (true) {
+                        checkForSubReminder(runningGameId)
+                        delay(15_000)
+                    }
+                }
+        }
+
         // Game Day mode lasts until its game ends. End Game turns it off directly; this also covers
         // the game being deleted, cleared, or replaced by a restore, in any sport.
         viewModelScope.launch {

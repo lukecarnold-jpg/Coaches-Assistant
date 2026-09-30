@@ -84,6 +84,10 @@ fun SettingsScreen(
     /** The current sport's minimum players to field a team (see SportConfig.minimumOnCourt). */
     minimumOnCourt: Int? = null,
     onMinimumOnCourtChange: (Int) -> Unit = {},
+    suggestSubs: Boolean = true,
+    onSuggestSubsChange: (Boolean) -> Unit = {},
+    notifySubs: Boolean = false,
+    onNotifySubsChange: (Boolean) -> Unit = {},
 ) {
     val layout = LocalResponsiveLayout.current
     var showConfirm by remember { mutableStateOf(value = false) }
@@ -142,6 +146,23 @@ fun SettingsScreen(
                     MinimumOnCourtSetting(currentSport, minimumOnCourt, onMinimumOnCourtChange)
                 }
             }
+        }
+
+        SectionCard(title = stringResource(R.string.substitutions_settings)) {
+            SettingSwitch(
+                title = stringResource(R.string.suggest_substitutions_setting),
+                description = stringResource(R.string.suggest_substitutions_setting_description),
+                checked = suggestSubs,
+                onCheckedChange = onSuggestSubsChange,
+            )
+            Spacer(Modifier.height(layout.smallGap))
+            SettingSwitch(
+                title = stringResource(R.string.notify_substitutions_setting),
+                description = stringResource(R.string.notify_substitutions_setting_description),
+                checked = notifySubs && suggestSubs,
+                onCheckedChange = onNotifySubsChange,
+                enabled = suggestSubs,
+            )
         }
 
         SectionCard(title = stringResource(R.string.display)) {
@@ -502,6 +523,27 @@ private fun MinimumOnCourtSetting(sport: Sport, minimum: Int, onChange: (Int) ->
         TextButton(onClick = { onChange(config.minimumOnCourt) }) {
             Text(stringResource(R.string.minimum_on_court_reset, config.minimumOnCourt))
         }
+    }
+}
+
+/** A setting with a title, a short explanation, and a switch. */
+@Composable
+private fun SettingSwitch(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title)
+            Text(description, style = MaterialTheme.typography.bodySmall)
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
 

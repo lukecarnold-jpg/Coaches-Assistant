@@ -64,3 +64,41 @@ fun paceLabel(behindMillis: Long): UiText = when {
     behindMillis > 0 -> uiText(R.string.pace_behind, formatDuration(behindMillis))
     else -> uiText(R.string.pace_ahead, formatDuration(-behindMillis))
 }
+
+/** How far ahead of and behind their share players must be before a substitution is suggested. */
+const val SUB_SUGGESTION_MARGIN_MILLIS = 120_000L
+
+/**
+ * A suggested substitution: [playerOff] is [offAheadMillis] ahead of their share and [playerOn]
+ * is [onBehindMillis] behind it.
+ */
+data class SubSuggestion(
+    val playerOff: PlayerGameStat,
+    val playerOn: PlayerGameStat,
+    val offAheadMillis: Long,
+    val onBehindMillis: Long,
+) {
+    /** Identifies the pair, e.g. for "Later" to hide just this suggestion. */
+    val key: Pair<Long, Long> get() = playerOff.player.id to playerOn.player.id
+}
+
+/**
+ * The substitution that would even out playing time most, as of [gameTimeMillis]: the on-court
+ * player furthest ahead of their [share] off, and the bench player furthest behind on, when each
+ * is at least [SUB_SUGGESTION_MARGIN_MILLIS] from it. Null when minutes are even enough, or
+ * there's no share to compare with.
+ */
+fun subSuggestion(
+    onCourt: List<PlayerGameStat>,
+    bench: List<PlayerGameStat>,
+    share: FairShare?,
+    gameTimeMillis: Long,
+): SubSuggestion? {
+    if (share == null) return null
+    val off = onCourt.maxByOrNull { -share.behindMillis(it.totalTimeAt(gameTimeMillis)) } ?: return null
+    val on = benchSubOrder(bench).firstOrNull() ?: return null
+    val offAhead = -share.behindMillis(off.totalTimeAt(gameTimeMillis))
+    val onBehind = share.behindMillis(on.totalTimeAt(gameTimeMillis))
+    if (offAhead < SUB_SUGGESTION_MARGIN_MILLIS || onBehind < SUB_SUGGESTION_MARGIN_MILLIS) return null
+    return SubSuggestion(off, on, offAhead, onBehind)
+}

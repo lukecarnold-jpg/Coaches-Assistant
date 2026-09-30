@@ -32,6 +32,9 @@
         <receiver
             android:name=".ui.StopGameClockReceiver"
             android:exported="false" />
+        <receiver
+            android:name=".ui.SubNowReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

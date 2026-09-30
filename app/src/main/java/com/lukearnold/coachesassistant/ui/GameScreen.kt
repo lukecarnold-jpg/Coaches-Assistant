@@ -33,6 +33,11 @@ fun GameScreen(
     minimumOnCourt: Int,
     /** Players coming on and going off; see AppViewModel.substitute for how they pair up. */
     onSubstitute: (playersIn: List<Long>, playersOut: List<Long>) -> Unit,
+    /** Substitution suggestions (see subSuggestion): whether to show them, and what to do with one. */
+    suggestSubs: Boolean = false,
+    subSnooze: AppViewModel.SubSnooze? = null,
+    onSubNow: (playerOn: Long, playerOff: Long) -> Unit = { _, _ -> },
+    onSubLater: (key: Pair<Long, Long>, gameTimeMillis: Long) -> Unit = { _, _ -> },
     onAddPlayerScore: (playerId: Long, points: Int) -> Unit,
     onAdjustTeamScore: (points: Int) -> Unit,
     onAddOpponentScore: (points: Int) -> Unit,
@@ -149,7 +154,11 @@ fun GameScreen(
                             onSubstitute(pendingIn.toList(), pendingOut.toList())
                             pendingIn.clear()
                             pendingOut.clear()
-                        }
+                        },
+                        suggestSubs = suggestSubs,
+                        subSnooze = subSnooze,
+                        onSubNow = onSubNow,
+                        onSubLater = onSubLater,
                     )
                 } else {
                     EmptyMessage(stringResource(R.string.select_or_create_a_game_to_start_tracking))
@@ -286,11 +295,16 @@ fun GameScreen(
                     onPlayerInClick = { id ->
                         if (pendingIn.contains(id)) pendingIn.remove(id) else pendingIn.add(id)
                     },
-                ) {
-                    onSubstitute(pendingIn.toList(), pendingOut.toList())
-                    pendingIn.clear()
-                    pendingOut.clear()
-                }
+                    onSubstitute = {
+                        onSubstitute(pendingIn.toList(), pendingOut.toList())
+                        pendingIn.clear()
+                        pendingOut.clear()
+                    },
+                    suggestSubs = suggestSubs,
+                    subSnooze = subSnooze,
+                    onSubNow = onSubNow,
+                    onSubLater = onSubLater,
+                )
 
                 GameStatsPanel(
                     stats = stats,

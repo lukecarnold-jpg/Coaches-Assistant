@@ -31,6 +31,13 @@ class GameRepository(
 
     suspend fun getLineup(gameId: Long): GameLineup = GameLineup.from(gamePlayerDao.getByGame(gameId))
 
+    suspend fun getGame(gameId: Long): GameEntity? = gameDao.getById(gameId)
+
+    suspend fun getPlayers(sport: Sport): List<PlayerEntity> = playerDao.getAllBySport(sport.name)
+
+    /** The game's events in the order they happened. */
+    suspend fun getEvents(gameId: Long): List<GameEventEntity> = gameEventDao.getByGame(gameId)
+
     /** Every event from [sport]'s finished games, for season totals. */
     fun observeFinishedGameEvents(sport: Sport): Flow<List<GameEventEntity>> =
         gameEventDao.observeForFinishedGames(sport.name)

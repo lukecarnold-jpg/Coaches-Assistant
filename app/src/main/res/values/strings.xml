@@ -559,4 +559,18 @@
     <string name="rotation_court_empty">At least one player has to stay on court.</string>
     <!-- Appended to rotation_leaving, e.g. "That leaves 4 on court, below the minimum of 5." -->
     <string name="rotation_below_minimum">That leaves %1$d on court, below the minimum of %2$d.</string>
+
+    <!-- Substitution suggestions -->
+    <string name="sub_suggestion_title">Time to sub</string>
+    <!-- e.g. "#4 Sam off (02:30 ahead) · #7 Kit on (02:10 behind)" -->
+    <string name="sub_suggestion_line">%1$s off (%2$s ahead) · %3$s on (%4$s behind)</string>
+    <string name="sub_now">Sub now</string>
+    <string name="sub_later">Later</string>
+    <string name="sub_reminders_channel">Substitution reminders</string>
+    <string name="sub_reminders_channel_description">When a player on court is well ahead of an even share of playing time and one on the bench is well behind.</string>
+    <string name="substitutions_settings">Substitutions</string>
+    <string name="suggest_substitutions_setting">Suggest substitutions</string>
+    <string name="suggest_substitutions_setting_description">When a player on court is 2 minutes ahead of an even share of playing time and one on the bench is 2 minutes behind, the Game tab suggests swapping them.</string>
+    <string name="notify_substitutions_setting">Notify me when it\'s time to sub</string>
+    <string name="notify_substitutions_setting_description">Also sends the suggestion as a notification, with a Sub now button, while the clock runs. Works while the app is open or in the background. With Game Day mode on it arrives silently, unless you allow Coaches Assistant in the Game day mode\'s settings (phone Settings → Modes → Game day).</string>
 </resources>

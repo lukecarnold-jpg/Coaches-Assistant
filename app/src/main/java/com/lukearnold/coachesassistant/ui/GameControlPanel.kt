@@ -57,6 +57,11 @@ fun GameControlPanel(
     pendingIn: List<Long>,
     onPlayerInClick: (Long) -> Unit,
     onSubstitute: () -> Unit,
+    /** Whether to suggest substitutions (see subSuggestion), and what to do with one. */
+    suggestSubs: Boolean = false,
+    subSnooze: AppViewModel.SubSnooze? = null,
+    onSubNow: (playerOn: Long, playerOff: Long) -> Unit = { _, _ -> },
+    onSubLater: (key: Pair<Long, Long>, gameTimeMillis: Long) -> Unit = { _, _ -> },
 ) {
     val layout = LocalResponsiveLayout.current
     var showEndGameConfirm by remember(selectedGame.id) { mutableStateOf(false) }
@@ -103,6 +108,19 @@ fun GameControlPanel(
             onResetTimer = onResetTimer,
             onSetGameTime = onSetGameTime
         )
+
+        if (suggestSubs && !selectedGame.isFinished) {
+            val now = gameTimeMillis()
+            subSuggestion(onCourtStats, benchStats, fairShareAt(now), now)
+                ?.takeUnless { s -> subSnooze?.let { it.key == s.key && now < it.untilGameTimeMillis } == true }
+                ?.let { suggestion ->
+                    SubSuggestionBanner(
+                        suggestion = suggestion,
+                        onSubNow = { onSubNow(suggestion.playerOn.player.id, suggestion.playerOff.player.id) },
+                        onLater = { onSubLater(suggestion.key, now) },
+                    )
+                }
+        }
 
         if (!selectedGame.isFinished) {
             Row(
@@ -542,3 +560,37 @@ fun StartingLineupPicker(
         }
     }
 }
+
+/** "Time to sub: #4 Sam off (02:30 ahead) · #7 Kit on (02:10 behind)", with Sub now and Later. */
+@Composable
+fun SubSuggestionBanner(suggestion: SubSuggestion, onSubNow: () -> Unit, onLater: () -> Unit) {
+    val layout = LocalResponsiveLayout.current
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(top = layout.smallGap),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+    ) {
+        Column(modifier = Modifier.padding(layout.cardPadding), verticalArrangement = Arrangement.spacedBy(layout.tinyGap)) {
+            Text(
+                stringResource(R.string.sub_suggestion_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
+            )
+            Text(
+                stringResource(
+                    R.string.sub_suggestion_line,
+                    suggestion.playerOff.player.displayLabel(),
+                    formatDuration(suggestion.offAheadMillis),
+                    suggestion.playerOn.player.displayLabel(),
+                    formatDuration(suggestion.onBehindMillis),
+                ),
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+                Button(onClick = onSubNow) { Text(stringResource(R.string.sub_now)) }
+                TextButton(onClick = onLater) { Text(stringResource(R.string.sub_later)) }
+            }
+        }
+    }
+}
+
