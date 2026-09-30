@@ -1,5 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
+import com.lukearnold.coachesassistant.data.EventType
+import com.lukearnold.coachesassistant.data.GameEventEntity
 import com.lukearnold.coachesassistant.data.PlayerEntity
 import com.lukearnold.coachesassistant.data.Sport
 import org.junit.Assert.assertEquals
@@ -63,9 +65,27 @@ class SubSuggestionTest {
         val keeper = PlayerEntity(id = 1, name = "Kim", position = "GK")
         val striker = PlayerEntity(id = 2, name = "Sam", position = "FWD")
 
-        assertEquals(setOf(1L), subSuggestionExclusions(listOf(keeper, striker), Sport.SOCCER.config))
-        assertEquals(setOf(5L), subSuggestionExclusions(listOf(PlayerEntity(id = 5, name = "Lee", position = "G")), Sport.ICE_HOCKEY.config))
+        assertEquals(setOf(1L), subSuggestionExclusions(listOf(keeper, striker), Sport.SOCCER.config, emptyList()))
+        assertEquals(setOf(5L), subSuggestionExclusions(listOf(PlayerEntity(id = 5, name = "Lee", position = "G")), Sport.ICE_HOCKEY.config, emptyList()))
         // Netball's GK is a defender who rotates like everyone else.
-        assertEquals(emptySet<Long>(), subSuggestionExclusions(listOf(keeper), Sport.NETBALL.config))
+        assertEquals(emptySet<Long>(), subSuggestionExclusions(listOf(keeper), Sport.NETBALL.config, emptyList()))
+    }
+
+    @Test
+    fun aPlayerTakenOffWithoutAReplacement_isLeftOutUntilTheyComeBack() {
+        fun event(id: Long, type: EventType, playerId: Long? = null, related: Long? = null, note: String = "") =
+            GameEventEntity(id = id, gameId = 1, timestamp = id, type = type.name, playerId = playerId, relatedPlayerId = related, note = note)
+        val injured = listOf(
+            event(1, EventType.START_LINEUP, note = "1,2"),
+            event(2, EventType.SUBSTITUTION, related = 1), // 1 goes off injured
+        )
+        assertEquals(setOf(1L), offWithoutReplacement(injured))
+
+        // Back on through a join, a swap, or the next period's lineup: included again.
+        assertEquals(emptySet<Long>(), offWithoutReplacement(injured + event(3, EventType.SUBSTITUTION, playerId = 1)))
+        assertEquals(emptySet<Long>(), offWithoutReplacement(injured + event(3, EventType.SUBSTITUTION, playerId = 1, related = 2)))
+        assertEquals(emptySet<Long>(), offWithoutReplacement(injured + event(3, EventType.START_LINEUP, note = "1,2")))
+        // An ordinary swap doesn't count.
+        assertEquals(emptySet<Long>(), offWithoutReplacement(listOf(event(1, EventType.SUBSTITUTION, playerId = 3, related = 1))))
     }
 }

@@ -171,7 +171,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         val stats = calculatePlayerGameStats(players, game, repository.getLineup(gameId), events)
         val now = game.currentGameTimeMillis()
         val share = fairShare(game, stats.size, elapsedGameMillis(events, now, game.periodDurationMillis))
-        val excluded = subSuggestionExclusions(players, sport.config)
+        val excluded = subSuggestionExclusions(players, sport.config, events)
         val suggestion = subSuggestion(stats.filter { it.onCourt }, stats.filter { !it.onCourt }, share, now, excluded)
             ?.takeUnless { s -> _subSnooze.value?.let { it.key == s.key && now < it.untilGameTimeMillis } == true }
         if (suggestion == null) {

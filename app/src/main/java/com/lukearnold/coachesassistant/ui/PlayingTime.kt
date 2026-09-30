@@ -109,8 +109,31 @@ fun subSuggestion(
 
 /**
  * Players substitution suggestions leave out: the keeper, in sports where the keeper plays through
- * (their position is [config]'s keeperPosition), since they'd otherwise always look "ahead".
+ * (their position is [config]'s keeperPosition), since they'd otherwise always look "ahead"; and
+ * anyone taken off without a replacement (e.g. injured), who'd otherwise soon be suggested back
+ * on, until the coach brings them back.
  */
-fun subSuggestionExclusions(players: List<PlayerEntity>, config: SportConfig): Set<Long> =
-    config.keeperPosition?.let { keeper -> players.filter { it.position == keeper }.map { it.id }.toSet() }.orEmpty()
+fun subSuggestionExclusions(players: List<PlayerEntity>, config: SportConfig, events: List<GameEventEntity>): Set<Long> {
+    val keepers = config.keeperPosition?.let { keeper -> players.filter { it.position == keeper }.map { it.id } }.orEmpty()
+    return keepers.toSet() + offWithoutReplacement(events)
+}
+
+/**
+ * Players whose last move in [events] was going off without a replacement: out until they come
+ * back on (a substitution, joining without a swap, or a starting lineup).
+ */
+fun offWithoutReplacement(events: List<GameEventEntity>): Set<Long> {
+    val out = mutableSetOf<Long>()
+    events.sortedWith(compareBy({ it.timestamp }, { it.id })).forEach { event ->
+        when (EventType.fromRaw(event.type)) {
+            EventType.SUBSTITUTION -> {
+                event.playerId?.let { out -= it }
+                if (event.playerId == null) event.relatedPlayerId?.let { out += it }
+            }
+            EventType.START_LINEUP -> out -= event.note.split(',').mapNotNull { it.trim().toLongOrNull() }.toSet()
+            else -> Unit
+        }
+    }
+    return out
+}
 
