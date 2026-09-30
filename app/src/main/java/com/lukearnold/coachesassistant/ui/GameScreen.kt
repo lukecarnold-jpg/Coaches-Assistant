@@ -156,6 +156,7 @@ fun GameScreen(
                             pendingOut.clear()
                         },
                         suggestSubs = suggestSubs,
+                        events = events,
                         subSnooze = subSnooze,
                         onSubNow = onSubNow,
                         onSubLater = onSubLater,
@@ -301,6 +302,7 @@ fun GameScreen(
                         pendingOut.clear()
                     },
                     suggestSubs = suggestSubs,
+                    events = events,
                     subSnooze = subSnooze,
                     onSubNow = onSubNow,
                     onSubLater = onSubLater,
