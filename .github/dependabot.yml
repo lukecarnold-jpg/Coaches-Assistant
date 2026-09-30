@@ -1,0 +1,21 @@
+# Weekly dependency update PRs; CI checks each one (tests, lint, release build) before merging.
+# Minor and patch updates are grouped into one PR per ecosystem; majors get their own PRs, since
+# they're the ones likely to need code changes.
+version: 2
+updates:
+  - package-ecosystem: "gradle" # reads gradle/libs.versions.toml, the plugins, and the wrapper
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]

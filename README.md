@@ -12,7 +12,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 13)
 - AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash`), Anthropic Claude (`claude-sonnet-5`), OpenAI ChatGPT (`gpt-5.5`), or "Other" (any OpenAI-compatible endpoint the user configures, e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server) — and supplies that provider's API key (Gemini also falls back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
-- Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests, lint, and a minified release build on every push/PR to `master`
+- Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests, lint, and a minified release build on every push/PR to `master`; Dependabot (`.github/dependabot.yml`) opens weekly PRs for dependency and Actions updates, which CI checks the same way
 
 ## Core features
 
