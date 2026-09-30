@@ -1,8 +1,0 @@
-com.lukearnold.coachesassistant.baselineprofile-pngs-0 /Users/lukearnold/Documents/Projects/Basketball-Rotation/Basketball-Rotation/baselineprofile/build/generated/res/pngs/benchmarkRelease
-com.lukearnold.coachesassistant.baselineprofile-updated_navigation_xml-1 /Users/lukearnold/Documents/Projects/Basketball-Rotation/Basketball-Rotation/baselineprofile/build/generated/updated_navigation_xml/benchmarkRelease
-com.lukearnold.coachesassistant.baselineprofile-packageBenchmarkReleaseResources-2 /Users/lukearnold/Documents/Projects/Basketball-Rotation/Basketball-Rotation/baselineprofile/build/intermediates/incremental/benchmarkRelease/packageBenchmarkReleaseResources/merged.dir
-com.lukearnold.coachesassistant.baselineprofile-packageBenchmarkReleaseResources-3 /Users/lukearnold/Documents/Projects/Basketball-Rotation/Basketball-Rotation/baselineprofile/build/intermediates/incremental/benchmarkRelease/packageBenchmarkReleaseResources/stripped.dir
-com.lukearnold.coachesassistant.baselineprofile-benchmarkRelease-4 /Users/lukearnold/Documents/Projects/Basketball-Rotation/Basketball-Rotation/baselineprofile/build/intermediates/merged_res/benchmarkRelease/mergeBenchmarkReleaseResources
-com.lukearnold.coachesassistant.baselineprofile-benchmarkRelease-5 /Users/lukearnold/Documents/Projects/Basketball-Rotation/Basketball-Rotation/baselineprofile/src/benchmarkRelease/res
-com.lukearnold.coachesassistant.baselineprofile-main-6 /Users/lukearnold/Documents/Projects/Basketball-Rotation/Basketball-Rotation/baselineprofile/src/main/res
-gradleHome-0 /Users/lukearnold/.gradle

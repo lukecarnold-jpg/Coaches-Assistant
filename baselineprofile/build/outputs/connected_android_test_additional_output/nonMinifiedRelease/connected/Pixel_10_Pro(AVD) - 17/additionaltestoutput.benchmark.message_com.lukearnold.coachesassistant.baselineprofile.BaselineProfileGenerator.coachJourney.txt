@@ -1,6 +1,0 @@
-BaselineProfileGenerator_coachJourney
-Total run time Ns: 593725418992.
-Baseline profile [results](file://BaselineProfileGenerator_coachJourney-baseline-prof-2026-09-29-10-31-58.txt)
-
-To copy the profile use:
-adb -e pull "/sdcard/Android/media/com.lukearnold.coachesassistant.baselineprofile/additional_test_output/BaselineProfileGenerator_coachJourney-baseline-prof.txt" .
