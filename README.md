@@ -6,7 +6,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 
 ## Project status
 
-- Single-module Android app (`:app`)
+- Android app (`:app`), plus a `:baselineprofile` module that generates its baseline profile (see "Baseline profile")
 - Application ID and Kotlin package: `com.lukearnold.coachesassistant`
 - Multi-sport: a landing screen lets the user pick from 16 supported team sports (categorized into Court, Field, and Ice & Water sports); each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
 - UI: Jetpack Compose + Material 3
