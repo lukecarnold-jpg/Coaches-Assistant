@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "BasketballRotation"
 include(":app")
+include(":baselineprofile")
  

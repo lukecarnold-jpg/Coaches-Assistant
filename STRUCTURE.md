@@ -17,7 +17,9 @@ export, and persistence infrastructure.
 │   ├── build.gradle.kts               # Android module configuration and dependencies
 │   └── src/
 │       ├── main/                      # Production Android application
+│       ├── release/generated/baselineProfiles/  # Generated baseline profile (see README)
 │       └── test/                      # Unit and UI tests (JVM, Robolectric)
+├── baselineprofile/                   # Generates the baseline profile; startup benchmark
 ├── docs/
 │   └── privacy-policy.md              # Privacy policy draft for the Play listing
 ├── gradle/
