@@ -1,6 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
 import com.lukearnold.coachesassistant.data.PlayerEntity
+import com.lukearnold.coachesassistant.data.Sport
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -46,5 +47,25 @@ class SubSuggestionTest {
     fun nothingWithAnEmptyBench_orNoShare() {
         assertEquals(null, subSuggestion(listOf(stat(1, 600_000, true)), emptyList(), share, 0L))
         assertEquals(null, subSuggestion(listOf(stat(1, 600_000, true)), listOf(stat(3, 0, false)), null, 0L))
+    }
+
+    @Test
+    fun excludedPlayers_areSkippedOnBothSides() {
+        val onCourt = listOf(stat(1, 600_000, true), stat(2, 500_000, true)) // 4:00 and 2:20 ahead
+        val bench = listOf(stat(3, 0, false), stat(4, 100_000, false)) // 6:00 and 4:20 behind
+
+        // Player 1 (say the keeper) and player 3 are left out: next-most-ahead off, next-most-behind on.
+        assertEquals(2L to 4L, subSuggestion(onCourt, bench, share, 0L, excluded = setOf(1L, 3L))!!.key)
+    }
+
+    @Test
+    fun keepersAreExcluded_onlyWhereTheyPlayThrough() {
+        val keeper = PlayerEntity(id = 1, name = "Kim", position = "GK")
+        val striker = PlayerEntity(id = 2, name = "Sam", position = "FWD")
+
+        assertEquals(setOf(1L), subSuggestionExclusions(listOf(keeper, striker), Sport.SOCCER.config))
+        assertEquals(setOf(5L), subSuggestionExclusions(listOf(PlayerEntity(id = 5, name = "Lee", position = "G")), Sport.ICE_HOCKEY.config))
+        // Netball's GK is a defender who rotates like everyone else.
+        assertEquals(emptySet<Long>(), subSuggestionExclusions(listOf(keeper), Sport.NETBALL.config))
     }
 }

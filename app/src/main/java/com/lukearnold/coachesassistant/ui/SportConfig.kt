@@ -58,6 +58,12 @@ data class SportConfig(
     val defaultPeriodMinutes: Int,
     val scoringOptions: List<ScoreOption>,
     val infraction: Infraction,
+    /**
+     * The keeper's position code, in sports where the keeper usually plays the whole game, so
+     * substitution suggestions leave them out. Null where everyone rotates (netball's GK is a
+     * defender who rotates like the rest).
+     */
+    val keeperPosition: String? = null,
 )
 
 /**
@@ -171,6 +177,7 @@ val Sport.config: SportConfig
                 ScoreOption(uiText(R.string.score_goal), 1),
             ),
             infraction = Infraction.CARD,
+            keeperPosition = "GK",
         )
 
         Sport.AFL -> SportConfig(
@@ -232,6 +239,7 @@ val Sport.config: SportConfig
                 ScoreOption(uiText(R.string.score_goal), 1),
             ),
             infraction = Infraction.FOUL,
+            keeperPosition = "GK",
         )
 
         Sport.FIELD_HOCKEY -> SportConfig(
@@ -244,6 +252,7 @@ val Sport.config: SportConfig
                 ScoreOption(uiText(R.string.score_goal), 1),
             ),
             infraction = Infraction.CARD,
+            keeperPosition = "GK",
         )
 
         Sport.ICE_HOCKEY -> SportConfig(
@@ -256,6 +265,7 @@ val Sport.config: SportConfig
                 ScoreOption(uiText(R.string.score_goal), 1),
             ),
             infraction = Infraction.PENALTY,
+            keeperPosition = "G",
         )
 
         Sport.TOUCH_FOOTBALL -> SportConfig(
@@ -280,6 +290,7 @@ val Sport.config: SportConfig
                 ScoreOption(uiText(R.string.score_goal), 1),
             ),
             infraction = Infraction.EXCLUSION,
+            keeperPosition = "GK",
         )
 
         Sport.HANDBALL -> SportConfig(
@@ -294,6 +305,7 @@ val Sport.config: SportConfig
                 ScoreOption(uiText(R.string.score_goal), 1),
             ),
             infraction = Infraction.FOUL,
+            keeperPosition = "GK",
         )
 
         Sport.LACROSSE -> SportConfig(
@@ -306,6 +318,7 @@ val Sport.config: SportConfig
                 ScoreOption(uiText(R.string.score_goal), 1),
             ),
             infraction = Infraction.PENALTY,
+            keeperPosition = "GK",
         )
 
         Sport.GAELIC_FOOTBALL -> SportConfig(
@@ -321,6 +334,7 @@ val Sport.config: SportConfig
                 ScoreOption(uiText(R.string.score_point_1), 1),
             ),
             infraction = Infraction.FOUL,
+            keeperPosition = "GK",
         )
 
         Sport.FLAG_FOOTBALL -> SportConfig(
