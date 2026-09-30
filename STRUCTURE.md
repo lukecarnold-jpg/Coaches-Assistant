@@ -10,8 +10,10 @@ export, and persistence infrastructure.
 
 ```text
 .
-├── .github/workflows/
-│   └── android-ci.yml                 # Tests, lint, and a release build on pushes/PRs to master
+├── .github/
+│   ├── dependabot.yml                 # Weekly dependency and Actions update PRs
+│   └── workflows/
+│       └── android-ci.yml             # Tests, lint, and a release build on pushes/PRs to master
 ├── app/
 │   ├── schemas/                       # Exported Room database schemas
 │   ├── proguard-rules.pro             # Release R8/ProGuard rules
