@@ -4,6 +4,7 @@ import android.Manifest
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -194,6 +195,13 @@ private fun SportApp(
         val inProgress = appViewModel.hasGameInProgress()
         // Checked again: the user may have picked a tab while that was loading.
         if (inProgress && !startTabDecided) currentTab = AppTab.GAME.name
+        startTabDecided = true
+    }
+    // Back returns to the main tab (the Game tab during a game, otherwise the Roster) before it
+    // leaves the app, so a stray press mid-game doesn't close it.
+    val homeTab = if (selectedGame?.isFinished == false) AppTab.GAME.name else AppTab.ROSTER.name
+    BackHandler(enabled = currentTab != homeTab) {
+        currentTab = homeTab
         startTabDecided = true
     }
     val snackbarHostState = remember { SnackbarHostState() }
