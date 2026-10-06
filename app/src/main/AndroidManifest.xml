@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <!-- The optional game clock notification (Settings → Display); requested when it's turned on. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Substitution reminders while a game clock runs with the app in the background; see
+         ui/SubReminderService.kt. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -35,6 +40,14 @@
         <receiver
             android:name=".ui.SubNowReceiver"
             android:exported="false" />
+        <service
+            android:name=".ui.SubReminderService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Checks players' playing time every 15 seconds while a game clock the user started is running, and notifies the coach when a substitution would even out minutes. Runs only during live play with substitution notifications turned on, and stops when the clock stops." />
+        </service>
     </application>
 
 </manifest>

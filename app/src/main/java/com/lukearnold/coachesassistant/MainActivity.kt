@@ -175,6 +175,7 @@ private fun SportApp(
     val subNotificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         SubReminders.setNotifyEnabled(context, granted)
         notifySubs = granted
+        if (granted) appViewModel.refreshSubReminders()
         if (!granted) appViewModel.reportNotificationsDenied()
     }
     val subSnooze by appViewModel.subSnooze.collectAsState()
@@ -370,6 +371,7 @@ private fun SportApp(
                         onSuggestSubsChange = { enabled ->
                             SubReminders.setSuggestEnabled(context, enabled)
                             suggestSubs = enabled
+                            if (enabled) appViewModel.refreshSubReminders()
                         },
                         notifySubs = notifySubs,
                         onNotifySubsChange = { enabled ->
@@ -382,6 +384,7 @@ private fun SportApp(
                             } else {
                                 SubReminders.setNotifyEnabled(context, enabled)
                                 notifySubs = enabled
+                                if (enabled) appViewModel.refreshSubReminders()
                             }
                         },
                         onMinimumOnCourtChange = appViewModel::setMinimumOnCourt,

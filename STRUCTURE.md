@@ -75,7 +75,8 @@ presentation helpers:
 - `GameClockNotification.kt` - the optional running-clock notification (a system-counted countdown with a Stop clock action) and its receiver.
 - `GameDayMode.kt` - Game Day mode: the app's own Do Not Disturb rule, on from its button until the game ends, and the button with its access prompt.
 - `PlayingTime.kt` - equal-share playing-time targets, pace labels, the bench substitution order, and substitution suggestions.
-- `SubReminders.kt` - the substitution suggestion settings and notification, and its Sub now receiver.
+- `SubReminders.kt` - the substitution suggestion settings, the check for a suggestion, its notification and "Later" snooze, and the Sub now receiver.
+- `SubReminderService.kt` - the foreground service that keeps checking for substitution reminders while a clock runs, even with the app in the background.
 - `Fielding.kt` - how many players a starting lineup can have given who's here (full side, short-handed down to the sport's minimum, or too few), and the per-sport minimum setting.
 - `GameHistoryScreen.kt` - finished-game history, viewing, exporting, and deletion, with the season summary on top.
 - `SeasonStats.kt` - season totals (team record and per-player totals) across a sport's finished games.

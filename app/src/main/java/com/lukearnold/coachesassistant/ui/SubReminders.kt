@@ -13,10 +13,21 @@ import com.lukearnold.coachesassistant.MainActivity
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.AppDatabase
 import com.lukearnold.coachesassistant.data.GameRepository
+import com.lukearnold.coachesassistant.data.Sport
+import com.lukearnold.coachesassistant.data.currentGameTimeMillis
 import com.lukearnold.coachesassistant.data.displayLabel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+/** A substitution suggestion the coach put off, until the game clock reaches [untilGameTimeMillis]. */
+data class SubSnooze(val key: Pair<Long, Long>, val untilGameTimeMillis: Long) {
+    fun hides(suggestion: SubSuggestion, gameTimeMillis: Long): Boolean =
+        key == suggestion.key && gameTimeMillis < untilGameTimeMillis
+}
 
 /**
  * Substitution reminders: a suggestion (see subSuggestion) shown as a banner on the Game tab, and
@@ -49,6 +60,49 @@ object SubReminders {
     fun setNotifyEnabled(context: Context, enabled: Boolean) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit { putBoolean(KEY_NOTIFY, enabled) }
         if (!enabled) cancel(context)
+    }
+
+    private val _snooze = MutableStateFlow<SubSnooze?>(null)
+
+    /**
+     * The suggestion "Later" put off, shared by the Game tab's banner and the notifications (see
+     * SubReminderService) so both hide it. Kept for the life of the process.
+     */
+    val snooze: StateFlow<SubSnooze?> = _snooze.asStateFlow()
+
+    /** "Later" on a suggestion: hides that pair for another [SUB_SUGGESTION_MARGIN_MILLIS] of play. */
+    fun snooze(context: Context, key: Pair<Long, Long>, gameTimeMillis: Long) {
+        _snooze.value = SubSnooze(key, gameTimeMillis + SUB_SUGGESTION_MARGIN_MILLIS)
+        cancel(context)
+    }
+
+    /**
+     * Checks whether it's time to suggest a substitution for [gameId], and notifies if so, once
+     * per suggested pair: [lastNotified] is the pair last notified, and the result is the pair to
+     * pass next time. Reads the database directly, so it works while the app isn't showing.
+     */
+    internal suspend fun check(context: Context, repository: GameRepository, gameId: Long, lastNotified: Pair<Long, Long>?): Pair<Long, Long>? {
+        val game = repository.getGame(gameId)?.takeUnless { it.isFinished } ?: return null
+        val sport = Sport.entries.firstOrNull { it.name == game.sport } ?: return null
+        val events = repository.getEvents(gameId)
+        val players = repository.getPlayers(sport)
+        val stats = calculatePlayerGameStats(players, game, repository.getLineup(gameId), events)
+        val now = game.currentGameTimeMillis()
+        val share = fairShare(game, stats.size, elapsedGameMillis(events, now, game.periodDurationMillis))
+        val excluded = subSuggestionExclusions(players, sport.config, events)
+        val suggestion = subSuggestion(stats.filter { it.onCourt }, stats.filter { !it.onCourt }, share, now, excluded)
+            ?.takeUnless { snooze.value?.hides(it, now) == true }
+        return when {
+            suggestion == null -> {
+                if (lastNotified != null) cancel(context)
+                null
+            }
+            suggestion.key != lastNotified -> {
+                notify(context, gameId, suggestion)
+                suggestion.key
+            }
+            else -> lastNotified
+        }
     }
 
     /** Posts [suggestion] for [gameId], replacing any earlier one. */

@@ -566,6 +566,8 @@
     <string name="sub_suggestion_line">%1$s off (%2$s ahead) · %3$s on (%4$s behind)</string>
     <string name="sub_now">Sub now</string>
     <string name="sub_later">Later</string>
+    <string name="sub_reminder_service_title">Sub reminders on</string>
+    <string name="sub_reminder_service_text">Watching playing time while the clock runs</string>
     <string name="sub_reminders_channel">Substitution reminders</string>
     <string name="sub_reminders_channel_description">When a player on court is well ahead of an even share of playing time and one on the bench is well behind.</string>
     <string name="substitutions_settings">Substitutions</string>

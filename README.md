@@ -64,7 +64,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Settings tab
   - "Switch sport" returns to the sport landing screen
   - "Minimum players to field a team" for the current sport, from 1 to a full side, defaulting to the sport's rules
-  - Substitutions: "Suggest substitutions" (on by default) and "Notify me when it's time to sub" (off by default; asks for the notifications permission on Android 13+). The notification is checked every 15 seconds while a clock runs and the app is open or in the background. Game Day mode silences it like any other app's, unless the coach allows Coaches Assistant in that mode's settings
+  - Substitutions: "Suggest substitutions" (on by default) and "Notify me when it's time to sub" (off by default; asks for the notifications permission on Android 13+). While a clock runs with notifications on, a foreground service (shown as a silent "Sub reminders on" notification) checks every 15 seconds, so reminders keep coming with the phone locked and the app in the background; it stops when the clock stops. Game Day mode silences it like any other app's, unless the coach allows Coaches Assistant in that mode's settings
   - "Keep screen on while the clock runs" (on by default) stops the phone locking mid-game; the normal screen timeout returns as soon as the clock stops
   - "Show the running clock in notifications" (off by default; asks for the notifications permission on Android 13+): while a clock runs, a silent notification shows the game, period, score, and a live countdown, including on the lock screen, with a Stop clock button. The system counts it down, so it stays right with the app closed, and it disappears when the clock stops or the period ends
   - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device with an AES-256-GCM key held in the Android Keystore (`ai/AiSettingsStore.kt`)
@@ -193,6 +193,8 @@ For Play's **Data safety** form, the relevant facts (review them against Google'
 - The only network traffic is generating drills: the selected sport and age group (and the app's language, when it isn't English), plus the user's own API key, go to the AI provider the user chose. No player or game data is sent.
 - Data is encrypted in transit (all built-in providers use HTTPS; plain HTTP is only allowed to a server on the user's local network).
 - Users can delete their data in the app (Settings → Delete data) or by uninstalling.
+
+The app declares a **foreground service** of type `specialUse` (`ui/SubReminderService.kt`), so Play Console's App content → Foreground service permissions needs a declaration. What it does: while a game clock the coach started is running and substitution notifications are on, it checks playing time every 15 seconds and notifies when a substitution would even out minutes; it stops when the clock stops. Play may ask for a short video of the feature.
 
 ## Testing
 
