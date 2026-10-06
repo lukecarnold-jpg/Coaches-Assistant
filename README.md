@@ -206,6 +206,7 @@ The automated tests cover:
 - Game logic: the player time/points/bench calculator (including legacy events past the period end), playing-time targets, season totals, clock rules (auto-stop, never moving before recorded events), and confirmation messages
 - Data: `GameRepository`'s transactions and undo against an in-memory Room database, every Room migration against the exported schemas, backup/restore round trips, and CSV import/export
 - AI: request/response parsing for each provider, local-network endpoint rules, and settings storage
+- View models: lineup checks and failed writes being reported (`AppViewModel`, against an in-memory database), and drill generation's key, model, and error handling (`TrainingViewModel`, with a fake provider)
 - Screens (Compose UI tests on Robolectric): confirmation dialogs, toggling rows by their label, and the clock editor
 
 Last checked by hand on the Pixel 10 Pro emulator (API 37) in September 2026:
@@ -242,7 +243,7 @@ The class filter matters: without it the run also includes the profile generator
 ## High-level project structure
 
 - App entry
-  - `app/src/main/java/com/lukearnold/coachesassistant/MainActivity.kt` — routes between the sport landing screen and the per-sport app shell (`SportApp`), and hosts a sport-keyed `AppViewModel` factory
+  - `app/src/main/java/com/lukearnold/coachesassistant/MainActivity.kt` — routes between the sport landing screen and the per-sport app shell (`SportApp`), and creates the view models (sport-keyed `AppViewModel` and `DataViewModel`, plus `SettingsViewModel` and `TrainingViewModel`)
 - Sport layer
   - `app/src/main/java/com/lukearnold/coachesassistant/data/Sport.kt` — the `Sport` enum (domain concept, shared by the DAOs/repository and the UI)
   - `app/src/main/java/com/lukearnold/coachesassistant/ui/SportConfig.kt` — per-sport rotation/scoring configuration (on-court size, squad positions, period defaults, scoring options, infraction label)

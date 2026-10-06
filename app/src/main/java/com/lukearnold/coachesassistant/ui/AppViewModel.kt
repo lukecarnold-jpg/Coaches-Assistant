@@ -2,9 +2,10 @@ package com.lukearnold.coachesassistant.ui
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.annotation.StringRes
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.AppDatabase
@@ -34,9 +35,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class AppViewModel(application: Application, private val sport: Sport) : AndroidViewModel(application) {
-    private val repository = GameRepository(AppDatabase.getInstance(application))
-    private val gameDayMode = GameDayMode.get(application)
+/**
+ * The roster and live game for one [sport]. Backup, CSV files, and clearing data are in
+ * DataViewModel; app-wide settings in SettingsViewModel.
+ */
+class AppViewModel(
+    application: Application,
+    private val sport: Sport,
+    private val repository: GameRepository,
+    private val gameDayMode: GameDayMode,
+) : AndroidViewModel(application) {
 
     private val _minimumOnCourt = MutableStateFlow(FieldingPreferences.minimumOnCourt(application, sport))
 
@@ -558,12 +566,10 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
 private fun defaultGame(newestFirst: List<GameEntity>): GameEntity? =
     newestFirst.firstOrNull { !it.isFinished } ?: newestFirst.firstOrNull()
 
-class AppViewModelFactory(
-    private val application: Application,
-    private val sport: Sport,
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        @Suppress("UNCHECKED_CAST")
-        return AppViewModel(application, sport) as T
+/** Builds the [AppViewModel] for [sport] with the app's database. */
+fun appViewModelFactory(sport: Sport): ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val application = checkNotNull(this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
+        AppViewModel(application, sport, GameRepository(AppDatabase.getInstance(application)), GameDayMode.get(application))
     }
 }
