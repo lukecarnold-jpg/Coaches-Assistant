@@ -52,6 +52,8 @@ import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.ui.AppViewModel
 import com.lukearnold.coachesassistant.ui.AppTheme
 import com.lukearnold.coachesassistant.ui.AppViewModelFactory
+import com.lukearnold.coachesassistant.ui.DataViewModel
+import com.lukearnold.coachesassistant.ui.dataViewModelFactory
 import com.lukearnold.coachesassistant.ui.KeepScreenOn
 import com.lukearnold.coachesassistant.ui.shouldKeepScreenOn
 import com.lukearnold.coachesassistant.ui.GameHistoryScreen
@@ -155,6 +157,10 @@ private fun SportApp(
         key = "AppViewModel-${sport.name}",
         factory = remember(sport) { AppViewModelFactory(application, sport) },
     )
+    val dataViewModel: DataViewModel = viewModel(
+        key = "DataViewModel-${sport.name}",
+        factory = remember(sport) { dataViewModelFactory(sport) },
+    )
     val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
     val navTabSpecs = remember(sport) { navTabSpecsFor(sport) }
 
@@ -199,9 +205,9 @@ private fun SportApp(
 
     val undoLabel = stringResource(R.string.undo)
     val resources = LocalResources.current
-    LaunchedEffect(appViewModel, settingsViewModel) {
+    LaunchedEffect(appViewModel, dataViewModel, settingsViewModel) {
         // collectLatest: a new message replaces the one showing (and its Undo) straight away.
-        merge(appViewModel.messages, settingsViewModel.messages).collectLatest { message ->
+        merge(appViewModel.messages, dataViewModel.messages, settingsViewModel.messages).collectLatest { message ->
             val undo = message.undo
             val result = snackbarHostState.showSnackbar(
                 message = message.text.resolve(resources),
@@ -268,8 +274,8 @@ private fun SportApp(
                         onAddPlayer = appViewModel::addPlayer,
                         onUpdatePlayer = appViewModel::updatePlayer,
                         onDeletePlayer = appViewModel::deletePlayer,
-                        onExportPlayers = appViewModel::exportPlayersCsv,
-                        onImportPlayers = appViewModel::importPlayersCsv,
+                        onExportPlayers = dataViewModel::exportPlayersCsv,
+                        onImportPlayers = dataViewModel::importPlayersCsv,
                     )
 
                     AppTab.GAME -> GameScreen(
@@ -300,8 +306,8 @@ private fun SportApp(
                         onResetTimer = appViewModel::resetTimer,
                         onSetGameTime = appViewModel::setGameTime,
                         onDeleteGame = appViewModel::deleteGame,
-                        onExportGame = appViewModel::exportGameCsv,
-                        onExportPlayers = appViewModel::exportPlayersCsv,
+                        onExportGame = dataViewModel::exportGameCsv,
+                        onExportPlayers = dataViewModel::exportPlayersCsv,
                         onAdvancePeriod = appViewModel::advancePeriod,
                         onEndGame = appViewModel::endGame,
                         gameDayActive = selectedGame?.id != null && selectedGame?.id == gameDayGameId,
@@ -309,7 +315,7 @@ private fun SportApp(
                         onStopGameDay = appViewModel::stopGameDay,
                         onUpdateAbsentPlayers = appViewModel::updateAbsentPlayers,
                         onUpdateNotes = appViewModel::updateGameNotes,
-                        onExportNotes = appViewModel::exportGameNotesTxt,
+                        onExportNotes = dataViewModel::exportGameNotesTxt,
                         onUpdateEvent = appViewModel::updateEvent,
                         onDeleteEvent = appViewModel::deleteEvent,
                     )
@@ -335,14 +341,14 @@ private fun SportApp(
                                 currentTab = AppTab.GAME.name
                             },
                             onDeleteGame = appViewModel::deleteGame,
-                            onExportGame = appViewModel::exportGameCsv,
+                            onExportGame = dataViewModel::exportGameCsv,
                         )
                     }
 
                     AppTab.SETTINGS -> SettingsScreen(
                         modifier = Modifier.fillMaxSize(),
-                        onClearAllData = appViewModel::clearAllData,
-                        onClearSelectedData = appViewModel::clearSelectedData,
+                        onClearAllData = dataViewModel::clearAllData,
+                        onClearSelectedData = dataViewModel::clearSelectedData,
                         apiKeys = apiKeys,
                         selectedProvider = selectedAiProvider,
                         hasBuiltInApiKey = trainingViewModel.hasBuiltInApiKey,
@@ -355,8 +361,8 @@ private fun SportApp(
                         onSaveModel = trainingViewModel::updateModel,
                         currentSport = sport,
                         onSwitchSport = onSwitchSport,
-                        onBackup = appViewModel::exportBackup,
-                        onRestore = appViewModel::restoreBackup,
+                        onBackup = dataViewModel::exportBackup,
+                        onRestore = dataViewModel::restoreBackup,
                         minimumOnCourt = minimumOnCourt,
                         suggestSubs = suggestSubs,
                         onSuggestSubsChange = settingsViewModel::setSuggestSubs,
