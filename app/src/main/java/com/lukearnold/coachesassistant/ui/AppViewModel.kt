@@ -20,6 +20,8 @@ import com.lukearnold.coachesassistant.data.displayLabel
 import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.data.GameLineup
 import com.lukearnold.coachesassistant.data.remainingPeriodTimeMillis
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -196,6 +198,8 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         }
     }
 
+    private fun launchSafely(block: suspend CoroutineScope.() -> Unit): Job = launchSafely(_messages, block = block)
+
     /** Whether this sport has a game that hasn't ended, read from the database (not the UI state). */
     suspend fun hasGameInProgress(): Boolean = repository.gamesForSport(sport).first().any { !it.isFinished }
 
@@ -223,7 +227,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             return
         }
 
-        viewModelScope.launch {
+        launchSafely {
             repository.addPlayer(sport, trimmedName, jerseyNumber, position)
             _messages.emit(UiMessage(savedPlayerMessage(R.string.msg_player_added, clash)))
         }
@@ -248,7 +252,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             return
         }
 
-        viewModelScope.launch {
+        launchSafely {
             repository.updatePlayer(player.copy(name = trimmedName, jerseyNumber = jerseyNumber, position = newPosition))
             _messages.emit(UiMessage(savedPlayerMessage(R.string.msg_player_updated, clash)))
         }
@@ -263,21 +267,21 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         }
 
     fun deletePlayer(playerId: Long) {
-        viewModelScope.launch {
+        launchSafely {
             repository.deletePlayer(playerId)
             _messages.emit(UiMessage(uiText(R.string.msg_player_removed)))
         }
     }
 
     fun clearAllData() {
-        viewModelScope.launch {
+        launchSafely {
             repository.clearAllData()
             _messages.emit(UiMessage(uiText(R.string.msg_all_data_cleared)))
         }
     }
 
     fun clearSelectedData(players: Boolean, games: Boolean, events: Boolean) {
-        viewModelScope.launch {
+        launchSafely {
             repository.clearSelectedData(sport, players, games, events)
             _messages.emit(UiMessage(uiText(R.string.msg_selected_data_cleared)))
         }
@@ -290,7 +294,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         }
         val durationMillis = periodMins * 60 * 1000L
 
-        viewModelScope.launch {
+        launchSafely {
             val gameId = repository.createGame(
                 sport = sport,
                 title = finalTitle,
@@ -306,7 +310,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
 
     fun advancePeriod() {
         val gameId = selectedGame.value?.id ?: return
-        viewModelScope.launch {
+        launchSafely {
             repository.advancePeriod(gameId)
             _messages.emit(UiMessage(uiText(R.string.msg_advanced_period)))
         }
@@ -314,7 +318,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
 
     fun endGame() {
         val gameId = selectedGame.value?.id ?: return
-        viewModelScope.launch {
+        launchSafely {
             repository.endGame(gameId)
             val wasGameDay = gameDayMode.activeGameId.value == gameId
             val message = when {
@@ -341,7 +345,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
     /** Turns the game clock notification on or off, updating what's shown now. */
     fun setClockNotificationEnabled(enabled: Boolean) {
         GameClockNotification.setEnabled(getApplication(), enabled)
-        viewModelScope.launch { GameClockNotification.sync(getApplication(), repository.games.first()) }
+        launchSafely { GameClockNotification.sync(getApplication(), repository.games.first()) }
     }
 
     fun reportNotificationsDenied() {
@@ -355,7 +359,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
 
     fun updateAbsentPlayers(playerIds: List<Long>) {
         val gameId = selectedGame.value?.id ?: return
-        viewModelScope.launch {
+        launchSafely {
             repository.updateAbsentPlayers(gameId, playerIds)
             _messages.emit(UiMessage(uiText(R.string.msg_attendance_updated)))
         }
@@ -363,13 +367,13 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
 
     fun updateGameNotes(notes: String) {
         val gameId = selectedGame.value?.id ?: return
-        viewModelScope.launch {
+        launchSafely {
             repository.updateGameNotes(gameId, notes)
         }
     }
 
     fun updateEvent(event: GameEventEntity) {
-        viewModelScope.launch {
+        launchSafely {
             repository.updateEvent(event)
             _messages.emit(UiMessage(uiText(R.string.msg_event_updated)))
         }
@@ -380,14 +384,14 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
      * substitution swaps its players back, and it's refused if they've moved since.
      */
     fun deleteEvent(event: GameEventEntity) {
-        viewModelScope.launch {
+        launchSafely {
             val removed = repository.undoEvents(listOf(event.id))
             _messages.emit(UiMessage(uiText(if (removed) R.string.msg_event_removed else R.string.msg_event_cant_remove)))
         }
     }
 
     fun deleteGame(gameId: Long) {
-        viewModelScope.launch {
+        launchSafely {
             repository.deleteGame(gameId)
             _messages.emit(UiMessage(uiText(R.string.msg_game_deleted)))
         }
@@ -414,7 +418,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             return
         }
 
-        viewModelScope.launch {
+        launchSafely {
             repository.selectStartingLineup(gameId, chosen, requiredSize)
             _messages.emit(UiMessage(uiText(R.string.msg_lineup_saved)))
         }
@@ -445,7 +449,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             playersOut.drop(swaps.size).map { null to it } +
             playersIn.drop(swaps.size).map { it to null }
 
-        viewModelScope.launch {
+        launchSafely {
             val pairs = changes
             val eventIds = pairs.mapNotNull { (playerIn, playerOut) -> repository.substitute(gameId, playerIn, playerOut) }
             when {
@@ -468,7 +472,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             return
         }
 
-        viewModelScope.launch {
+        launchSafely {
             repository.addTeamScore(gameId, playerId, points)?.let { announceUndoable(listOf(it)) }
         }
     }
@@ -481,7 +485,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             return
         }
 
-        viewModelScope.launch {
+        launchSafely {
             repository.addTeamScore(gameId, playerId = null, points = points)?.let { announceUndoable(listOf(it)) }
         }
     }
@@ -493,7 +497,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             return
         }
 
-        viewModelScope.launch {
+        launchSafely {
             repository.addOpponentScore(gameId, points)?.let { announceUndoable(listOf(it)) }
         }
     }
@@ -505,7 +509,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             return
         }
 
-        viewModelScope.launch {
+        launchSafely {
             repository.addFoul(gameId, playerId, adjustment)?.let { announceUndoable(listOf(it)) }
         }
     }
@@ -526,7 +530,7 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         } ?: return
         _messages.emit(
             UiMessage(message) {
-                viewModelScope.launch {
+                launchSafely {
                     val undone = repository.undoEvents(eventIds)
                     _messages.emit(UiMessage(uiText(if (undone) R.string.msg_undone else R.string.msg_undo_stale)))
                 }
@@ -541,14 +545,14 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             _messages.tryEmit(UiMessage(uiText(R.string.msg_period_time_up)))
             return
         }
-        viewModelScope.launch {
+        launchSafely {
             repository.toggleTimer(gameId)
         }
     }
 
     fun resetTimer() {
         val game = selectedGame.value ?: return
-        viewModelScope.launch {
+        launchSafely {
             val earliest = repository.resetTimer(game.id)
             _messages.emit(
                 UiMessage(
@@ -564,14 +568,14 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
 
     fun addMvpVote(playerId: Long) {
         val gameId = selectedGame.value?.id ?: return
-        viewModelScope.launch {
+        launchSafely {
             repository.addMvpVote(gameId, playerId)?.let { announceUndoable(listOf(it)) }
         }
     }
 
     fun setGameTime(timeMillis: Long) {
         val game = selectedGame.value ?: return
-        viewModelScope.launch {
+        launchSafely {
             repository.setGameTime(game.id, timeMillis)?.let { earliest ->
                 _messages.emit(UiMessage(clockTooEarlyMessage(game.periodDurationMillis, earliest)))
             }
