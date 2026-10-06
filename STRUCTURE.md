@@ -89,6 +89,7 @@ presentation helpers:
 - `FileExport.kt` - shared file-export launcher.
 - `SportConfig.kt` - sport-specific rules: players on court and the minimum to field a team, scoring, periods, positions, and infractions.
 - `SportPreferences.kt` - remembers the last selected sport.
+- `AppLanguage.kt` - the languages offered under Settings → Language, and switching between them.
 - `AppViewModel.kt` - one sport's roster and live game: screen state, user actions, and repository coordination.
 - `DataViewModel.kt` - backup and restore, CSV and notes files, and clearing data.
 - `SettingsViewModel.kt` - the app-wide display and substitution settings.
@@ -158,6 +159,8 @@ res/
 │   └── themes.xml
 ├── values-night/
 │   └── themes.xml
+├── values-{es,fr,it}/
+│   └── strings.xml                   # Spanish, French, and Italian translations
 ├── resources.properties              # The default strings' language (English)
 └── xml/
     ├── backup_rules.xml
@@ -170,8 +173,14 @@ and sport data (sport names, positions, scoring buttons, infractions). Screens
 read it with `stringResource(R.string...)`; text built in code (snackbar
 messages, confirmations, event descriptions, errors) is a `UiText` (a resource
 and its arguments) that's turned into words only when shown, so it follows a
-change of language. To translate the app, add `values-<lang>/strings.xml` with
-the same names; anything left out falls back to English. Set its
+change of language. The app is translated into Spanish, French, and Italian
+(`values-es`, `values-fr`, `values-it`), chosen under Settings → Language
+(`ui/AppLanguage.kt`; `MainActivity` is an `AppCompatActivity` so the choice
+also applies before Android 13). `TranslationsTest` checks that each
+translation has every string and plural with the same placeholders. To add a
+language, add `values-<lang>/strings.xml` with the same names, add it to
+`AppLanguage` and `TranslationsTest`, and keep lint clean (it checks plural
+forms per language). Set its
 `content_language_tag` to the language's tag (e.g. `fr`), so AI drills are
 requested in that language. The build generates the list of the app's
 languages from these folders (`generateLocaleConfig`, with English as the

@@ -19,6 +19,9 @@
     <string name="display">Display</string>
     <string name="keep_screen_on_while_the_clock_runs">Keep screen on while the clock runs</string>
     <string name="stops_the_phone_locking_mid_game_the_normal_scre">Stops the phone locking mid-game. The normal screen timeout returns when the clock stops.</string>
+    <string name="language_setting">Language</string>
+    <string name="language_setting_description">The language the app is shown in. AI training drills are generated in it too.</string>
+    <string name="language_system_default">Phone\'s language</string>
     <string name="ai_training_assistant">AI training assistant</string>
     <string name="choose_which_ai_generates_training_drills_then_a">Choose which AI generates training drills, then add its API key. Each provider requires its own key — the app does not support signing in with a Gemini, Claude, or ChatGPT account.</string>
     <string name="using_the_gemini_api_key_built_into_this_app_ai">Using the GEMINI_API_KEY built into this app. AI drill generation is enabled.</string>
