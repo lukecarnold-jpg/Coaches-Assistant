@@ -30,11 +30,11 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         @Volatile
-        private var INSTANCE: AppDatabase? = null
+        private var instance: AppDatabase? = null
 
         fun getInstance(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: Room.databaseBuilder(
+            return instance ?: synchronized(this) {
+                instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "basketball_rotation.db",
@@ -42,7 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
                     .addMigrations(MIGRATION_11_12, MIGRATION_12_13)
                     .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
                     .build()
-                    .also { INSTANCE = it }
+                    .also { instance = it }
             }
         }
     }

@@ -227,7 +227,7 @@ Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see R
 **Build and publishing**
 - Release signing with an upload key kept outside the repo; `versionCode` from the commit count and `versionName` from release tags
 - Privacy policy draft and Play listing notes
-- CI runs unit tests, lint, and a minified release build, and builds a signed bundle when the signing secrets are set
+- CI checks formatting (Spotless/ktlint), runs unit tests, lint, and a minified release build, and builds a signed bundle when the signing secrets are set
 - View models take their dependencies through factories (and the data, settings, and game parts are separate view models), so they're unit tested
 - Tests grew from the core stat logic to 206: repository tests against an in-memory Room database, migration tests, backup, CSV, and Compose UI tests on Robolectric
 

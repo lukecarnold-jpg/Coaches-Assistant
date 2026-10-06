@@ -1,4 +1,4 @@
-/**
+/*
  * Generates the app's baseline profile (the code Android compiles ahead of time for a faster
  * start and smoother first use) and measures startup with and without it. Runs on a connected
  * device or emulator, not in CI:

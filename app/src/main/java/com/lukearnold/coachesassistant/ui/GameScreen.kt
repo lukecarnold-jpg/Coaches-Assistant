@@ -1,7 +1,5 @@
 package com.lukearnold.coachesassistant.ui
 
-import com.lukearnold.coachesassistant.R
-import androidx.compose.ui.res.stringResource
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,7 +10,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.*
 
 @Composable
@@ -103,13 +103,13 @@ fun GameScreen(
     if (isExpanded) {
         Row(
             modifier = modifier.padding(layout.screenPadding),
-            horizontalArrangement = Arrangement.spacedBy(layout.sectionGap)
+            horizontalArrangement = Arrangement.spacedBy(layout.sectionGap),
         ) {
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(layout.sectionGap)
+                verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
             ) {
                 if (selectedGame != null) {
                     GameControlPanel(
@@ -170,11 +170,11 @@ fun GameScreen(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(layout.sectionGap)
+                verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
             ) {
                 if (selectedGame != null) {
                     GameNotesPanel(
-                        onClick = { showNotesDialog = true }
+                        onClick = { showNotesDialog = true },
                     )
                 }
 
@@ -208,7 +208,7 @@ fun GameScreen(
                     onExportGame = { gId ->
                         exportGame(gId, "game_$gId.csv")
                     },
-                    selectedGameId = selectedGame?.id
+                    selectedGameId = selectedGame?.id,
                 )
             }
         }
@@ -217,12 +217,12 @@ fun GameScreen(
             modifier = modifier
                 .verticalScroll(rememberScrollState())
                 .padding(layout.screenPadding),
-            verticalArrangement = Arrangement.spacedBy(layout.sectionGap)
+            verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
         ) {
             Text(
                 text = stringResource(R.string.game_tracker),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
 
             GameStatsPanel(
@@ -250,12 +250,12 @@ fun GameScreen(
                 onSelectGame = onSelectGame,
                 onDeleteGame = onDeleteGame,
                 selectedGameId = selectedGame?.id,
-                onlyManagement = true
+                onlyManagement = true,
             )
 
             if (selectedGame != null) {
                 GameNotesPanel(
-                    onClick = { showNotesDialog = true }
+                    onClick = { showNotesDialog = true },
                 )
 
                 GameControlPanel(
@@ -322,7 +322,7 @@ fun GameScreen(
                     onlyStats = true,
                     onExportGame = { gId ->
                         exportGame(gId, "game_$gId.csv")
-                    }
+                    },
                 )
             }
         }
@@ -348,7 +348,7 @@ fun GameScreen(
             onConfirm = { ids ->
                 onUpdateAbsentPlayers(ids)
                 showAttendanceDialog = false
-            }
+            },
         )
     }
 
@@ -363,7 +363,7 @@ fun GameScreen(
             onExport = { newNotes ->
                 if (newNotes != selectedGame.notes) onUpdateNotes(newNotes)
                 exportNotes(selectedGame.id, "notes_${selectedGame.id}.txt")
-            }
+            },
         )
     }
 }

@@ -33,6 +33,10 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      # Formatting and basic Kotlin style (ktlint); `./gradlew spotlessApply` fixes most of it.
+      - name: Check formatting
+        run: ./gradlew spotlessCheck
+
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest
 

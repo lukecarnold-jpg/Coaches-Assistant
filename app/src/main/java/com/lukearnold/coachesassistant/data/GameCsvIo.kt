@@ -1,25 +1,24 @@
 package com.lukearnold.coachesassistant.data
 
-import com.lukearnold.coachesassistant.R
-
 import android.content.ContentResolver
 import android.content.res.Resources
 import android.net.Uri
 import androidx.room.withTransaction
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.lukearnold.coachesassistant.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+/** How a roster CSV import went: players added, and players skipped as already on the roster. */
+data class RosterImportResult(val added: Int, val skipped: Int)
 
 /**
  * CSV/TXT import and export for rosters, games, and coaching notes. Split out of
  * [GameRepository] so that class stays focused on transactional game-state changes, and so
  * the pure formatting/parsing helpers below can be unit tested without a database.
  */
-/** How a roster CSV import went: players added, and players skipped as already on the roster. */
-data class RosterImportResult(val added: Int, val skipped: Int)
-
 class GameCsvIo(private val database: AppDatabase) {
     private val playerDao = database.playerDao()
     private val gameDao = database.gameDao()
@@ -124,7 +123,7 @@ class GameCsvIo(private val database: AppDatabase) {
                             "",
                             "",
                             "",
-                        ).joinToString(",")
+                        ).joinToString(","),
                     )
                 } else {
                     events.forEach { event ->
@@ -152,8 +151,8 @@ class GameCsvIo(private val database: AppDatabase) {
                                 escapeCsv(relatedPlayer?.name.orEmpty()),
                                 relatedPlayer?.jerseyNumber?.toString().orEmpty(),
                                 if ((event.points == 0) && (EventType.fromRaw(event.type) != EventType.FOUL)) "" else event.points.toString(),
-                                escapeCsv(eventNote)
-                            ).joinToString(",")
+                                escapeCsv(eventNote),
+                            ).joinToString(","),
                         )
                     }
                 }

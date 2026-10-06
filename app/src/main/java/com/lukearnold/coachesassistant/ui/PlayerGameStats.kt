@@ -131,7 +131,8 @@ fun calculatePlayerGameStats(
             }
 
             EventType.OPPONENT_SCORE,
-            EventType.MVP_VOTE -> {}
+            EventType.MVP_VOTE,
+            -> {}
         }
     }
 

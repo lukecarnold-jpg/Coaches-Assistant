@@ -1,14 +1,7 @@
 package com.lukearnold.coachesassistant.ui
 
-import com.lukearnold.coachesassistant.R
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -17,8 +10,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.*
 
 @Composable
@@ -100,7 +100,7 @@ fun GameControlPanel(
         Text(
             text = stringResource(R.string.period_value, selectedGame.periodLabel().asString()),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.primary,
         )
 
         GameClock(
@@ -108,7 +108,7 @@ fun GameControlPanel(
             gameTimeMillis = gameTimeMillis,
             onToggleTimer = onToggleTimer,
             onResetTimer = onResetTimer,
-            onSetGameTime = onSetGameTime
+            onSetGameTime = onSetGameTime,
         )
 
         if (suggestSubs && !selectedGame.isFinished) {
@@ -128,7 +128,7 @@ fun GameControlPanel(
         if (!selectedGame.isFinished) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
+                horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
             ) {
                 if (selectedGame.currentPeriod < selectedGame.periodCount) {
                     OutlinedButton(onClick = { showNextPeriodConfirm = true }, modifier = Modifier.weight(1f)) {
@@ -138,7 +138,7 @@ fun GameControlPanel(
                 Button(
                     onClick = { showEndGameConfirm = true },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                 ) {
                     Text(stringResource(R.string.end_game_title))
                 }
@@ -148,20 +148,20 @@ fun GameControlPanel(
 
             OutlinedButton(
                 onClick = onManageAttendance,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.manage_attendance_flag_absent))
             }
         } else {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
             ) {
                 Text(
                     stringResource(R.string.game_finished),
                     modifier = Modifier.padding(layout.smallGap).align(Alignment.CenterHorizontally),
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }
@@ -171,14 +171,14 @@ fun GameControlPanel(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(stringResource(R.string.us), style = MaterialTheme.typography.labelMedium)
                 Text(
                     text = selectedGame.teamScore.toString(),
                     style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 // Live scoring only: a finished game's score is corrected through the event log.
                 if (!selectedGame.isFinished) {
@@ -195,12 +195,12 @@ fun GameControlPanel(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = selectedGame.opponent.ifBlank { stringResource(R.string.them) },
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.labelMedium,
                 )
                 Text(
                     text = selectedGame.opponentScore.toString(),
                     style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 if (!selectedGame.isFinished) {
                     Row {
@@ -221,18 +221,18 @@ fun GameControlPanel(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
+            horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
         ) {
             OutlinedButton(
                 onClick = onExportGame,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text(stringResource(R.string.export_game_csv))
             }
 
             OutlinedButton(
                 onClick = { exportRosterLauncher.launch("players.csv") },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text(stringResource(R.string.export_roster_csv))
             }
@@ -262,7 +262,7 @@ fun GameControlPanel(
                         onAddMvpVote = onAddMvpVote,
                         gameTimeMillis = gameTimeMillis,
                         fairShareAt = fairShareAt,
-                        enabled = !selectedGame.isFinished
+                        enabled = !selectedGame.isFinished,
                     )
                 }
             }
@@ -277,14 +277,19 @@ fun GameControlPanel(
                 val fullSide = sportConfig.onCourtSize
                 val rotationNote = when {
                     courtAfter > fullSide && onCourtIds.size >= fullSide -> stringResource(R.string.rotation_court_already_full)
+
                     courtAfter > fullSide ->
                         pluralStringResource(R.plurals.rotation_court_full, fullSide - onCourtIds.size, fullSide - onCourtIds.size)
+
                     courtAfter < 1 -> stringResource(R.string.rotation_court_empty)
+
                     pendingIn.size > pendingOut.size ->
                         pluralStringResource(R.plurals.rotation_joining, pendingIn.size - pendingOut.size, pendingIn.size - pendingOut.size)
+
                     pendingOut.size > pendingIn.size ->
                         pluralStringResource(R.plurals.rotation_leaving, pendingOut.size - pendingIn.size, pendingOut.size - pendingIn.size) +
                             if (courtAfter < minimumOnCourt) " " + stringResource(R.string.rotation_below_minimum, courtAfter, minimumOnCourt) else ""
+
                     else -> null
                 }
                 val rotationValid = (pendingIn.isNotEmpty() || pendingOut.isNotEmpty()) && courtAfter in 1..fullSide
@@ -292,7 +297,7 @@ fun GameControlPanel(
                     Text(
                         rotationNote,
                         color = if (rotationValid) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
                     )
                 }
                 Spacer(Modifier.height(layout.smallGap))
@@ -300,7 +305,7 @@ fun GameControlPanel(
                 Text(
                     text = stringResource(R.string.players_coming_out, pendingOut.size),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(layout.tinyGap))
 
@@ -324,7 +329,7 @@ fun GameControlPanel(
                 Text(
                     text = stringResource(R.string.players_coming_in, pendingIn.size),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(layout.tinyGap))
 
@@ -351,7 +356,7 @@ fun GameControlPanel(
 
                 Button(
                     onClick = onSubstitute,
-                    enabled = rotationValid
+                    enabled = rotationValid,
                 ) {
                     val changes = maxOf(pendingIn.size, pendingOut.size)
                     Text(pluralStringResource(R.plurals.confirm_rotation, changes, changes))
@@ -359,7 +364,6 @@ fun GameControlPanel(
             }
         }
     }
-
 }
 
 @Composable
@@ -405,7 +409,7 @@ fun GameClock(
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                color = if (remainingTime < 60000) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                color = if (remainingTime < 60000) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
             )
 
             if (!game.isFinished) {
@@ -426,7 +430,7 @@ fun GameClock(
                             ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                         } else {
                             ButtonDefaults.buttonColors()
-                        }
+                        },
                     ) {
                         Icon(
                             if (timerLastStartedAt != null) {
@@ -434,7 +438,7 @@ fun GameClock(
                             } else {
                                 Icons.Default.PlayArrow
                             },
-                            contentDescription = null
+                            contentDescription = null,
                         )
                         Spacer(Modifier.width(layout.smallGap))
                         Text(if (timerLastStartedAt != null) stringResource(R.string.stop) else stringResource(R.string.start), maxLines = 1)
@@ -453,19 +457,19 @@ fun GameClock(
                     .fillMaxWidth()
                     .padding(top = layout.smallGap),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
+                horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
             ) {
                 OutlinedTextField(
                     value = minutesText,
                     onValueChange = { minutesText = it.filter { c -> c.isDigit() } },
                     label = { Text(stringResource(R.string.min_left)) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 OutlinedTextField(
                     value = secondsText,
                     onValueChange = { secondsText = it.filter { c -> c.isDigit() } },
                     label = { Text(stringResource(R.string.sec_left)) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 Button(
                     onClick = {
@@ -473,7 +477,7 @@ fun GameClock(
                         val secs = secondsText.toLongOrNull() ?: 0L
                         onSetGameTime(elapsedFromRemaining(((mins * 60) + secs) * 1000, game.periodDurationMillis))
                         isEditing = false
-                    }
+                    },
                 ) {
                     Text(stringResource(R.string.set))
                 }
@@ -488,8 +492,11 @@ fun GameClock(
  * taken as elapsed time.
  */
 fun elapsedFromRemaining(remainingMillis: Long, periodDurationMillis: Long): Long =
-    if (periodDurationMillis > 0) (periodDurationMillis - remainingMillis).coerceIn(0L, periodDurationMillis)
-    else maxOf(0L, remainingMillis)
+    if (periodDurationMillis > 0) {
+        (periodDurationMillis - remainingMillis).coerceIn(0L, periodDurationMillis)
+    } else {
+        maxOf(0L, remainingMillis)
+    }
 
 /**
  * Picks the starting lineup from the players who are here ([availablePlayers]). With enough for
@@ -524,6 +531,7 @@ fun StartingLineupPicker(
             when (rule) {
                 is LineupRule.ShortHanded ->
                     pluralStringResource(R.plurals.lineup_short_handed, rule.available, rule.available, rule.fullSize, rule.minimum)
+
                 else -> pluralStringResource(R.plurals.select_exactly_players, onCourtSize, onCourtSize)
             },
         )
@@ -546,7 +554,7 @@ fun StartingLineupPicker(
                         }
                     }
                     .padding(vertical = layout.tinyGap),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(checked = checked, onCheckedChange = null)
                 Text(player.displayLabel())
@@ -596,4 +604,3 @@ fun SubSuggestionBanner(suggestion: SubSuggestion, onSubNow: () -> Unit, onLater
         }
     }
 }
-

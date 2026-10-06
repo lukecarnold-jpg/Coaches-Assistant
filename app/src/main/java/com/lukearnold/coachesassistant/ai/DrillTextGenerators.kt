@@ -2,6 +2,8 @@ package com.lukearnold.coachesassistant.ai
 
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.UserFacingException
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -10,8 +12,6 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.IOException
-import java.util.concurrent.TimeUnit
 
 /**
  * A provider's API rejected a request: [httpCode] is the HTTP status it answered with, and

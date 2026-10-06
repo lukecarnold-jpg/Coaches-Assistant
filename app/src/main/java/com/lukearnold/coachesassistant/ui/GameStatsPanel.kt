@@ -1,17 +1,17 @@
 package com.lukearnold.coachesassistant.ui
 
-import com.lukearnold.coachesassistant.R
-import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.*
 import java.util.Date
 
@@ -69,7 +69,7 @@ fun GameStatsPanel(
                 value = gameTitle,
                 onValueChange = onGameTitleChange,
                 label = { Text(stringResource(R.string.game_title)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(Modifier.height(layout.smallGap))
@@ -78,7 +78,7 @@ fun GameStatsPanel(
                 value = opponent,
                 onValueChange = onOpponentChange,
                 label = { Text(stringResource(R.string.opponent)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(Modifier.height(layout.smallGap))
@@ -101,7 +101,7 @@ fun GameStatsPanel(
                 value = periodMins,
                 onValueChange = { onPeriodMinsChange(it.filter { c -> c.isDigit() }) },
                 label = { Text(stringResource(R.string.period_duration_minutes)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(Modifier.height(layout.smallGap))
@@ -125,7 +125,7 @@ fun GameStatsPanel(
                                 Text(
                                     text = game.title,
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
                                 )
                                 if (game.opponent.isNotBlank()) {
                                     Text(stringResource(R.string.opponent_value, game.opponent))
@@ -141,7 +141,7 @@ fun GameStatsPanel(
                                 }
                                 TextButton(
                                     onClick = { pendingDelete = game },
-                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                                 ) {
                                     Text(stringResource(R.string.delete))
                                 }
@@ -165,26 +165,26 @@ fun GameStatsPanel(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(layout.cardPadding),
-                                verticalArrangement = Arrangement.spacedBy(layout.tinyGap)
+                                verticalArrangement = Arrangement.spacedBy(layout.tinyGap),
                             ) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     StatusBadge(if (stat.onCourt) stringResource(R.string.on_court) else stringResource(R.string.bench))
                                     val now = gameTimeMillis()
                                     Text(
                                         text = formatDuration(
-                                            if (stat.onCourt) stat.shiftTimeAt(now) else stat.benchTimeAt(now)
+                                            if (stat.onCourt) stat.shiftTimeAt(now) else stat.benchTimeAt(now),
                                         ),
-                                        style = MaterialTheme.typography.labelSmall
+                                        style = MaterialTheme.typography.labelSmall,
                                     )
                                 }
                                 Text(
                                     text = stat.player.displayLabel(),
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
                                 )
                                 Text(stringResource(R.string.game_stats_line, stat.points, stringResource(infraction.plural), stat.fouls, stat.mvpVotes, stat.timesSubbedOff))
                                 val now = gameTimeMillis()
@@ -201,7 +201,7 @@ fun GameStatsPanel(
                                             paceLabel(share.behindMillis(played)).asString(),
                                         )
                                     },
-                                    style = MaterialTheme.typography.bodySmall
+                                    style = MaterialTheme.typography.bodySmall,
                                 )
                             }
                         }
@@ -225,16 +225,16 @@ fun GameStatsPanel(
                                     .fillMaxWidth()
                                     .padding(layout.cardPadding),
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Column(
                                     modifier = Modifier.weight(1f),
-                                    verticalArrangement = Arrangement.spacedBy(layout.tinyGap)
+                                    verticalArrangement = Arrangement.spacedBy(layout.tinyGap),
                                 ) {
                                     Text(
                                         text = eventDescription(event, playerById, opponentName, infraction).asString(),
                                         style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.Medium
+                                        fontWeight = FontWeight.Medium,
                                     )
                                     Text(
                                         text = stringResource(
@@ -243,7 +243,7 @@ fun GameStatsPanel(
                                             clockReading(event.gameTimeMillis, eventsGame?.periodDurationMillis ?: 0L),
                                             timeOfDay.format(Date(event.timestamp)),
                                         ).trim(),
-                                        style = MaterialTheme.typography.bodySmall
+                                        style = MaterialTheme.typography.bodySmall,
                                     )
                                 }
 

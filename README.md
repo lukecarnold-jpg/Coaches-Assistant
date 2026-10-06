@@ -135,6 +135,7 @@ Use the Gradle wrapper from the repo root (on Windows, run `gradlew.bat` instead
 ```sh
 ./gradlew testDebugUnitTest   # unit and Compose UI tests (JVM, via Robolectric; no emulator needed)
 ./gradlew lintDebug
+./gradlew spotlessCheck       # formatting (ktlint); ./gradlew spotlessApply fixes it
 ./gradlew assembleDebug
 ./gradlew installDebug        # install on a connected device or running emulator
 ```
@@ -199,7 +200,7 @@ The app declares a **foreground service** of type `specialUse` (`ui/SubReminderS
 
 ## Testing
 
-CI (`.github/workflows/android-ci.yml`) runs on every push and PR to `master`: the unit and UI tests, lint, and a minified release build.
+CI (`.github/workflows/android-ci.yml`) runs on every push and PR to `master`: a formatting check (Spotless/ktlint), the unit and UI tests, lint, and a minified release build.
 
 The automated tests cover:
 

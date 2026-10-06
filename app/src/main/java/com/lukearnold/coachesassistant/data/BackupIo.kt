@@ -1,11 +1,10 @@
 package com.lukearnold.coachesassistant.data
 
-import com.lukearnold.coachesassistant.R
-
 import android.content.ContentResolver
 import android.database.sqlite.SQLiteConstraintException
 import android.net.Uri
 import androidx.room.withTransaction
+import com.lukearnold.coachesassistant.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

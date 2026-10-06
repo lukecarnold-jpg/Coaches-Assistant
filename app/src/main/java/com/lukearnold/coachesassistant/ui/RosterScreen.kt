@@ -1,18 +1,16 @@
 package com.lukearnold.coachesassistant.ui
 
-import com.lukearnold.coachesassistant.R
-import androidx.compose.ui.res.stringResource
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -32,8 +30,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.PlayerEntity
 import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.data.displayLabel
@@ -264,7 +264,7 @@ fun RosterForm(
             value = jerseyNumber,
             onValueChange = onJerseyNumberChange,
             label = { Text(stringResource(R.string.jersey_number_optional)) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
 
         if (squadPositions.isNotEmpty()) {
@@ -280,25 +280,25 @@ fun RosterForm(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                )
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                ),
             ) {
                 Text(
                     text = stringResource(R.string.player_name_is_required),
                     modifier = Modifier.padding(layout.cardPadding),
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
+            horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
         ) {
             Button(
                 onClick = onAddPlayer,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text(stringResource(R.string.add_player))
             }
@@ -306,18 +306,18 @@ fun RosterForm(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
+            horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
         ) {
             OutlinedButton(
                 onClick = onExportPlayers,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text(stringResource(R.string.export_roster_csv))
             }
 
             OutlinedButton(
                 onClick = onImportPlayers,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text(stringResource(R.string.import_roster_csv))
             }
@@ -349,23 +349,23 @@ fun RosterList(
                 val layout = LocalResponsiveLayout.current
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 ) {
                     Column(
                         modifier = Modifier.padding(layout.cardPadding),
-                        verticalArrangement = Arrangement.spacedBy(layout.smallGap)
+                        verticalArrangement = Arrangement.spacedBy(layout.smallGap),
                     ) {
                         OutlinedTextField(
                             value = editName,
                             onValueChange = onEditNameChange,
                             label = { Text(stringResource(R.string.player_name)) },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                         OutlinedTextField(
                             value = editJerseyNumber,
                             onValueChange = onEditJerseyNumberChange,
                             label = { Text(stringResource(R.string.jersey_number_optional)) },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                         if (squadPositions.isNotEmpty()) {
                             PositionSelector(
@@ -376,17 +376,17 @@ fun RosterList(
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
+                            horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
                         ) {
                             Button(
                                 onClick = { onSaveUpdate(player) },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             ) {
                                 Text(stringResource(R.string.save))
                             }
                             TextButton(
                                 onClick = onCancelEdit,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             ) {
                                 Text(stringResource(R.string.cancel))
                             }
@@ -400,13 +400,13 @@ fun RosterList(
                             .fillMaxWidth()
                             .padding(LocalResponsiveLayout.current.cardPadding),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column {
                             Text(
                                 text = player.displayLabel(),
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
                             )
                             if (!player.position.isNullOrBlank()) {
                                 Text(
@@ -419,13 +419,13 @@ fun RosterList(
 
                         Row {
                             TextButton(
-                                onClick = { onStartEdit(player) }
+                                onClick = { onStartEdit(player) },
                             ) {
                                 Text(stringResource(R.string.edit))
                             }
                             TextButton(
                                 onClick = { onDeletePlayer(player.id) },
-                                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                             ) {
                                 Text(stringResource(R.string.remove))
                             }

@@ -4,6 +4,8 @@ import android.app.Application
 import android.net.Uri
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import java.io.File
+import java.nio.file.Files
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -13,8 +15,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.io.File
-import java.nio.file.Files
 
 /**
  * Exercises [GameCsvIo] end to end: real export/import through a ContentResolver against real
@@ -116,7 +116,7 @@ class GameCsvIoTest {
 
         val lines = File(uri.path!!).readLines()
         assertEquals(2, lines.size) // header + one summary-only row
-        assertTrue(lines[1].startsWith("${gameId},\"Test Game\",\"Rivals\","))
+        assertTrue(lines[1].startsWith("$gameId,\"Test Game\",\"Rivals\","))
     }
 
     @Test

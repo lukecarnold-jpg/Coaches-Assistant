@@ -1,12 +1,12 @@
 package com.lukearnold.coachesassistant.ui
 
-import com.lukearnold.coachesassistant.R
-import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.PlayerEntity
 import com.lukearnold.coachesassistant.data.displayLabel
@@ -43,8 +43,11 @@ fun ConfirmDialog(
 
 /** "Us 4 – 2 Rivals" (or "Them" with no opponent name). */
 fun GameEntity.scoreLine(): UiText =
-    if (opponent.isBlank()) uiText(R.string.score_line_no_opponent, teamScore, opponentScore)
-    else uiText(R.string.score_line, teamScore, opponentScore, opponent)
+    if (opponent.isBlank()) {
+        uiText(R.string.score_line_no_opponent, teamScore, opponentScore)
+    } else {
+        uiText(R.string.score_line, teamScore, opponentScore, opponent)
+    }
 
 /** The End Game confirmation's message: the score, a warning if periods remain, and what happens next. */
 fun endGameConfirmMessage(game: GameEntity): UiText =

@@ -1,22 +1,22 @@
 package com.lukearnold.coachesassistant.ui
 
-import com.lukearnold.coachesassistant.R
-import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.lukearnold.coachesassistant.R
 
 @Composable
 fun GameNotesPanel(
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     SectionCard(title = stringResource(R.string.coaching_notes)) {
         Button(
             onClick = onClick,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Text(stringResource(R.string.open_edit_notes))
         }
@@ -33,7 +33,7 @@ fun CoachingNotesDialog(
     notes: String,
     onDismiss: () -> Unit,
     onSave: (String) -> Unit,
-    onExport: (String) -> Unit
+    onExport: (String) -> Unit,
 ) {
     var text by rememberSaveable { mutableStateOf(notes) }
     val layout = LocalResponsiveLayout.current
@@ -44,7 +44,7 @@ fun CoachingNotesDialog(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(stringResource(R.string.coaching_notes))
                 OutlinedButton(onClick = { onExport(text) }) {
@@ -61,7 +61,7 @@ fun CoachingNotesDialog(
                         .fillMaxWidth()
                         .heightIn(min = layout.notesMinHeight),
                     placeholder = { Text(stringResource(R.string.write_strategy_or_observations_here)) },
-                    label = { Text(stringResource(R.string.notes_keyboard_pen_support)) }
+                    label = { Text(stringResource(R.string.notes_keyboard_pen_support)) },
                 )
             }
         },
@@ -74,6 +74,6 @@ fun CoachingNotesDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
-        }
+        },
     )
 }
