@@ -91,6 +91,15 @@ class AiSettingsStore(
         prefs.edit { remove(provider.storageKey) }
     }
 
+    /** The model the user chose for [provider] in place of its default, or "" for the default. */
+    fun modelOverride(provider: AiProvider): String = prefs.getString(modelKey(provider), null).orEmpty()
+
+    fun setModelOverride(provider: AiProvider, model: String) {
+        prefs.edit { if (model.isBlank()) remove(modelKey(provider)) else putString(modelKey(provider), model) }
+    }
+
+    private fun modelKey(provider: AiProvider) = "model_${provider.name}"
+
     var selectedProvider: AiProvider
         get() = AiProvider.entries.firstOrNull { it.name == prefs.getString(KEY_SELECTED_PROVIDER, null) }
             ?: AiProvider.GEMINI

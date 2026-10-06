@@ -73,6 +73,9 @@ fun SettingsScreen(
     onSaveApiKey: (AiProvider, String) -> Unit = { _, _ -> },
     onClearApiKey: (AiProvider) -> Unit = {},
     onSaveCustomEndpoint: (CustomEndpointConfig) -> Unit = {},
+    /** Each provider's model chosen here, or "" for its default (see AiProvider.defaultModel). */
+    modelOverrides: Map<AiProvider, String> = emptyMap(),
+    onSaveModel: (AiProvider, String) -> Unit = { _, _ -> },
     currentSport: Sport? = null,
     onSwitchSport: () -> Unit = {},
     onBackup: (Uri) -> Unit = {},
@@ -109,6 +112,8 @@ fun SettingsScreen(
     var apiKeyVisible by remember { mutableStateOf(value = false) }
     var endpointUrlInput by remember(customEndpoint.endpointUrl) { mutableStateOf(customEndpoint.endpointUrl) }
     var modelInput by remember(customEndpoint.model) { mutableStateOf(customEndpoint.model) }
+    val savedModelOverride = modelOverrides[selectedProvider].orEmpty()
+    var modelOverrideInput by remember(selectedProvider, savedModelOverride) { mutableStateOf(savedModelOverride) }
     val isOther = selectedProvider == AiProvider.OTHER
     val endpointProblem = if (isOther) endpointUrlProblem(endpointUrlInput) else null
     val context = LocalContext.current
@@ -257,6 +262,18 @@ fun SettingsScreen(
                 )
                 Spacer(Modifier.height(layout.smallGap))
             }
+            selectedProvider.defaultModel?.let { defaultModel ->
+                OutlinedTextField(
+                    value = modelOverrideInput,
+                    onValueChange = { modelOverrideInput = it },
+                    label = { Text(stringResource(R.string.model_name)) },
+                    placeholder = { Text(defaultModel) },
+                    supportingText = { Text(stringResource(R.string.model_default_hint, defaultModel)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(layout.smallGap))
+            }
 
             OutlinedTextField(
                 value = apiKeyInput,
@@ -278,9 +295,11 @@ fun SettingsScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 val endpointChanged = isOther &&
                     ((endpointUrlInput.trim() != customEndpoint.endpointUrl) || (modelInput.trim() != customEndpoint.model))
+                val modelChanged = !isOther && modelOverrideInput.trim() != savedModelOverride
                 Button(
                     onClick = {
                         onSaveApiKey(selectedProvider, apiKeyInput.trim())
+                        if (modelChanged) onSaveModel(selectedProvider, modelOverrideInput.trim())
                         if (isOther) {
                             onSaveCustomEndpoint(CustomEndpointConfig(endpointUrlInput.trim(), modelInput.trim()))
                             // Ask now, while the user is setting it up, rather than on first use.
@@ -289,7 +308,7 @@ fun SettingsScreen(
                             }
                         }
                     },
-                    enabled = ((apiKeyInput.trim() != savedKey) || endpointChanged) && (endpointProblem == null),
+                    enabled = ((apiKeyInput.trim() != savedKey) || endpointChanged || modelChanged) && (endpointProblem == null),
                 ) {
                     Text(stringResource(R.string.save))
                 }

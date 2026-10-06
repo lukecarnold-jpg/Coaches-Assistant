@@ -40,6 +40,11 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
     private val _apiKeys = MutableStateFlow(AiProvider.entries.associateWith(store::apiKey))
     val apiKeys = _apiKeys.asStateFlow()
 
+    private val _modelOverrides = MutableStateFlow(AiProvider.entries.associateWith(store::modelOverride))
+
+    /** Each provider's model chosen in Settings, or "" for its default (see AiProvider.defaultModel). */
+    val modelOverrides = _modelOverrides.asStateFlow()
+
     private val _selectedProvider = MutableStateFlow(store.selectedProvider)
     val selectedProvider = _selectedProvider.asStateFlow()
 
@@ -64,6 +69,12 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         val trimmed = key.trim()
         store.setApiKey(provider, trimmed)
         _apiKeys.value = _apiKeys.value + (provider to trimmed)
+    }
+
+    fun updateModel(provider: AiProvider, model: String) {
+        val trimmed = model.trim()
+        store.setModelOverride(provider, trimmed)
+        _modelOverrides.value = _modelOverrides.value + (provider to trimmed)
     }
 
     fun clearApiKey(provider: AiProvider) {
@@ -108,7 +119,8 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _uiState.value = TrainingUiState.Loading
             try {
-                val text = textGeneratorFor(provider, customEndpoint).generateText(buildDrillPrompt(sport, ageGroup, languageTag), apiKey)
+                val text = textGeneratorFor(provider, customEndpoint, _modelOverrides.value[provider].orEmpty())
+                    .generateText(buildDrillPrompt(sport, ageGroup, languageTag), apiKey)
                 val drills = parseDrills(text)
                 _uiState.value = if (drills.isEmpty()) {
                     TrainingUiState.Error(uiText(R.string.drills_parse_failed))

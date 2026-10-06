@@ -47,6 +47,18 @@ class AiSettingsStoreTest {
     }
 
     @Test
+    fun modelOverride_isPerProviderAndBlankMeansDefault() {
+        assertEquals("", store.modelOverride(AiProvider.GEMINI))
+
+        store.setModelOverride(AiProvider.GEMINI, "gemini-next")
+        assertEquals("gemini-next", store.modelOverride(AiProvider.GEMINI))
+        assertEquals("", store.modelOverride(AiProvider.ANTHROPIC))
+
+        store.setModelOverride(AiProvider.GEMINI, " ")
+        assertEquals("", store.modelOverride(AiProvider.GEMINI))
+    }
+
+    @Test
     fun apiKey_thatCantBeDecrypted_readsAsUnsetInsteadOfCrashing() {
         prefs.edit().putString(AiProvider.GEMINI.storageKey, "garbage").commit()
 

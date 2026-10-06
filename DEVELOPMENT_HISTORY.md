@@ -213,6 +213,7 @@ Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see R
 - Offered for every sport; Gemini is called through its REST API; API keys are encrypted with an Android Keystore key
 - The Other (OpenAI-compatible) provider can use plain http to a server on the local network, with Android 17's local network permission
 - Drills are requested in the app's language
+- Each provider's model can be changed in Settings, so a retired model doesn't need an app update
 - The build-time `GEMINI_API_KEY` is only used by debug builds, so a key can't ship inside a release APK
 
 **App-wide**
