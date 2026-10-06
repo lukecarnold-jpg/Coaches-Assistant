@@ -265,7 +265,9 @@ The class filter matters: without it the run also includes the profile generator
   - Shared file-export launcher: `app/src/main/java/com/lukearnold/coachesassistant/ui/FileExport.kt`
 - State and logic
   - `app/src/main/java/com/lukearnold/coachesassistant/ui/AppViewModel.kt`, with the pure `calculatePlayerGameStats` function in `PlayerGameStats.kt`
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/DataViewModel.kt` (backup, CSV, clearing data) and `SettingsViewModel.kt` (display and substitution settings)
   - `app/src/main/java/com/lukearnold/coachesassistant/ui/TrainingViewModel.kt`
+  - `app/src/main/java/com/lukearnold/coachesassistant/ui/SubReminderService.kt` — the foreground service behind substitution reminders
 - AI provider layer (`app/src/main/java/com/lukearnold/coachesassistant/ai/`)
   - `AiProvider.kt` — the Gemini/Anthropic/OpenAI/Other enum, each provider's preferences key, display strings, and default model
   - `CustomEndpointConfig.kt` — user-supplied endpoint URL and model name for the "Other" provider

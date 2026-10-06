@@ -88,7 +88,8 @@ presentation helpers:
 - `FileExport.kt` - shared file-export launcher.
 - `SportConfig.kt` - sport-specific rules: players on court and the minimum to field a team, scoring, periods, positions, and infractions.
 - `SportPreferences.kt` - remembers the last selected sport.
-- `AppViewModel.kt` - screen state, user actions, and repository coordination.
+- `AppViewModel.kt` - one sport's roster and live game: screen state, user actions, and repository coordination.
+- `DataViewModel.kt` - backup and restore, CSV and notes files, and clearing data.
 - `SettingsViewModel.kt` - the app-wide display and substitution settings.
 - `ViewModelActions.kt` - `launchSafely`, which turns a failed user action into a message instead of a crash.
 - `PlayerGameStats.kt` - the per-game player stats calculator (`calculatePlayerGameStats`).
@@ -234,7 +235,7 @@ flowchart LR
 
     subgraph ui["ui/"]
         Screens["Roster · Game · Training<br/>History · Settings screens"]
-        AppVM["AppViewModel<br/>(one per sport)"]
+        AppVM["AppViewModel · DataViewModel<br/>(one per sport)"]
         SettingsVM["SettingsViewModel"]
         TrainingVM["TrainingViewModel"]
         SubService["SubReminderService<br/>(while a clock runs)"]
@@ -267,5 +268,5 @@ flowchart LR
 ```
 
 The selected sport is persisted independently from roster and game data.
-`AppViewModel` instances are keyed by sport so each sport's state remains
+`AppViewModel` and `DataViewModel` instances are keyed by sport so each sport's state remains
 isolated while using the same application screens and repository patterns.
