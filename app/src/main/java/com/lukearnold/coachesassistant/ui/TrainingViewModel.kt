@@ -3,13 +3,17 @@ package com.lukearnold.coachesassistant.ui
 import android.app.Application
 import android.os.Build
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.lukearnold.coachesassistant.BuildConfig
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.ai.AiProvider
 import com.lukearnold.coachesassistant.ai.AiRequestException
 import com.lukearnold.coachesassistant.ai.AiSettingsStore
 import com.lukearnold.coachesassistant.ai.Drill
+import com.lukearnold.coachesassistant.ai.DrillTextGenerator
 import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
 import com.lukearnold.coachesassistant.ai.buildDrillPrompt
 import com.lukearnold.coachesassistant.ai.hasLocalNetworkPermission
@@ -28,14 +32,20 @@ sealed class TrainingUiState {
     data class Error(val message: UiText) : TrainingUiState()
 }
 
-class TrainingViewModel(application: Application) : AndroidViewModel(application) {
-    // API keys are encrypted with an Android Keystore key; see AiSettingsStore, which also moves
-    // settings over from the storage older versions of the app used.
-    private val store = AiSettingsStore.create(application)
-
-    // A Gemini key saved in Settings takes priority; otherwise falls back to local.properties
-    // via BuildConfig. Anthropic and OpenAI have no build-time fallback.
-    val hasBuiltInApiKey: Boolean = BuildConfig.GEMINI_API_KEY.isNotBlank()
+/**
+ * The AI provider settings and drill generation. [generatorFor] makes the generator for a provider,
+ * its custom endpoint, and the chosen model (see textGeneratorFor); [builtInGeminiKey] is the
+ * debug-build fallback key.
+ */
+class TrainingViewModel(
+    application: Application,
+    private val store: AiSettingsStore,
+    private val generatorFor: (AiProvider, CustomEndpointConfig, String) -> DrillTextGenerator = ::textGeneratorFor,
+    private val builtInGeminiKey: String = BuildConfig.GEMINI_API_KEY,
+) : AndroidViewModel(application) {
+    // A Gemini key saved in Settings takes priority; otherwise debug builds fall back to
+    // local.properties via BuildConfig. Anthropic and OpenAI have no build-time fallback.
+    val hasBuiltInApiKey: Boolean = builtInGeminiKey.isNotBlank()
 
     private val _apiKeys = MutableStateFlow(AiProvider.entries.associateWith(store::apiKey))
     val apiKeys = _apiKeys.asStateFlow()
@@ -86,7 +96,7 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         val saved = _apiKeys.value[provider].orEmpty()
         return when {
             saved.isNotBlank() -> saved
-            provider == AiProvider.GEMINI -> BuildConfig.GEMINI_API_KEY
+            provider == AiProvider.GEMINI -> builtInGeminiKey
             else -> ""
         }
     }
@@ -119,7 +129,7 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _uiState.value = TrainingUiState.Loading
             try {
-                val text = textGeneratorFor(provider, customEndpoint, _modelOverrides.value[provider].orEmpty())
+                val text = generatorFor(provider, customEndpoint, _modelOverrides.value[provider].orEmpty())
                     .generateText(buildDrillPrompt(sport, ageGroup, languageTag), apiKey)
                 val drills = parseDrills(text)
                 _uiState.value = if (drills.isEmpty()) {
@@ -137,5 +147,16 @@ class TrainingViewModel(application: Application) : AndroidViewModel(application
         provider == AiProvider.GEMINI && e is AiRequestException && e.httpCode == 404 -> uiText(R.string.gemini_model_not_found)
         e is AiRequestException -> e.apiMessage?.let { UiText.Plain(it) } ?: uiText(R.string.request_failed_http, e.httpCode)
         else -> e.toUiText(fallback = R.string.unknown_error)
+    }
+
+    companion object {
+        // API keys are encrypted with an Android Keystore key; see AiSettingsStore, which also
+        // moves settings over from the storage older versions of the app used.
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = checkNotNull(this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
+                TrainingViewModel(application, AiSettingsStore.create(application))
+            }
+        }
     }
 }

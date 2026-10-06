@@ -11,7 +11,6 @@ import android.Manifest
 import com.lukearnold.coachesassistant.R
 import androidx.annotation.StringRes
 import androidx.compose.ui.res.stringResource
-import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -51,7 +50,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.ui.AppViewModel
 import com.lukearnold.coachesassistant.ui.AppTheme
-import com.lukearnold.coachesassistant.ui.AppViewModelFactory
+import com.lukearnold.coachesassistant.ui.appViewModelFactory
 import com.lukearnold.coachesassistant.ui.DataViewModel
 import com.lukearnold.coachesassistant.ui.dataViewModelFactory
 import com.lukearnold.coachesassistant.ui.KeepScreenOn
@@ -150,12 +149,11 @@ private fun SportApp(
     sport: Sport,
     onSwitchSport: () -> Unit,
 ) {
-    val application = LocalContext.current.applicationContext as Application
     // One per sport, so one sport's generated drills don't show up on another's Training tab.
-    val trainingViewModel: TrainingViewModel = viewModel(key = "TrainingViewModel-${sport.name}")
+    val trainingViewModel: TrainingViewModel = viewModel(key = "TrainingViewModel-${sport.name}", factory = TrainingViewModel.Factory)
     val appViewModel: AppViewModel = viewModel(
         key = "AppViewModel-${sport.name}",
-        factory = remember(sport) { AppViewModelFactory(application, sport) },
+        factory = remember(sport) { appViewModelFactory(sport) },
     )
     val dataViewModel: DataViewModel = viewModel(
         key = "DataViewModel-${sport.name}",

@@ -95,8 +95,8 @@ presentation helpers:
 - `PlayerGameStats.kt` - the per-game player stats calculator (`calculatePlayerGameStats`).
 - `UiMessages.kt` - snackbar messages (with optional Undo) and their text.
 - `UiText.kt` - text built in code as a string resource and its arguments, resolved when shown.
-- `TrainingViewModel.kt` - AI provider selection, endpoint configuration, and
-  API key state.
+- `TrainingViewModel.kt` - AI provider selection, endpoint configuration, the
+  model chosen for each provider, API key state, and drill generation.
 
 ### `data/` - domain and persistence
 
@@ -205,7 +205,8 @@ Robolectric:
   migrations (from the exported schemas), backup format and restore, CSV
   import and export, event types, game totals, and MVP votes.
 - `ui/` - player and season stats, playing-time targets, sport configuration,
-  confirmation and other message text, the clock editor, keep-screen-on, and
+  confirmation and other message text, the clock editor, keep-screen-on, the
+  `AppViewModel` and `TrainingViewModel` (with a fake AI provider), and
   Compose UI tests of screens (`ScreenBehaviourTest`).
 
 There are no instrumented (`androidTest`) tests. CI
