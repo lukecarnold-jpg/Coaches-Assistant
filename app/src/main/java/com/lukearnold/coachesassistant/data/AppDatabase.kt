@@ -8,8 +8,11 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [PlayerEntity::class, GameEntity::class, GameEventEntity::class, GamePlayerEntity::class],
-    version = 14,
+    entities = [
+        PlayerEntity::class, GameEntity::class, GameEventEntity::class, GamePlayerEntity::class,
+        CricketScorecardEntity::class, CricketFieldPositionEntity::class,
+    ],
+    version = 15,
     autoMigrations = [
         androidx.room.AutoMigration(from = 5, to = 6),
         androidx.room.AutoMigration(from = 6, to = 7),
@@ -21,6 +24,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         androidx.room.AutoMigration(from = 10, to = 11),
         // Adds indices on players.sport and games.sport.
         androidx.room.AutoMigration(from = 13, to = 14),
+        // Cricket: the scorecard and field plan tables, and games.extras, teamWickets, and opponentWickets
+        // (defaulting to 0 for existing games).
+        androidx.room.AutoMigration(from = 14, to = 15),
     ],
     exportSchema = true,
 )
@@ -29,6 +35,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun gameDao(): GameDao
     abstract fun gameEventDao(): GameEventDao
     abstract fun gamePlayerDao(): GamePlayerDao
+    abstract fun cricketDao(): CricketDao
 
     companion object {
         @Volatile

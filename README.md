@@ -1,6 +1,6 @@
 # Coaches Assistant
 
-Coaches Assistant is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data — across 16 team sports: Basketball, Netball, Soccer, AFL, Rugby Union, Rugby League, Futsal, Field Hockey, Ice Hockey, Touch Football, Water Polo, Handball, Lacrosse, Gaelic Football, Flag Football, and Ultimate Frisbee.
+Coaches Assistant is a coach-focused Android app for managing team rosters, tracking live game events, and exporting post-game data — across 17 team sports: Basketball, Netball, Soccer, AFL, Rugby Union, Rugby League, Futsal, Field Hockey, Ice Hockey, Touch Football, Water Polo, Handball, Lacrosse, Gaelic Football, Flag Football, Ultimate Frisbee, and Cricket.
 
 The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered training assistant (Google Gemini, Anthropic Claude, OpenAI ChatGPT, or any other OpenAI-compatible provider — your choice, for every sport). It is designed for local, in-season use and keeps the workflow lightweight: roster setup, live substitutions, score tracking, attendance, and exportable game records.
 
@@ -8,20 +8,27 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 
 - Android app (`:app`), plus a `:baselineprofile` module that generates its baseline profile (see "Baseline profile")
 - Application ID and Kotlin package: `com.lukearnold.coachesassistant`
-- Multi-sport: a landing screen lets the user pick from 16 supported team sports (categorized into Court, Field, and Ice & Water sports); each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
+- Multi-sport: a landing screen lets the user pick from 17 supported team sports (categorized into Court, Field, and Ice & Water sports); each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
 - UI: Jetpack Compose + Material 3
-- Persistence: Room database (schema version 14)
+- Persistence: Room database (schema version 15)
 - AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash` by default), Anthropic Claude (`claude-sonnet-5` by default), OpenAI ChatGPT (`gpt-5.5` by default; each model can be changed in Settings, e.g. once one is retired), or "Other" (any OpenAI-compatible endpoint the user configures, e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server) — and supplies that provider's API key (debug builds of Gemini also fall back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests, lint, and a minified release build on every push/PR to `master`; Dependabot (`.github/dependabot.yml`) opens weekly PRs for dependency and Actions updates, which CI checks the same way
 
 ## Core features
 
 - Sport support
-  - Landing screen to pick from 16 team sports across Court, Field, and Ice & Water categories (Rugby prompts a "which code?" dialog for Union vs League)
+  - Landing screen to pick from 17 team sports across Court, Field, and Ice & Water categories (Rugby prompts a "which code?" dialog for Union vs League)
   - Each sport gets its own roster and game history — players and games are tagged by sport and never mix across sports
   - One shared rotation-tracking engine, configured per sport (`ui/SportConfig.kt`) rather than a separate implementation per sport: on-court size (5 for Basketball up to 18 for AFL), optional squad positions (e.g. Netball's GS/GA/WA/C/WD/GD/GK), default period structure and duration, sport-correct scoring buttons (from a single "Goal" worth 1 point up to Rugby's Try/Conversion/Penalty/Drop Goal), and the label used for the per-player infraction counter (Foul, Penalty, Card, or Free Kick)
   - "Switch sport" in Settings returns to the landing screen without clearing any sport's data; the app remembers the last-picked sport across restarts
   - Position is an optional, informational label on a roster player — the app does not enforce sport-specific positional legality, interchange caps, or replacement rules
+- Cricket
+  - Recorded as a scorecard per player rather than live with a clock: no periods, lineups, or substitutions, so the Game tab is its own (`ui/CricketGameScreen.kt`)
+  - Each player's batting (how out, runs, balls, 4s, 6s), bowling (overs such as 3.4, maidens, runs conceded, wickets), and fielding (catches, run-outs, stumpings), entered during the game or afterwards from the scorebook
+  - Our score is the batters' runs plus extras, with wickets from how each batter was out; the other team's runs and wickets are entered. Scores show as runs/wickets ("Us 145/6 – 140/9 Hawks")
+  - A field plan per game: tap a position on the field diagram (25 positions, from wicketkeeper and slips to long-on, mirrored for a left-handed batter) or a player in the list to place them; change it between overs, or start from the last game's field
+  - The History tab's season summary for cricket: each player's innings, runs, high score, batting average and strike rate; overs, wickets, best bowling, bowling average and economy; and catches, run-outs, and stumpings
+  - The game CSV export for cricket is the scorecard: one row per player, with both teams' scores and each player's field position
 - Roster management
   - Add, edit, and remove players
   - Optional jersey number and optional sport-appropriate position
@@ -289,7 +296,9 @@ The class filter matters: without it the run also includes the profile generator
 ## Data model summary
 
 - `players`: roster entries (`id`, `name`, optional `jerseyNumber`, `sport`, optional `position`)
-- `games`: game metadata and state (score and MVP totals derived from events, timer, `periodCount` and period length, notes, `isFinished` flag and `finishedAt` timestamp, `sport`, `onCourtSize`)
+- `games`: game metadata and state (score and MVP totals derived from events, timer, `periodCount` and period length, notes, `isFinished` flag and `finishedAt` timestamp, `sport`, `onCourtSize`; for cricket, `extras`, `teamWickets`, and `opponentWickets`)
+- `cricket_scorecards`: one player's batting, bowling (in balls, so partial overs add up), and fielding in one cricket game; deleting the player keeps the row (its runs still count), deleting the game removes it
+- `cricket_field_positions`: each cricket game's field plan, one player per position
 - `game_players`: each game's on-court and absent players, one row per player; rows cascade-delete with their game or player
 - `game_events`: event timeline entries (lineup, substitutions, team score, opponent score, per-player infractions, MVP votes, period changes, game end) — the `FOUL` event type is shared across sports and relabeled per sport in the UI (Foul/Penalty/Card/Free Kick)
 

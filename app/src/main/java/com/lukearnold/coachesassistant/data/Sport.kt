@@ -21,4 +21,12 @@ enum class Sport(@param:StringRes val label: Int, val emoji: String) {
     GAELIC_FOOTBALL(R.string.sport_gaelic_football, "🏐"),
     FLAG_FOOTBALL(R.string.sport_flag_football, "🏈"),
     ULTIMATE_FRISBEE(R.string.sport_ultimate_frisbee, "🥏"),
+    CRICKET(R.string.sport_cricket, "🏏"),
+    ;
+
+    /**
+     * Whether games are recorded as a scorecard per player (see CricketScorecardEntity) instead of
+     * live with a clock, periods, and substitutions.
+     */
+    val usesScorecards: Boolean get() = this == CRICKET
 }

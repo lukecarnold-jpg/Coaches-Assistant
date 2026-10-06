@@ -139,3 +139,61 @@ interface GamePlayerDao {
     @Query("DELETE FROM game_players WHERE gameId = :gameId")
     suspend fun deleteByGame(gameId: Long)
 }
+
+@Dao
+interface CricketDao {
+    @Query("SELECT * FROM cricket_scorecards WHERE gameId = :gameId")
+    fun observeScorecards(gameId: Long): Flow<List<CricketScorecardEntity>>
+
+    @Query("SELECT * FROM cricket_scorecards WHERE gameId = :gameId")
+    suspend fun getScorecards(gameId: Long): List<CricketScorecardEntity>
+
+    @Query(
+        "SELECT c.* FROM cricket_scorecards c INNER JOIN games g ON g.id = c.gameId " +
+            "WHERE g.sport = :sport AND g.isFinished = 1",
+    )
+    fun observeFinishedScorecards(sport: String): Flow<List<CricketScorecardEntity>>
+
+    @Query("SELECT * FROM cricket_scorecards WHERE gameId = :gameId AND playerId = :playerId LIMIT 1")
+    suspend fun getScorecard(gameId: Long, playerId: Long): CricketScorecardEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertScorecard(card: CricketScorecardEntity): Long
+
+    @Query("DELETE FROM cricket_scorecards WHERE id = :id")
+    suspend fun deleteScorecard(id: Long)
+
+    @Query("SELECT * FROM cricket_scorecards")
+    suspend fun getAllScorecards(): List<CricketScorecardEntity>
+
+    /** For restoring a backup: keeps each row's id, and fails (rather than overwriting) on a clash. */
+    @Insert
+    suspend fun insertAllScorecards(cards: List<CricketScorecardEntity>)
+
+    @Query("DELETE FROM cricket_scorecards WHERE gameId IN (SELECT id FROM games WHERE sport = :sport)")
+    suspend fun deleteScorecardsBySport(sport: String)
+
+    @Query("SELECT * FROM cricket_field_positions WHERE gameId = :gameId")
+    fun observeField(gameId: Long): Flow<List<CricketFieldPositionEntity>>
+
+    @Query("SELECT * FROM cricket_field_positions WHERE gameId = :gameId")
+    suspend fun getField(gameId: Long): List<CricketFieldPositionEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFieldPositions(rows: List<CricketFieldPositionEntity>)
+
+    @Query("DELETE FROM cricket_field_positions WHERE gameId = :gameId AND (playerId = :playerId OR position = :position)")
+    suspend fun clearFieldSpot(gameId: Long, playerId: Long, position: String)
+
+    @Query("DELETE FROM cricket_field_positions WHERE gameId = :gameId AND position = :position")
+    suspend fun clearFieldPosition(gameId: Long, position: String)
+
+    @Query("DELETE FROM cricket_field_positions WHERE gameId = :gameId")
+    suspend fun clearField(gameId: Long)
+
+    @Query("SELECT * FROM cricket_field_positions")
+    suspend fun getAllFieldPositions(): List<CricketFieldPositionEntity>
+
+    @Query("DELETE FROM cricket_field_positions WHERE gameId IN (SELECT id FROM games WHERE sport = :sport)")
+    suspend fun deleteFieldPositionsBySport(sport: String)
+}

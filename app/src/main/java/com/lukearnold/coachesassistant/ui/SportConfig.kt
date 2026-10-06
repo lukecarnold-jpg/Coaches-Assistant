@@ -363,4 +363,16 @@ val Sport.config: SportConfig
             ),
             infraction = Infraction.FOUL,
         )
+
+        // Recorded as a scorecard per player (see Sport.usesScorecards), so there's no lineup,
+        // clock, scoring buttons, or infraction count; those fields aren't used.
+        Sport.CRICKET -> SportConfig(
+            onCourtSize = 11,
+            minimumOnCourt = 11,
+            squadPositions = emptyList(),
+            defaultPeriodCount = 1,
+            defaultPeriodMinutes = 0,
+            scoringOptions = emptyList(),
+            infraction = Infraction.FOUL,
+        )
     }

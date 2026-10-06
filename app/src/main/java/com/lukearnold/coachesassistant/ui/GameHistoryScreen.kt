@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.displayLabel
+import com.lukearnold.coachesassistant.data.formatOvers
+import com.lukearnold.coachesassistant.data.usesScorecards
 import java.util.Locale
 
 @Composable
@@ -32,6 +34,8 @@ fun GameHistoryScreen(
     modifier: Modifier = Modifier,
     games: List<GameEntity>,
     season: SeasonSummary,
+    /** Cricket's season totals, shown instead of [season] for a scorecard sport. */
+    cricketSeason: CricketSeasonSummary? = null,
     infraction: Infraction,
     onViewGame: (Long) -> Unit,
     onDeleteGame: (Long) -> Unit,
@@ -73,7 +77,11 @@ fun GameHistoryScreen(
         if (finishedGames.isEmpty()) {
             EmptyMessage(stringResource(R.string.no_completed_games_yet_games_appear_here_once_yo))
         } else {
-            SeasonSummaryCard(season = season, infraction = infraction)
+            if (cricketSeason != null) {
+                CricketSeasonCard(cricketSeason)
+            } else {
+                SeasonSummaryCard(season = season, infraction = infraction)
+            }
 
             Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
                 finishedGames.forEach { game ->
@@ -98,7 +106,13 @@ fun GameHistoryScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 StatusBadge(result)
-                                Text(stringResource(R.string.final_score_value, game.teamScore, game.opponentScore))
+                                Text(
+                                    if (game.usesScorecards) {
+                                        stringResource(R.string.cricket_final_score, game.teamScore, game.teamWickets, game.opponentScore, game.opponentWickets)
+                                    } else {
+                                        stringResource(R.string.final_score_value, game.teamScore, game.opponentScore)
+                                    },
+                                )
                             }
                             Text(
                                 text = formatTime(game.finishedAt ?: game.createdAt),
@@ -174,6 +188,79 @@ private fun SeasonSummaryCard(season: SeasonSummary, infraction: Infraction) {
         }
     }
 }
+
+/** Cricket's season: the team's record, and each player's batting, bowling, and fielding. */
+@Composable
+private fun CricketSeasonCard(season: CricketSeasonSummary) {
+    val layout = LocalResponsiveLayout.current
+
+    SectionCard(title = pluralStringResource(R.plurals.season_title, season.games, season.games)) {
+        Text(
+            text = stringResource(R.string.season_record, season.wins, season.losses, season.ties),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = layout.smallGap))
+
+        Column(verticalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+            season.players.forEach { stat ->
+                Column {
+                    Text(
+                        text = stat.player.displayLabel(),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    val lines = buildList {
+                        if (stat.hasBatted) {
+                            val highScore = if (stat.highScoreNotOut) {
+                                stringResource(R.string.cricket_runs_not_out, stat.highScore)
+                            } else {
+                                stat.highScore.toString()
+                            }
+                            add(
+                                stringResource(
+                                    R.string.cricket_season_batting,
+                                    stat.innings,
+                                    stat.runs,
+                                    highScore,
+                                    oneDecimal(stat.battingAverage),
+                                    oneDecimal(stat.strikeRate),
+                                ),
+                            )
+                        }
+                        if (stat.hasBowled) {
+                            add(
+                                stringResource(
+                                    R.string.cricket_season_bowling,
+                                    formatOvers(stat.ballsBowled),
+                                    stat.wickets,
+                                    stat.bestBowling?.let { (wickets, runs) -> "$wickets/$runs" } ?: "–",
+                                    oneDecimal(stat.bowlingAverage),
+                                    oneDecimal(stat.economy),
+                                ),
+                            )
+                        }
+                        if (stat.hasFielded) {
+                            val fielding = listOfNotNull(
+                                stat.catches.takeIf { it > 0 }?.let { pluralStringResource(R.plurals.cricket_catch_count, it, it) },
+                                stat.runOuts.takeIf { it > 0 }?.let { pluralStringResource(R.plurals.cricket_run_out_count, it, it) },
+                                stat.stumpings.takeIf { it > 0 }?.let { pluralStringResource(R.plurals.cricket_stumping_count, it, it) },
+                            )
+                            add(stringResource(R.string.cricket_season_fielding, fielding.joinToString(" · ")))
+                        }
+                        if (isEmpty()) add(stringResource(R.string.cricket_yet_to_play))
+                    }
+                    lines.forEach { line -> Text(text = line, style = MaterialTheme.typography.bodySmall) }
+                }
+            }
+        }
+    }
+}
+
+/** [value] to one decimal place, or a dash when there's nothing to show (e.g. no dismissals yet). */
+private fun oneDecimal(value: Double?): String =
+    value?.let { String.format(Locale.getDefault(), "%.1f", it) } ?: "–"
 
 /** [total] averaged over [games], to one decimal place. */
 private fun perGame(total: Int, games: Int): String =

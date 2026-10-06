@@ -16,6 +16,7 @@ class GameRepository(
     private val gameDao = database.gameDao()
     private val gameEventDao = database.gameEventDao()
     private val gamePlayerDao = database.gamePlayerDao()
+    private val cricketDao = database.cricketDao()
 
     val players: Flow<List<PlayerEntity>> = playerDao.observeAll()
     val games: Flow<List<GameEntity>> = gameDao.observeAll()
@@ -359,7 +360,17 @@ class GameRepository(
                 gameDao.deleteAllBySport(sport.name) // game_events.gameId is ON DELETE CASCADE
             } else if (events) {
                 gameEventDao.deleteAllBySport(sport.name)
-                gameDao.getAllBySport(sport.name).forEach { recalculateTotals(it.id) }
+                // A cricket game's record is its scorecards and field plan, and its scores are
+                // entered rather than counted from events, so those are what go.
+                cricketDao.deleteScorecardsBySport(sport.name)
+                cricketDao.deleteFieldPositionsBySport(sport.name)
+                gameDao.getAllBySport(sport.name).forEach { game ->
+                    if (sport.usesScorecards) {
+                        gameDao.update(game.copy(teamScore = 0, opponentScore = 0, extras = 0, teamWickets = 0, opponentWickets = 0))
+                    } else {
+                        recalculateTotals(game.id)
+                    }
+                }
             }
             if (players) {
                 playerDao.deleteAllBySport(sport.name) // game_players.playerId is ON DELETE CASCADE

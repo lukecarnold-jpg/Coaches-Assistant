@@ -6,12 +6,14 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
-/** Everything a backup holds: all four tables, for every sport. */
+/** Everything a backup holds: every table, for every sport. */
 data class BackupData(
     val players: List<PlayerEntity>,
     val games: List<GameEntity>,
     val gameEvents: List<GameEventEntity>,
     val gamePlayers: List<GamePlayerEntity>,
+    val cricketScorecards: List<CricketScorecardEntity> = emptyList(),
+    val cricketFieldPositions: List<CricketFieldPositionEntity> = emptyList(),
 )
 
 /** A backup file that can't be restored, with a message fit to show the user. */
@@ -34,6 +36,8 @@ object BackupFormat {
         put("games", JSONArray(data.games.map(::gameJson)))
         put("gameEvents", JSONArray(data.gameEvents.map(::eventJson)))
         put("gamePlayers", JSONArray(data.gamePlayers.map(::gamePlayerJson)))
+        put("cricketScorecards", JSONArray(data.cricketScorecards.map(::scorecardJson)))
+        put("cricketFieldPositions", JSONArray(data.cricketFieldPositions.map(::fieldPositionJson)))
     }.toString()
 
     /** Parses and checks a whole backup; throws [BackupFormatException] if it can't be restored. */
@@ -58,6 +62,9 @@ object BackupFormat {
                 games = root.getJSONArray("games").objects().map(::gameFrom),
                 gameEvents = root.getJSONArray("gameEvents").objects().map(::eventFrom),
                 gamePlayers = root.getJSONArray("gamePlayers").objects().map(::gamePlayerFrom),
+                // Added with cricket; backups from before then have none.
+                cricketScorecards = root.optJSONArray("cricketScorecards")?.objects()?.map(::scorecardFrom).orEmpty(),
+                cricketFieldPositions = root.optJSONArray("cricketFieldPositions")?.objects()?.map(::fieldPositionFrom).orEmpty(),
             )
         } catch (_: JSONException) {
             throw BackupFormatException(R.string.backup_damaged)
@@ -105,6 +112,9 @@ object BackupFormat {
         put("sport", g.sport)
         put("onCourtSize", g.onCourtSize)
         put("periodCount", g.periodCount)
+        put("extras", g.extras)
+        put("teamWickets", g.teamWickets)
+        put("opponentWickets", g.opponentWickets)
     }
 
     private fun gameFrom(o: JSONObject) = GameEntity(
@@ -125,6 +135,9 @@ object BackupFormat {
         sport = o.getString("sport"),
         onCourtSize = o.getInt("onCourtSize"),
         periodCount = o.getInt("periodCount"),
+        extras = o.optInt("extras", 0),
+        teamWickets = o.optInt("teamWickets", 0),
+        opponentWickets = o.optInt("opponentWickets", 0),
     )
 
     private fun eventJson(e: GameEventEntity) = JSONObject().apply {
@@ -163,6 +176,54 @@ object BackupFormat {
         playerId = o.getLong("playerId"),
         onCourt = o.getBoolean("onCourt"),
         absent = o.getBoolean("absent"),
+    )
+
+    private fun scorecardJson(c: CricketScorecardEntity) = JSONObject().apply {
+        put("id", c.id)
+        put("gameId", c.gameId)
+        putNullable("playerId", c.playerId)
+        put("dismissal", c.dismissal)
+        put("runs", c.runs)
+        put("ballsFaced", c.ballsFaced)
+        put("fours", c.fours)
+        put("sixes", c.sixes)
+        put("ballsBowled", c.ballsBowled)
+        put("maidens", c.maidens)
+        put("runsConceded", c.runsConceded)
+        put("wickets", c.wickets)
+        put("catches", c.catches)
+        put("runOuts", c.runOuts)
+        put("stumpings", c.stumpings)
+    }
+
+    private fun scorecardFrom(o: JSONObject) = CricketScorecardEntity(
+        id = o.getLong("id"),
+        gameId = o.getLong("gameId"),
+        playerId = o.longOrNull("playerId"),
+        dismissal = o.getString("dismissal"),
+        runs = o.getInt("runs"),
+        ballsFaced = o.getInt("ballsFaced"),
+        fours = o.getInt("fours"),
+        sixes = o.getInt("sixes"),
+        ballsBowled = o.getInt("ballsBowled"),
+        maidens = o.getInt("maidens"),
+        runsConceded = o.getInt("runsConceded"),
+        wickets = o.getInt("wickets"),
+        catches = o.getInt("catches"),
+        runOuts = o.getInt("runOuts"),
+        stumpings = o.getInt("stumpings"),
+    )
+
+    private fun fieldPositionJson(f: CricketFieldPositionEntity) = JSONObject().apply {
+        put("gameId", f.gameId)
+        put("playerId", f.playerId)
+        put("position", f.position)
+    }
+
+    private fun fieldPositionFrom(o: JSONObject) = CricketFieldPositionEntity(
+        gameId = o.getLong("gameId"),
+        playerId = o.getLong("playerId"),
+        position = o.getString("position"),
     )
 }
 

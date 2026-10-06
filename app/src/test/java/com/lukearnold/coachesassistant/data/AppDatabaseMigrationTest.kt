@@ -329,4 +329,41 @@ class AppDatabaseMigrationTest {
             assertEquals("NETBALL", cursor.getString(2))
         }
     }
+
+    @Test
+    fun migrate14To15_addsTheCricketTablesAndColumnsAndKeepsEveryRow() {
+        val dbName = "migration-test-14-to-15"
+
+        helper.createDatabase(dbName, 14).apply {
+            execSQL("INSERT INTO players (id, name, jerseyNumber, sport, position) VALUES (1, 'Alex', 23, 'BASKETBALL', NULL)")
+            execSQL(
+                """
+                INSERT INTO games (
+                    id, title, opponent, createdAt, teamScore, opponentScore, mvpVotesJson,
+                    runningTimeMillis, timerLastStartedAt, isFinished, finishedAt,
+                    currentPeriod, periodDurationMillis, notes, sport, onCourtSize, periodCount
+                ) VALUES (
+                    1, 'Round 1', 'Rivals', 3000, 40, 38, '{}',
+                    0, NULL, 1, 4000, 4, 600000, '', 'BASKETBALL', 5, 4
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        // Validating against 15.json checks the new tables, indices, and columns.
+        val migrated = helper.runMigrationsAndValidate(dbName, 15, true)
+
+        migrated.query("SELECT teamScore, extras, teamWickets, opponentWickets FROM games WHERE id = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(40, cursor.getInt(0))
+            assertEquals(0, cursor.getInt(1))
+            assertEquals(0, cursor.getInt(2))
+            assertEquals(0, cursor.getInt(3))
+        }
+        migrated.query("SELECT COUNT(*) FROM cricket_scorecards").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+    }
 }

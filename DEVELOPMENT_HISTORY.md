@@ -235,11 +235,21 @@ Tagged `v4.0.0` in October 2026: the first release whose version comes from a `v
 - View models take their dependencies through factories (and the data, settings, and game parts are separate view models), so they're unit tested
 - Tests grew from the core stat logic to 221: repository tests against an in-memory Room database, migration tests, backup, CSV, view models, translations, and Compose UI tests on Robolectric
 
+## Since version 4.0.0 (unreleased)
+
+**Cricket**
+- Cricket is the 17th sport, recorded as a scorecard per player instead of live with a clock, periods, and substitutions, so it has its own Game tab
+- Batting, bowling (overs as balls, so 3.4 + 2.2 adds up to 6.0), and fielding per player; our score is the batters' runs plus extras, and scores read as runs/wickets
+- A field plan per game on a field diagram with 25 positions, mirrored for a left-handed batter, with an accessible player list beside it and the option to start from the last game's field
+- Season batting, bowling, and fielding totals with averages, strike rate, economy, and best bowling on the History tab
+- Scorecards and field plans are in backups (older backups still restore), the game CSV export, and data clearing; Room schema version 15
+- Translated into Spanish, French, and Italian, keeping cricket's English terms (overs, LBW, run out) where those languages' cricket does
+
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.
-- `./gradlew testDebugUnitTest` passes 221 tests, all on the JVM (Robolectric where Android is needed; there are no instrumented tests); `./gradlew lintDebug` has no findings; `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
-- Room schema version 14, with every migration from version 5 tested against the exported schemas.
-- 16 sports share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position).
+- `./gradlew testDebugUnitTest` passes 234 tests, all on the JVM (Robolectric where Android is needed; there are no instrumented tests); `./gradlew lintDebug` has no findings; `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
+- Room schema version 15, with every migration from version 5 tested against the exported schemas.
+- 17 sports: 16 share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position), and cricket is recorded as scorecards with a field plan.
 - The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); in debug builds, Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.
 - The app is local-first: no backend, cloud sync, accounts, analytics, or crash reporting. The only network traffic is drill generation.
 - Before publishing: create the upload key, fill in and host the privacy policy, and declare the foreground service in Play Console (see README, "Publishing"). The latest release tag is `v4.0.0`.

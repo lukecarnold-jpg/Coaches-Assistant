@@ -3,7 +3,7 @@
 Coaches Assistant is an Android application (`:app`) built with Kotlin,
 Jetpack Compose, Room, and optional AI-generated training drills. A second
 module, `:baselineprofile`, generates its baseline profile. The
-application supports 16 sports while sharing the same roster, game, event,
+application supports 17 sports while sharing the same roster, game, event,
 export, and persistence infrastructure.
 
 ## Top-level layout
@@ -61,7 +61,7 @@ app/src/main/java/com/lukearnold/coachesassistant/
 The UI package contains the screens, reusable components, view models, and
 presentation helpers:
 
-- `SportSelectionScreen.kt` - landing screen for choosing one of the 16 sports.
+- `SportSelectionScreen.kt` - landing screen for choosing one of the 17 sports.
 - `RosterScreen.kt` - roster management, CSV import, and CSV export.
 - `GameScreen.kt` - top-level live-game screen.
 - `GameControlPanel.kt` - timer, scoring, lineup, and substitution controls.
@@ -89,6 +89,8 @@ presentation helpers:
 - `FileExport.kt` - shared file-export launcher.
 - `SportConfig.kt` - sport-specific rules: players on court and the minimum to field a team, scoring, periods, positions, and infractions.
 - `SportPreferences.kt` - remembers the last selected sport.
+- `CricketGameScreen.kt` / `CricketField.kt` - cricket's Game tab: the score, a scorecard per player, and the field plan diagram.
+- `CricketViewModel.kt` / `CricketStats.kt` - cricket's scorecards, field plans, and season totals (averages, strike rate, economy).
 - `AppLanguage.kt` - the languages offered under Settings → Language, and switching between them.
 - `AppViewModel.kt` - one sport's roster and live game: screen state, user actions, and repository coordination.
 - `DataViewModel.kt` - backup and restore, CSV and notes files, and clearing data.
@@ -107,8 +109,9 @@ The data package defines the multi-sport domain model and local Room database:
 - `Sport.kt` - supported sport enum and sport metadata.
 - `Entities.kt` - Room entities for players, games, game events, and each game's lineup (`game_players`: who's on court or absent).
 - `Dao.kt` - Room data access objects.
-- `AppDatabase.kt` - Room database, version 13, and migrations.
+- `AppDatabase.kt` - Room database, version 15, and migrations.
 - `GameRepository.kt` - repository operations used by the view models.
+- `Cricket.kt` / `CricketPosition.kt` / `CricketRepository.kt` - cricket's scorecards and field plans (entities, overs and totals helpers, the fielding positions and where they go on the field), and saving them.
 - `Backup.kt` / `BackupIo.kt` - the whole-app backup file format, and backing up to / restoring from a file the user picks.
 - `GameCsvIo.kt` - roster CSV import and export, game CSV export, and the coaching notes TXT export.
 - `MvpVotes.kt` - serialization and parsing for MVP vote data.
@@ -256,7 +259,7 @@ flowchart LR
     subgraph data["data/"]
         Repo["GameRepository"]
         Files["BackupIo · GameCsvIo<br/>backup, CSV, notes files"]
-        Room[("Room: basketball_rotation.db v14<br/>players · games · game_events · game_players")]
+        Room[("Room: basketball_rotation.db v15<br/>players · games · game_events · game_players<br/>cricket_scorecards · cricket_field_positions")]
     end
 
     subgraph ai["ai/"]

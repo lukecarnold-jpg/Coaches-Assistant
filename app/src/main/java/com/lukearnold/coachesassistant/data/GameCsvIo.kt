@@ -5,6 +5,7 @@ import android.content.res.Resources
 import android.net.Uri
 import androidx.room.withTransaction
 import com.lukearnold.coachesassistant.R
+import java.io.Writer
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -23,6 +24,7 @@ class GameCsvIo(private val database: AppDatabase) {
     private val playerDao = database.playerDao()
     private val gameDao = database.gameDao()
     private val gameEventDao = database.gameEventDao()
+    private val cricketDao = database.cricketDao()
 
     suspend fun exportPlayersCsv(contentResolver: ContentResolver, uri: Uri, sport: Sport) {
         withContext(Dispatchers.IO) {
@@ -97,6 +99,12 @@ class GameCsvIo(private val database: AppDatabase) {
         withContext(Dispatchers.IO) {
             val game = gameDao.getById(gameId) ?: throw UserFacingException(R.string.game_not_found)
             val players = playerDao.getAll().associateBy { it.id }
+            if (Sport.entries.firstOrNull { it.name == game.sport }?.usesScorecards == true) {
+                contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
+                    writeCricketCsv(writer, game, players, cricketDao.getScorecards(gameId), cricketDao.getField(gameId))
+                } ?: throw UserFacingException(R.string.export_file_unopenable)
+                return@withContext
+            }
             val events = gameEventDao.getByGame(gameId)
 
             contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
@@ -157,6 +165,67 @@ class GameCsvIo(private val database: AppDatabase) {
                     }
                 }
             } ?: throw UserFacingException(R.string.export_file_unopenable)
+        }
+    }
+
+    /**
+     * A cricket game as CSV: the game and both teams' scores on every row, then one row per player
+     * with a scorecard or field position, in roster order.
+     */
+    private fun writeCricketCsv(
+        writer: Writer,
+        game: GameEntity,
+        players: Map<Long, PlayerEntity>,
+        scorecards: List<CricketScorecardEntity>,
+        field: List<CricketFieldPositionEntity>,
+    ) {
+        val (runs, wickets) = cricketTotals(game, scorecards)
+        val cardsByPlayer = scorecards.associateBy { it.playerId }
+        val positionByPlayer = field.associate { it.playerId to CricketPosition.fromRaw(it.position)?.displayName.orEmpty() }
+        val playerIds = (scorecards.mapNotNull { it.playerId } + field.map { it.playerId }).distinct()
+            .sortedWith(compareBy({ players[it]?.jerseyNumber ?: Int.MAX_VALUE }, { players[it]?.name.orEmpty() }))
+        writer.appendLine(
+            "gameId,gameTitle,opponent,createdAt,ourRuns,ourWickets,extras,theirRuns,theirWickets,gameNotes," +
+                "playerName,playerNumber,howOut,runs,ballsFaced,fours,sixes,overs,maidens,runsConceded,wickets,catches,runOuts,stumpings,fieldPosition",
+        )
+        val gameColumns = listOf(
+            game.id.toString(),
+            escapeCsv(game.title),
+            escapeCsv(game.opponent),
+            escapeCsv(formatDate(game.createdAt)),
+            runs.toString(),
+            wickets.toString(),
+            game.extras.toString(),
+            game.opponentScore.toString(),
+            game.opponentWickets.toString(),
+            escapeCsv(game.notes),
+        )
+        // Scorecards whose player was deleted still count towards the totals; they're listed unnamed.
+        val rows = playerIds.map { cardsByPlayer[it] to it } + scorecards.filter { it.playerId == null }.map { it to null }
+        if (rows.isEmpty()) writer.appendLine((gameColumns + List(15) { "" }).joinToString(","))
+        rows.forEach { (card, playerId) ->
+            val player = playerId?.let(players::get)
+            writer.appendLine(
+                (
+                    gameColumns + listOf(
+                        escapeCsv(player?.name.orEmpty()),
+                        player?.jerseyNumber?.toString().orEmpty(),
+                        card?.howOut?.name.orEmpty(),
+                        card?.runs?.toString().orEmpty(),
+                        card?.ballsFaced?.toString().orEmpty(),
+                        card?.fours?.toString().orEmpty(),
+                        card?.sixes?.toString().orEmpty(),
+                        card?.let { formatOvers(it.ballsBowled) }.orEmpty(),
+                        card?.maidens?.toString().orEmpty(),
+                        card?.runsConceded?.toString().orEmpty(),
+                        card?.wickets?.toString().orEmpty(),
+                        card?.catches?.toString().orEmpty(),
+                        card?.runOuts?.toString().orEmpty(),
+                        card?.stumpings?.toString().orEmpty(),
+                        escapeCsv(playerId?.let(positionByPlayer::get).orEmpty()),
+                    )
+                    ).joinToString(","),
+            )
         }
     }
 
