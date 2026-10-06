@@ -61,7 +61,7 @@ fun GameControlPanel(
     suggestSubs: Boolean = false,
     /** The game's events, for who's been taken off injured (see subSuggestionExclusions). */
     events: List<GameEventEntity> = emptyList(),
-    subSnooze: AppViewModel.SubSnooze? = null,
+    subSnooze: SubSnooze? = null,
     onSubNow: (playerOn: Long, playerOff: Long) -> Unit = { _, _ -> },
     onSubLater: (key: Pair<Long, Long>, gameTimeMillis: Long) -> Unit = { _, _ -> },
 ) {
@@ -115,7 +115,7 @@ fun GameControlPanel(
             val now = gameTimeMillis()
             val excluded = subSuggestionExclusions((onCourtStats + benchStats).map { it.player }, sportConfig, events)
             subSuggestion(onCourtStats, benchStats, fairShareAt(now), now, excluded)
-                ?.takeUnless { s -> subSnooze?.let { it.key == s.key && now < it.untilGameTimeMillis } == true }
+                ?.takeUnless { subSnooze?.hides(it, now) == true }
                 ?.let { suggestion ->
                     SubSuggestionBanner(
                         suggestion = suggestion,

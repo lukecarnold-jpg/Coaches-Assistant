@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
  * Android 13+.
  */
 object GameClockNotification {
-    private const val CHANNEL_ID = "game_clock"
+    internal const val CHANNEL_ID = "game_clock"
     private const val PREFS_NAME = "display_prefs"
     private const val KEY_ENABLED = "game_clock_notification"
     private const val KEY_POSTED = "game_clock_notification_games"
@@ -115,7 +115,7 @@ object GameClockNotification {
         NotificationManagerCompat.from(context).notify(notificationId(game.id), builder.build())
     }
 
-    private fun ensureChannel(context: Context) {
+    internal fun ensureChannel(context: Context) {
         val channel = NotificationChannel(
             CHANNEL_ID,
             context.getString(R.string.game_clock_notification_channel),

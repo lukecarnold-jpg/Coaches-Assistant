@@ -35,7 +35,7 @@ fun GameScreen(
     onSubstitute: (playersIn: List<Long>, playersOut: List<Long>) -> Unit,
     /** Substitution suggestions (see subSuggestion): whether to show them, and what to do with one. */
     suggestSubs: Boolean = false,
-    subSnooze: AppViewModel.SubSnooze? = null,
+    subSnooze: SubSnooze? = null,
     onSubNow: (playerOn: Long, playerOff: Long) -> Unit = { _, _ -> },
     onSubLater: (key: Pair<Long, Long>, gameTimeMillis: Long) -> Unit = { _, _ -> },
     onAddPlayerScore: (playerId: Long, points: Int) -> Unit,

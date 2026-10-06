@@ -200,6 +200,7 @@ Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see R
 - Keep the screen on while the clock runs
 - The event log shows times as the game clock read them (period and countdown), only offers edit and remove for events that can change on their own, and finished games are read-only for live actions
 - Foul counts never go below zero; the team -1 button is a team-level adjustment
+- Substitution reminders run in a foreground service while a clock runs, so they keep coming after Android would have closed the app in the background; the service also stops the clock at the end of the period
 
 **Data**
 - On-court and absent players moved into a `game_players` table; foreign keys with cascades on events (Room schema now version 13, with migration tests)
@@ -234,4 +235,4 @@ Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see R
 - 16 sports share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position).
 - The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); in debug builds, Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.
 - The app is local-first: no backend, cloud sync, accounts, analytics, or crash reporting. The only network traffic is drill generation.
-- Before publishing: create the upload key, fill in and host the privacy policy, and tag the first release (see README, "Publishing").
+- Before publishing: create the upload key, fill in and host the privacy policy, declare the foreground service in Play Console, and tag the first release (see README, "Publishing").
