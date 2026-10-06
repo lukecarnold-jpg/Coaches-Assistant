@@ -3,4 +3,10 @@
     <include domain="database" path="basketball_rotation.db"/>
     <include domain="database" path="basketball_rotation.db-shm"/>
     <include domain="database" path="basketball_rotation.db-wal"/>
+    <!-- Settings that make sense on a new phone. Not ai_settings (its API keys are encrypted
+         with a key that can't leave this device) or game_day_prefs (this device's Do Not
+         Disturb state). -->
+    <include domain="sharedpref" path="display_prefs.xml"/>
+    <include domain="sharedpref" path="fielding_prefs.xml"/>
+    <include domain="sharedpref" path="sport_prefs.xml"/>
 </full-backup-content>
