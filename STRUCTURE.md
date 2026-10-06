@@ -52,7 +52,8 @@ app/src/main/java/com/lukearnold/coachesassistant/
 
 - `MainActivity.kt` initializes the Compose content and routes between the
   sport-selection screen and the sport-specific application shell.
-- `SportApp` owns the top-level tab navigation, responsive navigation rail or
+- `SportApp` owns the top-level tab navigation (back returns to the main tab
+  before leaving the app), responsive navigation rail or
   bottom navigation, the view models, and screen composition.
 
 ### `ui/` - Compose screens and presentation logic

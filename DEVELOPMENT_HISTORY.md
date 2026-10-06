@@ -202,6 +202,7 @@ Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see R
 - Foul counts never go below zero; the team -1 button is a team-level adjustment
 - Substitution reminders run in a foreground service while a clock runs, so they keep coming after Android would have closed the app in the background; the service also stops the clock at the end of the period
 - A failed save (e.g. a database error) shows "Couldn't save that change" instead of crashing the app
+- Back returns to the main tab before leaving the app
 
 **Data**
 - On-court and absent players moved into a `game_players` table; foreign keys with cascades on events (Room schema now version 13, with migration tests)

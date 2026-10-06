@@ -58,6 +58,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Coaching notes TXT
 - Adaptive layouts
   - Compact layout with bottom navigation
+  - Back returns to the main tab (Game during a game, otherwise Roster) before leaving the app
   - Expanded screens with navigation rail and split panels
 - Training tab (every sport)
   - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, OpenAI ChatGPT, or a custom OpenAI-compatible endpoint
