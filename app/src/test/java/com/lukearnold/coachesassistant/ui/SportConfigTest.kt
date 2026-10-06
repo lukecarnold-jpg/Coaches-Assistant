@@ -14,7 +14,8 @@ class SportConfigTest {
 
     @Test
     fun everySport_hasAtLeastOneScoringOptionAndPositiveOnCourtSize() {
-        Sport.entries.forEach { sport ->
+        // Scorecard sports (cricket) have no live scoring buttons.
+        Sport.entries.filterNot { it.usesScorecards }.forEach { sport ->
             val config = sport.config
             assertTrue("${sport.name} needs a positive on-court size", config.onCourtSize > 0)
             assertTrue("${sport.name} needs at least one scoring option", config.scoringOptions.isNotEmpty())
@@ -73,7 +74,8 @@ class SportConfigTest {
 
     @Test
     fun defaultPeriodCount_isHalvesThirdsOrQuarters_andIceHockeyHasThree() {
-        Sport.entries.forEach { sport ->
+        // Scorecard sports (cricket) have no periods to set up.
+        Sport.entries.filterNot { it.usesScorecards }.forEach { sport ->
             assertTrue(
                 "${sport.name} needs a period count the game setup can offer",
                 PERIOD_COUNT_OPTIONS.any { it.first == sport.config.defaultPeriodCount },

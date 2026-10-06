@@ -50,6 +50,8 @@ import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.ui.AppTheme
 import com.lukearnold.coachesassistant.ui.AppViewModel
+import com.lukearnold.coachesassistant.ui.CricketGameScreen
+import com.lukearnold.coachesassistant.ui.CricketViewModel
 import com.lukearnold.coachesassistant.ui.DataViewModel
 import com.lukearnold.coachesassistant.ui.GameClockNotification
 import com.lukearnold.coachesassistant.ui.GameHistoryScreen
@@ -66,9 +68,11 @@ import com.lukearnold.coachesassistant.ui.TrainingScreen
 import com.lukearnold.coachesassistant.ui.TrainingViewModel
 import com.lukearnold.coachesassistant.ui.appViewModelFactory
 import com.lukearnold.coachesassistant.ui.config
+import com.lukearnold.coachesassistant.ui.cricketViewModelFactory
 import com.lukearnold.coachesassistant.ui.dataViewModelFactory
 import com.lukearnold.coachesassistant.ui.shouldKeepScreenOn
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.merge
 
 // An AppCompatActivity so the language chosen in Settings applies on Android versions before 13.
@@ -162,6 +166,12 @@ private fun SportApp(
         factory = remember(sport) { dataViewModelFactory(sport) },
     )
     val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
+    // Only cricket (a scorecard sport) has one.
+    val cricketViewModel: CricketViewModel? = if (sport.usesScorecards) {
+        viewModel(key = "CricketViewModel-${sport.name}", factory = remember(sport) { cricketViewModelFactory(sport) })
+    } else {
+        null
+    }
     val navTabSpecs = remember(sport) { navTabSpecsFor(sport) }
 
     val players by appViewModel.players.collectAsState()
@@ -212,9 +222,14 @@ private fun SportApp(
 
     val undoLabel = stringResource(R.string.undo)
     val resources = LocalResources.current
-    LaunchedEffect(appViewModel, dataViewModel, settingsViewModel) {
+    LaunchedEffect(appViewModel, dataViewModel, settingsViewModel, cricketViewModel) {
         // collectLatest: a new message replaces the one showing (and its Undo) straight away.
-        merge(appViewModel.messages, dataViewModel.messages, settingsViewModel.messages).collectLatest { message ->
+        merge(
+            appViewModel.messages,
+            dataViewModel.messages,
+            settingsViewModel.messages,
+            cricketViewModel?.messages ?: emptyFlow(),
+        ).collectLatest { message ->
             val undo = message.undo
             val result = snackbarHostState.showSnackbar(
                 message = message.text.resolve(resources),
@@ -286,47 +301,68 @@ private fun SportApp(
                             onImportPlayers = dataViewModel::importPlayersCsv,
                         )
 
-                        AppTab.GAME -> GameScreen(
-                            modifier = Modifier.fillMaxSize(),
-                            isExpanded = isExpanded,
-                            sport = sport,
-                            players = players,
-                            games = games,
-                            selectedGame = selectedGame,
-                            lineup = lineup,
-                            stats = stats,
-                            events = events,
-                            onCreateGame = appViewModel::createGame,
-                            onSelectGame = appViewModel::selectGame,
-                            onSetLineup = appViewModel::setStartingLineup,
-                            minimumOnCourt = minimumOnCourt,
-                            suggestSubs = suggestSubs,
-                            subSnooze = subSnooze,
-                            onSubNow = appViewModel::acceptSubSuggestion,
-                            onSubLater = appViewModel::snoozeSubSuggestion,
-                            onSubstitute = appViewModel::substitute,
-                            onAddPlayerScore = appViewModel::addPlayerScore,
-                            onAdjustTeamScore = appViewModel::adjustTeamScore,
-                            onAddOpponentScore = appViewModel::addOpponentScore,
-                            onAddFoul = appViewModel::addFoul,
-                            onAddMvpVote = appViewModel::addMvpVote,
-                            onToggleTimer = appViewModel::toggleTimer,
-                            onResetTimer = appViewModel::resetTimer,
-                            onSetGameTime = appViewModel::setGameTime,
-                            onDeleteGame = appViewModel::deleteGame,
-                            onExportGame = dataViewModel::exportGameCsv,
-                            onExportPlayers = dataViewModel::exportPlayersCsv,
-                            onAdvancePeriod = appViewModel::advancePeriod,
-                            onEndGame = appViewModel::endGame,
-                            gameDayActive = selectedGame?.id != null && selectedGame?.id == gameDayGameId,
-                            onStartGameDay = appViewModel::startGameDay,
-                            onStopGameDay = appViewModel::stopGameDay,
-                            onUpdateAbsentPlayers = appViewModel::updateAbsentPlayers,
-                            onUpdateNotes = appViewModel::updateGameNotes,
-                            onExportNotes = dataViewModel::exportGameNotesTxt,
-                            onUpdateEvent = appViewModel::updateEvent,
-                            onDeleteEvent = appViewModel::deleteEvent,
-                        )
+                        AppTab.GAME -> if (cricketViewModel != null) {
+                            CricketGameScreen(
+                                modifier = Modifier.fillMaxSize(),
+                                isExpanded = isExpanded,
+                                players = players,
+                                games = games,
+                                selectedGame = selectedGame,
+                                lineup = lineup,
+                                cricketViewModel = cricketViewModel,
+                                // No periods or clock: one period of no set length.
+                                onCreateGame = { title, opponent -> appViewModel.createGame(title, opponent, 1, 0) },
+                                onSelectGame = appViewModel::selectGame,
+                                onDeleteGame = appViewModel::deleteGame,
+                                onExportGame = dataViewModel::exportGameCsv,
+                                onEndGame = appViewModel::endGame,
+                                onUpdateAbsentPlayers = appViewModel::updateAbsentPlayers,
+                                onUpdateNotes = appViewModel::updateGameNotes,
+                                onExportNotes = dataViewModel::exportGameNotesTxt,
+                            )
+                        } else {
+                            GameScreen(
+                                modifier = Modifier.fillMaxSize(),
+                                isExpanded = isExpanded,
+                                sport = sport,
+                                players = players,
+                                games = games,
+                                selectedGame = selectedGame,
+                                lineup = lineup,
+                                stats = stats,
+                                events = events,
+                                onCreateGame = appViewModel::createGame,
+                                onSelectGame = appViewModel::selectGame,
+                                onSetLineup = appViewModel::setStartingLineup,
+                                minimumOnCourt = minimumOnCourt,
+                                suggestSubs = suggestSubs,
+                                subSnooze = subSnooze,
+                                onSubNow = appViewModel::acceptSubSuggestion,
+                                onSubLater = appViewModel::snoozeSubSuggestion,
+                                onSubstitute = appViewModel::substitute,
+                                onAddPlayerScore = appViewModel::addPlayerScore,
+                                onAdjustTeamScore = appViewModel::adjustTeamScore,
+                                onAddOpponentScore = appViewModel::addOpponentScore,
+                                onAddFoul = appViewModel::addFoul,
+                                onAddMvpVote = appViewModel::addMvpVote,
+                                onToggleTimer = appViewModel::toggleTimer,
+                                onResetTimer = appViewModel::resetTimer,
+                                onSetGameTime = appViewModel::setGameTime,
+                                onDeleteGame = appViewModel::deleteGame,
+                                onExportGame = dataViewModel::exportGameCsv,
+                                onExportPlayers = dataViewModel::exportPlayersCsv,
+                                onAdvancePeriod = appViewModel::advancePeriod,
+                                onEndGame = appViewModel::endGame,
+                                gameDayActive = selectedGame?.id != null && selectedGame?.id == gameDayGameId,
+                                onStartGameDay = appViewModel::startGameDay,
+                                onStopGameDay = appViewModel::stopGameDay,
+                                onUpdateAbsentPlayers = appViewModel::updateAbsentPlayers,
+                                onUpdateNotes = appViewModel::updateGameNotes,
+                                onExportNotes = dataViewModel::exportGameNotesTxt,
+                                onUpdateEvent = appViewModel::updateEvent,
+                                onDeleteEvent = appViewModel::deleteEvent,
+                            )
+                        }
 
                         AppTab.TRAINING -> TrainingScreen(
                             modifier = Modifier.fillMaxSize(),
@@ -339,10 +375,12 @@ private fun SportApp(
                             // Collected here rather than with the other state above, so season totals
                             // are only computed while the History tab is showing.
                             val season by appViewModel.seasonStats.collectAsState()
+                            val cricketSeason = cricketViewModel?.season?.collectAsState()?.value
                             GameHistoryScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 games = games,
                                 season = season,
+                                cricketSeason = cricketSeason,
                                 infraction = sport.config.infraction,
                                 onViewGame = { gameId ->
                                     appViewModel.selectGame(gameId)
@@ -371,7 +409,8 @@ private fun SportApp(
                             onSwitchSport = onSwitchSport,
                             onBackup = dataViewModel::exportBackup,
                             onRestore = dataViewModel::restoreBackup,
-                            minimumOnCourt = minimumOnCourt,
+                            // Cricket has no lineup to field short-handed.
+                            minimumOnCourt = if (sport.usesScorecards) null else minimumOnCourt,
                             suggestSubs = suggestSubs,
                             onSuggestSubsChange = settingsViewModel::setSuggestSubs,
                             notifySubs = notifySubs,

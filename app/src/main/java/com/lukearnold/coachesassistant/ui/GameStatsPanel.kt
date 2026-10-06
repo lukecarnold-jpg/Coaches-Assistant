@@ -38,6 +38,8 @@ fun GameStatsPanel(
     onPeriodCountChange: (Int) -> Unit = {},
     periodMins: String = "10",
     onPeriodMinsChange: (String) -> Unit = {},
+    /** Whether new games have periods and a length to set (not in a scorecard sport like cricket). */
+    showPeriodSettings: Boolean = true,
     onCreateGame: () -> Unit = {},
     games: List<GameEntity> = emptyList(),
     onSelectGame: (Long) -> Unit = {},
@@ -83,28 +85,30 @@ fun GameStatsPanel(
 
             Spacer(Modifier.height(layout.smallGap))
 
-            Text(stringResource(R.string.periods), style = MaterialTheme.typography.labelMedium)
-            // Wraps onto another line when the chips don't fit (e.g. with large text).
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
-                PERIOD_COUNT_OPTIONS.forEach { (count, label) ->
-                    FilterChip(
-                        selected = periodCount == count,
-                        onClick = { onPeriodCountChange(count) },
-                        label = { Text(stringResource(label)) },
-                    )
+            if (showPeriodSettings) {
+                Text(stringResource(R.string.periods), style = MaterialTheme.typography.labelMedium)
+                // Wraps onto another line when the chips don't fit (e.g. with large text).
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
+                    PERIOD_COUNT_OPTIONS.forEach { (count, label) ->
+                        FilterChip(
+                            selected = periodCount == count,
+                            onClick = { onPeriodCountChange(count) },
+                            label = { Text(stringResource(label)) },
+                        )
+                    }
                 }
+
+                Spacer(Modifier.height(layout.smallGap))
+
+                OutlinedTextField(
+                    value = periodMins,
+                    onValueChange = { onPeriodMinsChange(it.filter { c -> c.isDigit() }) },
+                    label = { Text(stringResource(R.string.period_duration_minutes)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                Spacer(Modifier.height(layout.smallGap))
             }
-
-            Spacer(Modifier.height(layout.smallGap))
-
-            OutlinedTextField(
-                value = periodMins,
-                onValueChange = { onPeriodMinsChange(it.filter { c -> c.isDigit() }) },
-                label = { Text(stringResource(R.string.period_duration_minutes)) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(Modifier.height(layout.smallGap))
 
             Button(onClick = onCreateGame) {
                 Text(stringResource(R.string.create_game))
@@ -130,7 +134,13 @@ fun GameStatsPanel(
                                 if (game.opponent.isNotBlank()) {
                                     Text(stringResource(R.string.opponent_value, game.opponent))
                                 }
-                                Text(stringResource(R.string.score_value, game.teamScore))
+                                Text(
+                                    if (game.usesScorecards) {
+                                        stringResource(R.string.cricket_score_value, game.teamScore, game.teamWickets)
+                                    } else {
+                                        stringResource(R.string.score_value, game.teamScore)
+                                    },
+                                )
                             },
                             actions = {
                                 TextButton(onClick = { onSelectGame(game.id) }) {

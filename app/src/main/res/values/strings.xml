@@ -172,6 +172,7 @@
     <string name="sport_gaelic_football">Gaelic Football</string>
     <string name="sport_flag_football">Flag Football</string>
     <string name="sport_ultimate_frisbee">Ultimate Frisbee</string>
+    <string name="sport_cricket">Cricket</string>
     <string name="position_pg">PG</string>
     <string name="position_sg">SG</string>
     <string name="position_sf">SF</string>
@@ -580,4 +581,89 @@
     <string name="suggest_substitutions_setting_description">When a player on court is 2 minutes ahead of an even share of playing time and one on the bench is 2 minutes behind, the Game tab suggests swapping them.</string>
     <string name="notify_substitutions_setting">Notify me when it\'s time to sub</string>
     <string name="notify_substitutions_setting_description">Also sends the suggestion as a notification, with a Sub now button, while the clock runs. Works while the app is open or in the background. With Game Day mode on it arrives silently, unless you allow Coaches Assistant in the Game day mode\'s settings (phone Settings → Modes → Game day).</string>
+
+    <!-- Cricket: recorded as a scorecard per player, with a field plan, instead of live with a clock -->
+    <!-- e.g. "Us 145/6 – 140/9 Rivals": runs/wickets for each team. -->
+    <string name="cricket_score_line" tools:ignore="PluralsCandidate">Us %1$d/%2$d – %3$d/%4$d %5$s</string>
+    <string name="cricket_score_line_no_opponent" tools:ignore="PluralsCandidate">Us %1$d/%2$d – %3$d/%4$d Them</string>
+    <string name="cricket_score_value">Score: %1$d/%2$d</string>
+    <string name="cricket_final_score">Final: %1$d/%2$d – %3$d/%4$d</string>
+    <string name="cricket_score">Score</string>
+    <string name="cricket_innings_hint">Our total is the batters\' runs plus extras. Enter the other team\'s runs and wickets from the scorebook.</string>
+    <string name="cricket_extras">Extras</string>
+    <string name="cricket_their_runs">Their runs</string>
+    <string name="cricket_their_wickets">Their wickets</string>
+    <string name="cricket_save_score">Save score</string>
+    <string name="cricket_scorecards">Scorecards</string>
+    <string name="cricket_scorecards_hint">Tap a player to enter their batting, bowling, and fielding, during the game or after it from the scorebook.</string>
+    <string name="cricket_nothing_entered">Nothing entered yet</string>
+    <!-- A not-out score, e.g. "32*" -->
+    <string name="cricket_runs_not_out">%1$d*</string>
+    <!-- e.g. "32* (28 balls, not out)"; the how-out label is shown in lower case here. -->
+    <string name="cricket_batting_summary" tools:ignore="PluralsCandidate">%1$s (%2$d balls, %3$s)</string>
+    <!-- When balls faced weren't entered, e.g. "10* (not out)" -->
+    <string name="cricket_batting_summary_no_balls">%1$s (%2$s)</string>
+    <!-- Wickets/runs conceded, e.g. "2/15 (4.0 ov)" -->
+    <string name="cricket_bowling_summary">%1$d/%2$d (%3$s ov)</string>
+    <plurals name="cricket_catch_count">
+        <item quantity="one">%d catch</item>
+        <item quantity="other">%d catches</item>
+    </plurals>
+    <plurals name="cricket_run_out_count">
+        <item quantity="one">%d run-out</item>
+        <item quantity="other">%d run-outs</item>
+    </plurals>
+    <plurals name="cricket_stumping_count">
+        <item quantity="one">%d stumping</item>
+        <item quantity="other">%d stumpings</item>
+    </plurals>
+    <string name="cricket_batting">Batting</string>
+    <string name="cricket_how_out">How out</string>
+    <string name="dismissal_did_not_bat">Did not bat</string>
+    <string name="dismissal_not_out">Not out</string>
+    <string name="dismissal_retired">Retired</string>
+    <string name="dismissal_bowled">Bowled</string>
+    <string name="dismissal_caught">Caught</string>
+    <string name="dismissal_lbw">LBW</string>
+    <string name="dismissal_run_out">Run out</string>
+    <string name="dismissal_stumped">Stumped</string>
+    <string name="dismissal_other">Out (other)</string>
+    <string name="cricket_runs">Runs</string>
+    <string name="cricket_balls">Balls</string>
+    <string name="cricket_fours">4s</string>
+    <string name="cricket_sixes">6s</string>
+    <string name="cricket_bowling">Bowling</string>
+    <string name="cricket_overs">Overs</string>
+    <string name="cricket_overs_hint">e.g. 3.4 for 3 overs and 4 balls</string>
+    <string name="cricket_overs_invalid">Whole overs, then 0 to 5 balls after a dot (e.g. 3.4)</string>
+    <string name="cricket_maidens">Maidens</string>
+    <string name="cricket_wickets">Wickets</string>
+    <string name="cricket_runs_conceded">Runs conceded</string>
+    <string name="cricket_fielding">Fielding</string>
+    <string name="cricket_catches">Catches</string>
+    <string name="cricket_run_outs">Run-outs</string>
+    <string name="cricket_stumpings">Stumpings</string>
+    <string name="cricket_field_plan">Field plan</string>
+    <string name="cricket_field_hint">Tap a position on the field, or a player below, to place them. Change it between overs as often as you like.</string>
+    <string name="cricket_left_handed">Left-handed batter</string>
+    <string name="cricket_off_side">Off side</string>
+    <string name="cricket_leg_side">Leg side</string>
+    <string name="cricket_not_placed">Not placed</string>
+    <string name="cricket_nobody">Nobody</string>
+    <!-- %1$s is a fielding position, e.g. "Who fields at Point?" -->
+    <string name="cricket_place_at">Who fields at %1$s?</string>
+    <string name="cricket_where_fields">Where does %1$s field?</string>
+    <string name="cricket_copy_field">Use last game\'s field</string>
+    <string name="cricket_clear_field">Clear field</string>
+    <plurals name="cricket_field_diagram_description">
+        <item quantity="one">Cricket field with %d fielder placed</item>
+        <item quantity="other">Cricket field with %d fielders placed</item>
+    </plurals>
+    <string name="msg_field_copied">Field copied from your last game.</string>
+    <string name="msg_no_earlier_field">No earlier game has a field plan to copy.</string>
+    <!-- Season lines: innings, runs, high score, average, strike rate; overs, wickets, best, average, economy. -->
+    <string name="cricket_season_batting" tools:ignore="PluralsCandidate">Batting: %1$d inns · %2$d runs · HS %3$s · avg %4$s · SR %5$s</string>
+    <string name="cricket_season_bowling" tools:ignore="PluralsCandidate">Bowling: %1$s ov · %2$d wkts · best %3$s · avg %4$s · econ %5$s</string>
+    <string name="cricket_season_fielding">Fielding: %1$s</string>
+    <string name="cricket_yet_to_play">Yet to play</string>
 </resources>

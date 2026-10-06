@@ -72,6 +72,18 @@ data class GameEntity(
     /** How many periods the game has, e.g. 2 halves, 3 periods (Ice Hockey), or 4 quarters. */
     @ColumnInfo(defaultValue = "2")
     val periodCount: Int = 2,
+    /**
+     * Cricket: runs our innings got from extras (wides, no-balls, byes, leg byes), on top of the
+     * batters' runs. teamScore is the batters' runs plus these; opponentScore is the other team's runs.
+     */
+    @ColumnInfo(defaultValue = "0")
+    val extras: Int = 0,
+    /** Cricket: wickets we lost, counted from the scorecards' dismissals (like teamScore, kept for lists). */
+    @ColumnInfo(defaultValue = "0")
+    val teamWickets: Int = 0,
+    /** Cricket: wickets the other team lost. */
+    @ColumnInfo(defaultValue = "0")
+    val opponentWickets: Int = 0,
 )
 
 @Entity(

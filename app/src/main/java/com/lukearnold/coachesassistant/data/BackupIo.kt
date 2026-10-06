@@ -21,6 +21,7 @@ class BackupIo(private val database: AppDatabase) {
     private val gameDao = database.gameDao()
     private val gameEventDao = database.gameEventDao()
     private val gamePlayerDao = database.gamePlayerDao()
+    private val cricketDao = database.cricketDao()
 
     suspend fun readAll(): BackupData = database.withTransaction {
         BackupData(
@@ -28,6 +29,8 @@ class BackupIo(private val database: AppDatabase) {
             games = stopRunningClocks(gameDao.getAll(), System.currentTimeMillis()),
             gameEvents = gameEventDao.getAll(),
             gamePlayers = gamePlayerDao.getAll(),
+            cricketScorecards = cricketDao.getAllScorecards(),
+            cricketFieldPositions = cricketDao.getAllFieldPositions(),
         )
     }
 
@@ -39,12 +42,14 @@ class BackupIo(private val database: AppDatabase) {
     suspend fun replaceAll(data: BackupData) {
         try {
             database.withTransaction {
-                gameDao.deleteAll() // game_events and game_players cascade
+                gameDao.deleteAll() // game_events, game_players, and the cricket tables cascade
                 playerDao.deleteAll()
                 playerDao.insertAll(data.players)
                 gameDao.insertAll(data.games)
                 gameEventDao.insertAll(data.gameEvents)
                 gamePlayerDao.insertAll(data.gamePlayers)
+                cricketDao.insertAllScorecards(data.cricketScorecards)
+                cricketDao.insertFieldPositions(data.cricketFieldPositions)
             }
         } catch (_: SQLiteConstraintException) {
             throw BackupFormatException(R.string.backup_damaged_nothing_changed)

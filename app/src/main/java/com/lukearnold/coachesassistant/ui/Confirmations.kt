@@ -10,6 +10,7 @@ import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.PlayerEntity
 import com.lukearnold.coachesassistant.data.displayLabel
+import com.lukearnold.coachesassistant.data.usesScorecards
 
 /**
  * Asks before an action that can't be undone (ending a game, deleting a game or player, changing
@@ -42,12 +43,19 @@ fun ConfirmDialog(
 }
 
 /** "Us 4 – 2 Rivals" (or "Them" with no opponent name). */
-fun GameEntity.scoreLine(): UiText =
-    if (opponent.isBlank()) {
+fun GameEntity.scoreLine(): UiText = when {
+    // Cricket: runs and wickets, "Us 145/6 – 140/9 Rivals".
+    usesScorecards && opponent.isBlank() ->
+        uiText(R.string.cricket_score_line_no_opponent, teamScore, teamWickets, opponentScore, opponentWickets)
+
+    usesScorecards -> uiText(R.string.cricket_score_line, teamScore, teamWickets, opponentScore, opponentWickets, opponent)
+
+    else -> if (opponent.isBlank()) {
         uiText(R.string.score_line_no_opponent, teamScore, opponentScore)
     } else {
         uiText(R.string.score_line, teamScore, opponentScore, opponent)
     }
+}
 
 /** The End Game confirmation's message: the score, a warning if periods remain, and what happens next. */
 fun endGameConfirmMessage(game: GameEntity): UiText =

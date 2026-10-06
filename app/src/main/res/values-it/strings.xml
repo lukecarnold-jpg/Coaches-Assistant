@@ -167,6 +167,7 @@
     <string name="sport_gaelic_football">Calcio gaelico</string>
     <string name="sport_flag_football">Flag football</string>
     <string name="sport_ultimate_frisbee">Ultimate frisbee</string>
+    <string name="sport_cricket">Cricket</string>
     <string name="position_pg">PG</string>
     <string name="position_sg">SG</string>
     <string name="position_sf">SF</string>
@@ -590,4 +591,85 @@
     <string name="suggest_substitutions_setting_description">Quando un giocatore in campo è 2 minuti avanti rispetto a una quota equa del tempo di gioco e uno in panchina è 2 minuti indietro, la scheda Partita suggerisce di scambiarli.</string>
     <string name="notify_substitutions_setting">Avvisami quando è ora di un cambio</string>
     <string name="notify_substitutions_setting_description">Invia anche il suggerimento come notifica, con un pulsante Cambia ora, mentre il cronometro corre. Funziona con l’app aperta o in background. Con la modalità Giorno partita attiva arriva in silenzio, a meno che tu non consenta Coaches Assistant nelle impostazioni della modalità Giorno partita (Impostazioni del telefono → Modalità → Giorno partita).</string>
+    <!-- Cricket -->
+    <string name="cricket_score_line" tools:ignore="PluralsCandidate">Noi %1$d/%2$d – %3$d/%4$d %5$s</string>
+    <string name="cricket_score_line_no_opponent" tools:ignore="PluralsCandidate">Noi %1$d/%2$d – %3$d/%4$d Loro</string>
+    <string name="cricket_score_value">Punteggio: %1$d/%2$d</string>
+    <string name="cricket_final_score">Finale: %1$d/%2$d – %3$d/%4$d</string>
+    <string name="cricket_score">Punteggio</string>
+    <string name="cricket_innings_hint">Il nostro totale sono i run dei battitori più gli extra. Inserisci run e wicket dell’altra squadra dal foglio segnapunti.</string>
+    <string name="cricket_extras">Extra</string>
+    <string name="cricket_their_runs">Loro run</string>
+    <string name="cricket_their_wickets">Loro wicket</string>
+    <string name="cricket_save_score">Salva punteggio</string>
+    <string name="cricket_scorecards">Schede di gioco</string>
+    <string name="cricket_scorecards_hint">Tocca un giocatore per inserire battuta, lancio e gioco in campo, durante la partita o dopo dal foglio segnapunti.</string>
+    <string name="cricket_nothing_entered">Ancora niente</string>
+    <string name="cricket_runs_not_out">%1$d*</string>
+    <string name="cricket_batting_summary" tools:ignore="PluralsCandidate">%1$s (%2$d palle, %3$s)</string>
+    <string name="cricket_batting_summary_no_balls">%1$s (%2$s)</string>
+    <string name="cricket_bowling_summary">%1$d/%2$d (%3$s over)</string>
+    <plurals name="cricket_catch_count">
+        <item quantity="one">%d presa</item>
+        <item quantity="many">%d prese</item>
+        <item quantity="other">%d prese</item>
+    </plurals>
+    <plurals name="cricket_run_out_count">
+        <item quantity="one">%d run out</item>
+        <item quantity="many">%d run out</item>
+        <item quantity="other">%d run out</item>
+    </plurals>
+    <plurals name="cricket_stumping_count">
+        <item quantity="one">%d stumping</item>
+        <item quantity="many">%d stumping</item>
+        <item quantity="other">%d stumping</item>
+    </plurals>
+    <string name="cricket_batting">Battuta</string>
+    <string name="cricket_how_out">Come eliminato</string>
+    <string name="dismissal_did_not_bat">Non ha battuto</string>
+    <string name="dismissal_not_out">Non eliminato</string>
+    <string name="dismissal_retired">Ritirato</string>
+    <string name="dismissal_bowled">Bowled</string>
+    <string name="dismissal_caught">Preso al volo</string>
+    <string name="dismissal_lbw">LBW</string>
+    <string name="dismissal_run_out">Run out</string>
+    <string name="dismissal_stumped">Stumped</string>
+    <string name="dismissal_other">Eliminato (altro)</string>
+    <string name="cricket_runs">Run</string>
+    <string name="cricket_balls">Palle</string>
+    <string name="cricket_fours">4</string>
+    <string name="cricket_sixes">6</string>
+    <string name="cricket_bowling">Lancio</string>
+    <string name="cricket_overs">Over</string>
+    <string name="cricket_overs_hint">ad es. 3.4 per 3 over e 4 palle</string>
+    <string name="cricket_overs_invalid">Over interi, poi da 0 a 5 palle dopo un punto (ad es. 3.4)</string>
+    <string name="cricket_maidens">Maiden</string>
+    <string name="cricket_wickets">Wicket</string>
+    <string name="cricket_runs_conceded">Run concessi</string>
+    <string name="cricket_fielding">In campo</string>
+    <string name="cricket_catches">Prese</string>
+    <string name="cricket_run_outs">Run out</string>
+    <string name="cricket_stumpings">Stumping</string>
+    <string name="cricket_field_plan">Schieramento in campo</string>
+    <string name="cricket_field_hint">Tocca una posizione nel campo, o un giocatore qui sotto, per piazzarlo. Cambialo tra un over e l’altro tutte le volte che vuoi.</string>
+    <string name="cricket_left_handed">Battitore mancino</string>
+    <string name="cricket_off_side">Lato off</string>
+    <string name="cricket_leg_side">Lato leg</string>
+    <string name="cricket_not_placed">Non piazzato</string>
+    <string name="cricket_nobody">Nessuno</string>
+    <string name="cricket_place_at">Chi gioca in %1$s?</string>
+    <string name="cricket_where_fields">Dove gioca %1$s?</string>
+    <string name="cricket_copy_field">Usa lo schieramento dell’ultima partita</string>
+    <string name="cricket_clear_field">Svuota il campo</string>
+    <plurals name="cricket_field_diagram_description">
+        <item quantity="one">Campo da cricket con %d giocatore piazzato</item>
+        <item quantity="many">Campo da cricket con %d giocatori piazzati</item>
+        <item quantity="other">Campo da cricket con %d giocatori piazzati</item>
+    </plurals>
+    <string name="msg_field_copied">Schieramento copiato dall’ultima partita.</string>
+    <string name="msg_no_earlier_field">Nessuna partita precedente ha uno schieramento da copiare.</string>
+    <string name="cricket_season_batting" tools:ignore="PluralsCandidate">Battuta: %1$d inning · %2$d run · migliore %3$s · media %4$s · SR %5$s</string>
+    <string name="cricket_season_bowling" tools:ignore="PluralsCandidate">Lancio: %1$s over · %2$d wicket · migliore %3$s · media %4$s · econ. %5$s</string>
+    <string name="cricket_season_fielding">In campo: %1$s</string>
+    <string name="cricket_yet_to_play">Non ha ancora giocato</string>
 </resources>

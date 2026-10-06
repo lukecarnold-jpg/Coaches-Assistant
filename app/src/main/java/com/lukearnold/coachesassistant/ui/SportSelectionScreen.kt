@@ -120,6 +120,9 @@ fun SportSelectionScreen(
                 SportTile(emoji = Sport.ULTIMATE_FRISBEE.emoji, label = stringResource(Sport.ULTIMATE_FRISBEE.label)) {
                     onSelectSport(Sport.ULTIMATE_FRISBEE)
                 }
+                SportTile(emoji = Sport.CRICKET.emoji, label = stringResource(Sport.CRICKET.label)) {
+                    onSelectSport(Sport.CRICKET)
+                }
             }
 
             // Ice & Water Sports
