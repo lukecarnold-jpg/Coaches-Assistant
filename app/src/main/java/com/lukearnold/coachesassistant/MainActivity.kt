@@ -186,7 +186,7 @@ private fun SportApp(
     val customAiEndpoint by trainingViewModel.customEndpoint.collectAsState()
     val aiModelOverrides by trainingViewModel.modelOverrides.collectAsState()
 
-    var currentTab by rememberSaveable(sport) { mutableStateOf(AppTab.ROSTER.name) }
+    var currentTab by rememberSaveable(sport) { mutableStateOf(AppTab.ROSTER) }
     // Open on the Game tab if a game is in progress (e.g. reopening the app mid-game), unless the
     // user has already picked a tab. Decided once per sport, and kept across rotation.
     var startTabDecided by rememberSaveable(sport) { mutableStateOf(false) }
@@ -194,12 +194,12 @@ private fun SportApp(
         if (startTabDecided) return@LaunchedEffect
         val inProgress = appViewModel.hasGameInProgress()
         // Checked again: the user may have picked a tab while that was loading.
-        if (inProgress && !startTabDecided) currentTab = AppTab.GAME.name
+        if (inProgress && !startTabDecided) currentTab = AppTab.GAME
         startTabDecided = true
     }
     // Back returns to the main tab (the Game tab during a game, otherwise the Roster) before it
     // leaves the app, so a stray press mid-game doesn't close it.
-    val homeTab = if (selectedGame?.isFinished == false) AppTab.GAME.name else AppTab.ROSTER.name
+    val homeTab = if (selectedGame?.isFinished == false) AppTab.GAME else AppTab.ROSTER
     BackHandler(enabled = currentTab != homeTab) {
         currentTab = homeTab
         startTabDecided = true
@@ -229,9 +229,9 @@ private fun SportApp(
             NavigationRail {
                 navTabSpecs.forEach { spec ->
                     NavigationRailItem(
-                        selected = (currentTab == spec.tab.name),
+                        selected = (currentTab == spec.tab),
                         onClick = {
-                            currentTab = spec.tab.name
+                            currentTab = spec.tab
                             startTabDecided = true
                         },
                         icon = spec.icon,
@@ -249,9 +249,9 @@ private fun SportApp(
                     NavigationBar {
                         navTabSpecs.forEach { spec ->
                             NavigationBarItem(
-                                selected = (currentTab == spec.tab.name),
+                                selected = (currentTab == spec.tab),
                                 onClick = {
-                                    currentTab = spec.tab.name
+                                    currentTab = spec.tab
                                     startTabDecided = true
                                 },
                                 icon = spec.icon,
@@ -267,7 +267,7 @@ private fun SportApp(
                     .fillMaxSize()
                     .padding(paddingValues),
             ) {
-                val tab = AppTab.entries.find { it.name == currentTab } ?: AppTab.ROSTER
+                val tab = currentTab
                 // The roster, game, and history tabs wait for their data (usually a split second)
                 // rather than flashing their "none yet" messages.
                 val waitingForData = !isLoaded && tab in setOf(AppTab.ROSTER, AppTab.GAME, AppTab.HISTORY)
@@ -345,7 +345,7 @@ private fun SportApp(
                                 infraction = sport.config.infraction,
                                 onViewGame = { gameId ->
                                     appViewModel.selectGame(gameId)
-                                    currentTab = AppTab.GAME.name
+                                    currentTab = AppTab.GAME
                                 },
                                 onDeleteGame = appViewModel::deleteGame,
                                 onExportGame = dataViewModel::exportGameCsv,
