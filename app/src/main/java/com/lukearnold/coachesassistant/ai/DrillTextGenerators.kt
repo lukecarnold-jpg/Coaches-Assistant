@@ -25,13 +25,23 @@ interface DrillTextGenerator {
     suspend fun generateText(prompt: String, apiKey: String): String
 }
 
-fun textGeneratorFor(provider: AiProvider, customEndpoint: CustomEndpointConfig = CustomEndpointConfig()): DrillTextGenerator =
-    when (provider) {
-        AiProvider.GEMINI -> GeminiTextGenerator()
-        AiProvider.ANTHROPIC -> AnthropicTextGenerator()
-        AiProvider.OPENAI -> OpenAiTextGenerator()
+/**
+ * The generator for [provider], using [model] (blank for the provider's default model). The Other
+ * provider's model comes from [customEndpoint] instead.
+ */
+fun textGeneratorFor(
+    provider: AiProvider,
+    customEndpoint: CustomEndpointConfig = CustomEndpointConfig(),
+    model: String = "",
+): DrillTextGenerator {
+    val chosenModel = model.trim().ifBlank { provider.defaultModel.orEmpty() }
+    return when (provider) {
+        AiProvider.GEMINI -> GeminiTextGenerator(chosenModel)
+        AiProvider.ANTHROPIC -> AnthropicTextGenerator(chosenModel)
+        AiProvider.OPENAI -> OpenAiTextGenerator(chosenModel)
         AiProvider.OTHER -> CustomTextGenerator(customEndpoint)
     }
+}
 
 private val httpClient = OkHttpClient.Builder()
     .connectTimeout(30, TimeUnit.SECONDS)
@@ -60,7 +70,7 @@ private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
  * Calls the Gemini API's REST endpoint directly, like the Anthropic and OpenAI generators, rather
  * than through Google's deprecated Android client SDK.
  */
-class GeminiTextGenerator : DrillTextGenerator {
+class GeminiTextGenerator(private val model: String) : DrillTextGenerator {
     override suspend fun generateText(prompt: String, apiKey: String): String = withContext(Dispatchers.IO) {
         val body = JSONObject().apply {
             put(
@@ -72,7 +82,7 @@ class GeminiTextGenerator : DrillTextGenerator {
         }
 
         val request = Request.Builder()
-            .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent")
+            .url("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent")
             .addHeader("x-goog-api-key", apiKey)
             .post(body.toString().toRequestBody(jsonMediaType))
             .build()
@@ -81,10 +91,10 @@ class GeminiTextGenerator : DrillTextGenerator {
     }
 }
 
-class AnthropicTextGenerator : DrillTextGenerator {
+class AnthropicTextGenerator(private val model: String) : DrillTextGenerator {
     override suspend fun generateText(prompt: String, apiKey: String): String = withContext(Dispatchers.IO) {
         val body = JSONObject().apply {
-            put("model", "claude-sonnet-5")
+            put("model", model)
             put("max_tokens", 2048)
             put(
                 "messages",
@@ -108,12 +118,12 @@ class AnthropicTextGenerator : DrillTextGenerator {
     }
 }
 
-class OpenAiTextGenerator : DrillTextGenerator {
+class OpenAiTextGenerator(private val model: String) : DrillTextGenerator {
     override suspend fun generateText(prompt: String, apiKey: String): String =
         openAiCompatibleRequest(
             url = "https://api.openai.com/v1/chat/completions",
             apiKey = apiKey,
-            model = "gpt-5.5",
+            model = model,
             prompt = prompt,
         )
 }

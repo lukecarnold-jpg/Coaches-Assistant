@@ -191,6 +191,7 @@ private fun SportApp(
     val apiKeys by trainingViewModel.apiKeys.collectAsState()
     val selectedAiProvider by trainingViewModel.selectedProvider.collectAsState()
     val customAiEndpoint by trainingViewModel.customEndpoint.collectAsState()
+    val aiModelOverrides by trainingViewModel.modelOverrides.collectAsState()
 
     var currentTab by rememberSaveable(sport) { mutableStateOf(AppTab.ROSTER.name) }
     // Open on the Game tab if a game is in progress (e.g. reopening the app mid-game), unless the
@@ -362,6 +363,8 @@ private fun SportApp(
                         onSaveApiKey = trainingViewModel::updateApiKey,
                         onClearApiKey = trainingViewModel::clearApiKey,
                         onSaveCustomEndpoint = trainingViewModel::updateCustomEndpoint,
+                        modelOverrides = aiModelOverrides,
+                        onSaveModel = trainingViewModel::updateModel,
                         currentSport = sport,
                         onSwitchSport = onSwitchSport,
                         onBackup = appViewModel::exportBackup,

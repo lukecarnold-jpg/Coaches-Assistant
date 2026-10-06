@@ -26,6 +26,7 @@
     <string name="endpoint_url">Endpoint URL</string>
     <string name="this_server_is_on_your_local_network_so_android">This server is on your local network, so Android will ask to allow local network access.</string>
     <string name="model_name">Model name</string>
+    <string name="model_default_hint">Leave blank to use %1$s</string>
     <string name="hide_api_key">Hide API key</string>
     <string name="show_api_key">Show API key</string>
     <string name="save">Save</string>
@@ -390,7 +391,7 @@
     <string name="add_api_key_to_generate">Add your %1$s API key in Settings to generate drills.</string>
     <string name="other_provider_not_set_up">Add an endpoint URL and model name for the Other provider in Settings.</string>
     <string name="drills_parse_failed">Failed to parse drills. Try again.</string>
-    <string name="gemini_model_not_found">The selected Gemini model was not found. It may have been retired; please check for an app update.</string>
+    <string name="gemini_model_not_found">The selected Gemini model was not found. It may have been retired: enter a current model name in Settings → AI training assistant.</string>
     <string name="request_failed_http">Request failed (HTTP %1$d)</string>
     <string name="refusing_plain_http">Refusing to send a request over plain http to %1$s, which isn\'t on the local network.</string>
     <string name="unknown_error">Unknown error occurred</string>
