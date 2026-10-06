@@ -1,13 +1,5 @@
 package com.lukearnold.coachesassistant.ui
 
-import com.lukearnold.coachesassistant.R
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.ui.semantics.Role
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,12 +7,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -46,19 +39,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.lukearnold.coachesassistant.BuildConfig
+import com.lukearnold.coachesassistant.R
+import com.lukearnold.coachesassistant.ai.ACCESS_LOCAL_NETWORK
 import com.lukearnold.coachesassistant.ai.AiProvider
 import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
-import com.lukearnold.coachesassistant.ai.ACCESS_LOCAL_NETWORK
 import com.lukearnold.coachesassistant.ai.endpointUrlProblem
 import com.lukearnold.coachesassistant.ai.hasLocalNetworkPermission
 import com.lukearnold.coachesassistant.ai.needsLocalNetworkPermission
-import java.time.LocalDate
 import com.lukearnold.coachesassistant.data.Sport
+import java.time.LocalDate
 
 @Composable
 fun SettingsScreen(
@@ -225,13 +225,16 @@ fun SettingsScreen(
                 when {
                     savedKey.isNotBlank() ->
                         stringResource(R.string.api_key_active, stringResource(selectedProvider.label))
+
                     (selectedProvider == AiProvider.GEMINI) && hasBuiltInApiKey ->
                         stringResource(R.string.using_the_gemini_api_key_built_into_this_app_ai)
+
                     isOther ->
                         stringResource(R.string.no_api_key_saved_hosted_providers_need_one_a_loc)
+
                     else ->
                         stringResource(R.string.api_key_missing, stringResource(selectedProvider.label))
-                }
+                },
             )
             Spacer(Modifier.height(layout.smallGap))
 
@@ -244,10 +247,14 @@ fun SettingsScreen(
                     singleLine = true,
                     isError = endpointProblem != null,
                     supportingText = when {
-                        endpointProblem != null -> { { Text(stringResource(endpointProblem)) } }
+                        endpointProblem != null -> {
+                            { Text(stringResource(endpointProblem)) }
+                        }
+
                         endpointNeedsLocalNetwork -> {
                             { Text(stringResource(R.string.this_server_is_on_your_local_network_so_android)) }
                         }
+
                         else -> null
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -429,7 +436,7 @@ fun SettingsScreen(
                     ) {
                         Text(stringResource(R.string.cancel))
                     }
-                }
+                },
             )
         }
 
@@ -565,4 +572,3 @@ private fun SettingSwitch(
         Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
-

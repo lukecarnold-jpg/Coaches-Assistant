@@ -57,4 +57,3 @@ private fun Sport.promptName(): String = when (this) {
     Sport.FLAG_FOOTBALL -> "flag football"
     else -> name.lowercase().replace('_', ' ')
 }
-

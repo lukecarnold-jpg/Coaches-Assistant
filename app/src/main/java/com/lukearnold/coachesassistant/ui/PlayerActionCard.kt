@@ -1,7 +1,5 @@
 package com.lukearnold.coachesassistant.ui
 
-import com.lukearnold.coachesassistant.R
-import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -10,11 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.*
 
 @Composable
@@ -31,22 +31,22 @@ fun PlayerActionCard(
     val layout = LocalResponsiveLayout.current
 
     OutlinedCard(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
             modifier = Modifier.padding(layout.cardPadding),
-            verticalArrangement = Arrangement.spacedBy(layout.smallGap)
+            verticalArrangement = Arrangement.spacedBy(layout.smallGap),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(layout.tinyGap)) {
                     Text(
                         text = stat.player.displayLabel(),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Text(stringResource(R.string.player_card_stats, stat.points, stringResource(sportConfig.infraction.plural), stat.fouls, stat.timesSubbedOff))
                     if (enabled) {
@@ -65,13 +65,13 @@ fun PlayerActionCard(
                             text = stringResource(R.string.shift_time, formatDuration(stat.shiftTimeAt(now))),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                         Spacer(Modifier.width(layout.smallGap))
                         Text(
                             text = stringResource(R.string.total_time_short, formatDuration(stat.totalTimeAt(now))),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.secondary,
                         )
                     }
                     val now = gameTimeMillis()
@@ -83,7 +83,7 @@ fun PlayerActionCard(
                                 paceLabel(share.behindMillis(stat.totalTimeAt(now))).asString(),
                             ),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -96,7 +96,7 @@ fun PlayerActionCard(
                             onClick = { onAddMvpVote(stat.player.id) },
                             contentPadding = PaddingValues(horizontal = layout.smallGap),
                             modifier = Modifier.height(layout.controlHeight),
-                            colors = ButtonDefaults.textButtonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                            colors = ButtonDefaults.textButtonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
                         ) {
                             Text(stringResource(R.string.mvp_vote_count, stat.mvpVotes), style = MaterialTheme.typography.labelSmall)
                         }
@@ -107,7 +107,7 @@ fun PlayerActionCard(
             if (enabled) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(layout.smallGap)
+                    horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
                 ) {
                     sportConfig.scoringOptions.forEach { option ->
                         SmallActionButton(label = option.label.asString(), modifier = Modifier.weight(1f)) {
@@ -119,13 +119,13 @@ fun PlayerActionCard(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         stringResource(sportConfig.infraction.label),
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
 
                     OutlinedCard(
@@ -138,7 +138,7 @@ fun PlayerActionCard(
                                 enabled = stat.fouls > 0,
                                 modifier = Modifier
                                     .size(layout.iconButtonSize)
-                                    .semantics { contentDescription = removeLabel }
+                                    .semantics { contentDescription = removeLabel },
                             ) {
                                 // The button's description says what it does; "-" alone reads as "minus".
                                 Text("-", fontWeight = FontWeight.Bold, modifier = Modifier.clearAndSetSemantics {})
@@ -147,11 +147,11 @@ fun PlayerActionCard(
                                 text = stat.fouls.toString(),
                                 modifier = Modifier.padding(horizontal = layout.smallGap),
                                 style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
                             )
                             IconButton(
                                 onClick = { onAddFoul(stat.player.id, 1) },
-                                modifier = Modifier.size(layout.iconButtonSize)
+                                modifier = Modifier.size(layout.iconButtonSize),
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = stringResource(sportConfig.infraction.add), modifier = Modifier.size(layout.inlineIconSize))
                             }

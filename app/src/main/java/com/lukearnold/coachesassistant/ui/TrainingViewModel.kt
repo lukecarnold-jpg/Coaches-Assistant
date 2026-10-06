@@ -12,9 +12,9 @@ import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.ai.AiProvider
 import com.lukearnold.coachesassistant.ai.AiRequestException
 import com.lukearnold.coachesassistant.ai.AiSettingsStore
+import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
 import com.lukearnold.coachesassistant.ai.Drill
 import com.lukearnold.coachesassistant.ai.DrillTextGenerator
-import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
 import com.lukearnold.coachesassistant.ai.buildDrillPrompt
 import com.lukearnold.coachesassistant.ai.hasLocalNetworkPermission
 import com.lukearnold.coachesassistant.ai.needsLocalNetworkPermission

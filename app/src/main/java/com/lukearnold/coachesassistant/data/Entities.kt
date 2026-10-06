@@ -14,7 +14,8 @@ enum class EventType {
     FOUL,
     MVP_VOTE,
     PERIOD_CHANGE,
-    GAME_END;
+    GAME_END,
+    ;
 
     /** Whether the event log can correct this event's points: scores and infraction adjustments. */
     val hasEditablePoints: Boolean
@@ -181,11 +182,6 @@ fun GameEntity.currentGameTimeMillis(now: Long = System.currentTimeMillis()): Lo
     capToPeriod(runningTimeMillis + (timerLastStartedAt?.let { now - it } ?: 0L), periodDurationMillis)
 
 /**
- * [timeMillis] kept within a period of [periodDurationMillis] (or just non-negative if the period
- * has no set length). New games can't record time past the end of a period, but games from before
- * the clock stopped itself can: a clock left running for hours stamped its events with that time.
- */
-/**
  * The latest clock time recorded by an event in the current period, given a game's [events] in
  * the order they happened (0 if none). The clock can't be moved earlier than this: events would
  * then sit "in the future", and shifts that started at them would count as zero.
@@ -194,6 +190,11 @@ fun latestEventTimeThisPeriod(events: List<GameEventEntity>, periodDurationMilli
     events.takeLastWhile { it.type != EventType.PERIOD_CHANGE.name }
         .maxOfOrNull { capToPeriod(it.gameTimeMillis, periodDurationMillis) } ?: 0L
 
+/**
+ * [timeMillis] kept within a period of [periodDurationMillis] (or just non-negative if the period
+ * has no set length). New games can't record time past the end of a period, but games from before
+ * the clock stopped itself can: a clock left running for hours stamped its events with that time.
+ */
 fun capToPeriod(timeMillis: Long, periodDurationMillis: Long): Long =
     if (periodDurationMillis > 0) timeMillis.coerceIn(0L, periodDurationMillis) else maxOf(0L, timeMillis)
 

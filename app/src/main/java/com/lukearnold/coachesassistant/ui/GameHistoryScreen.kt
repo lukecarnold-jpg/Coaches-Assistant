@@ -1,8 +1,5 @@
 package com.lukearnold.coachesassistant.ui
 
-import com.lukearnold.coachesassistant.R
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,7 +19,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.displayLabel
 import java.util.Locale
@@ -62,12 +62,12 @@ fun GameHistoryScreen(
         modifier = modifier
             .verticalScroll(rememberScrollState())
             .padding(layout.screenPadding),
-        verticalArrangement = Arrangement.spacedBy(layout.sectionGap)
+        verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
     ) {
         Text(
             text = stringResource(R.string.game_history),
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
 
         if (finishedGames.isEmpty()) {
@@ -178,4 +178,3 @@ private fun SeasonSummaryCard(season: SeasonSummary, infraction: Infraction) {
 /** [total] averaged over [games], to one decimal place. */
 private fun perGame(total: Int, games: Int): String =
     if (games == 0) "0" else String.format(Locale.getDefault(), "%.1f", total.toDouble() / games)
-

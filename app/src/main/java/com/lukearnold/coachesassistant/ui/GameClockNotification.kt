@@ -47,8 +47,10 @@ object GameClockNotification {
 
     /** Whether the app may post notifications (always before Android 13; a runtime permission since). */
     fun canPost(context: Context): Boolean =
-        (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) &&
+        (
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            ) &&
             NotificationManagerCompat.from(context).areNotificationsEnabled()
 
     /**

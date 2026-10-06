@@ -1,10 +1,8 @@
 package com.lukearnold.coachesassistant.ui
 
-import androidx.annotation.StringRes
-import com.lukearnold.coachesassistant.R
-import androidx.compose.ui.res.stringResource
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,9 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.ai.ACCESS_LOCAL_NETWORK
 import com.lukearnold.coachesassistant.ai.Drill
 import com.lukearnold.coachesassistant.data.Sport
@@ -39,7 +39,7 @@ fun TrainingScreen(
         R.string.under_16_s,
         R.string.under_18_s,
     )
-    
+
     var expanded by remember { mutableStateOf(value = false) }
     // Kept as the resource, so the choice survives a change of language; the prompt gets its text.
     var selectedAgeGroup by rememberSaveable { mutableIntStateOf(ageGroups.first()) }
@@ -242,7 +242,7 @@ fun DrillCard(drill: Drill) {
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
             )
-            
+
             Text(
                 text = stringResource(R.string.description),
                 style = MaterialTheme.typography.labelLarge,
@@ -252,9 +252,9 @@ fun DrillCard(drill: Drill) {
                 text = drill.description,
                 style = MaterialTheme.typography.bodyMedium,
             )
-            
+
             HorizontalDivider(modifier = Modifier.padding(vertical = layout.tinyGap))
-            
+
             Text(
                 text = stringResource(R.string.teaching_points),
                 style = MaterialTheme.typography.labelLarge,

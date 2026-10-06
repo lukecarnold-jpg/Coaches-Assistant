@@ -15,4 +15,3 @@ class EventTypeTest {
         assertEquals(EventType.SCORE, EventType.fromRaw("UNKNOWN_EVENT"))
     }
 }
-

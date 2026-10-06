@@ -1,27 +1,23 @@
 package com.lukearnold.coachesassistant
 
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.foundation.text.TextAutoSize
-import com.lukearnold.coachesassistant.ui.GameClockNotification
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.compose.rememberLauncherForActivityResult
-import android.os.Build
 import android.Manifest
-import com.lukearnold.coachesassistant.R
-import androidx.annotation.StringRes
-import androidx.compose.ui.res.stringResource
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -45,28 +41,32 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.Sport
-import com.lukearnold.coachesassistant.ui.AppViewModel
 import com.lukearnold.coachesassistant.ui.AppTheme
-import com.lukearnold.coachesassistant.ui.appViewModelFactory
+import com.lukearnold.coachesassistant.ui.AppViewModel
 import com.lukearnold.coachesassistant.ui.DataViewModel
-import com.lukearnold.coachesassistant.ui.dataViewModelFactory
-import com.lukearnold.coachesassistant.ui.KeepScreenOn
-import com.lukearnold.coachesassistant.ui.shouldKeepScreenOn
+import com.lukearnold.coachesassistant.ui.GameClockNotification
 import com.lukearnold.coachesassistant.ui.GameHistoryScreen
 import com.lukearnold.coachesassistant.ui.GameScreen
-import com.lukearnold.coachesassistant.ui.RosterScreen
+import com.lukearnold.coachesassistant.ui.KeepScreenOn
 import com.lukearnold.coachesassistant.ui.LocalResponsiveLayout
+import com.lukearnold.coachesassistant.ui.ResponsiveLayoutProvider
+import com.lukearnold.coachesassistant.ui.RosterScreen
 import com.lukearnold.coachesassistant.ui.SettingsScreen
 import com.lukearnold.coachesassistant.ui.SettingsViewModel
-import com.lukearnold.coachesassistant.ui.ResponsiveLayoutProvider
 import com.lukearnold.coachesassistant.ui.SportPreferences
 import com.lukearnold.coachesassistant.ui.SportSelectionScreen
 import com.lukearnold.coachesassistant.ui.TrainingScreen
 import com.lukearnold.coachesassistant.ui.TrainingViewModel
+import com.lukearnold.coachesassistant.ui.appViewModelFactory
 import com.lukearnold.coachesassistant.ui.config
+import com.lukearnold.coachesassistant.ui.dataViewModelFactory
+import com.lukearnold.coachesassistant.ui.shouldKeepScreenOn
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.merge
 
@@ -121,7 +121,7 @@ enum class AppTab {
     GAME,
     TRAINING,
     HISTORY,
-    SETTINGS
+    SETTINGS,
 }
 
 private data class NavTabSpec(
@@ -263,115 +263,117 @@ private fun SportApp(
                 // The roster, game, and history tabs wait for their data (usually a split second)
                 // rather than flashing their "none yet" messages.
                 val waitingForData = !isLoaded && tab in setOf(AppTab.ROSTER, AppTab.GAME, AppTab.HISTORY)
-                if (!waitingForData) when (tab) {
-                    AppTab.ROSTER -> RosterScreen(
-                        modifier = Modifier.fillMaxSize(),
-                        isExpanded = isExpanded,
-                        sport = sport,
-                        players = players,
-                        onAddPlayer = appViewModel::addPlayer,
-                        onUpdatePlayer = appViewModel::updatePlayer,
-                        onDeletePlayer = appViewModel::deletePlayer,
-                        onExportPlayers = dataViewModel::exportPlayersCsv,
-                        onImportPlayers = dataViewModel::importPlayersCsv,
-                    )
-
-                    AppTab.GAME -> GameScreen(
-                        modifier = Modifier.fillMaxSize(),
-                        isExpanded = isExpanded,
-                        sport = sport,
-                        players = players,
-                        games = games,
-                        selectedGame = selectedGame,
-                        lineup = lineup,
-                        stats = stats,
-                        events = events,
-                        onCreateGame = appViewModel::createGame,
-                        onSelectGame = appViewModel::selectGame,
-                        onSetLineup = appViewModel::setStartingLineup,
-                        minimumOnCourt = minimumOnCourt,
-                        suggestSubs = suggestSubs,
-                        subSnooze = subSnooze,
-                        onSubNow = appViewModel::acceptSubSuggestion,
-                        onSubLater = appViewModel::snoozeSubSuggestion,
-                        onSubstitute = appViewModel::substitute,
-                        onAddPlayerScore = appViewModel::addPlayerScore,
-                        onAdjustTeamScore = appViewModel::adjustTeamScore,
-                        onAddOpponentScore = appViewModel::addOpponentScore,
-                        onAddFoul = appViewModel::addFoul,
-                        onAddMvpVote = appViewModel::addMvpVote,
-                        onToggleTimer = appViewModel::toggleTimer,
-                        onResetTimer = appViewModel::resetTimer,
-                        onSetGameTime = appViewModel::setGameTime,
-                        onDeleteGame = appViewModel::deleteGame,
-                        onExportGame = dataViewModel::exportGameCsv,
-                        onExportPlayers = dataViewModel::exportPlayersCsv,
-                        onAdvancePeriod = appViewModel::advancePeriod,
-                        onEndGame = appViewModel::endGame,
-                        gameDayActive = selectedGame?.id != null && selectedGame?.id == gameDayGameId,
-                        onStartGameDay = appViewModel::startGameDay,
-                        onStopGameDay = appViewModel::stopGameDay,
-                        onUpdateAbsentPlayers = appViewModel::updateAbsentPlayers,
-                        onUpdateNotes = appViewModel::updateGameNotes,
-                        onExportNotes = dataViewModel::exportGameNotesTxt,
-                        onUpdateEvent = appViewModel::updateEvent,
-                        onDeleteEvent = appViewModel::deleteEvent,
-                    )
-
-                    AppTab.TRAINING -> TrainingScreen(
-                        modifier = Modifier.fillMaxSize(),
-                        isExpanded = isExpanded,
-                        sport = sport,
-                        trainingViewModel = trainingViewModel,
-                    )
-
-                    AppTab.HISTORY -> {
-                        // Collected here rather than with the other state above, so season totals
-                        // are only computed while the History tab is showing.
-                        val season by appViewModel.seasonStats.collectAsState()
-                        GameHistoryScreen(
+                if (!waitingForData) {
+                    when (tab) {
+                        AppTab.ROSTER -> RosterScreen(
                             modifier = Modifier.fillMaxSize(),
+                            isExpanded = isExpanded,
+                            sport = sport,
+                            players = players,
+                            onAddPlayer = appViewModel::addPlayer,
+                            onUpdatePlayer = appViewModel::updatePlayer,
+                            onDeletePlayer = appViewModel::deletePlayer,
+                            onExportPlayers = dataViewModel::exportPlayersCsv,
+                            onImportPlayers = dataViewModel::importPlayersCsv,
+                        )
+
+                        AppTab.GAME -> GameScreen(
+                            modifier = Modifier.fillMaxSize(),
+                            isExpanded = isExpanded,
+                            sport = sport,
+                            players = players,
                             games = games,
-                            season = season,
-                            infraction = sport.config.infraction,
-                            onViewGame = { gameId ->
-                                appViewModel.selectGame(gameId)
-                                currentTab = AppTab.GAME.name
-                            },
+                            selectedGame = selectedGame,
+                            lineup = lineup,
+                            stats = stats,
+                            events = events,
+                            onCreateGame = appViewModel::createGame,
+                            onSelectGame = appViewModel::selectGame,
+                            onSetLineup = appViewModel::setStartingLineup,
+                            minimumOnCourt = minimumOnCourt,
+                            suggestSubs = suggestSubs,
+                            subSnooze = subSnooze,
+                            onSubNow = appViewModel::acceptSubSuggestion,
+                            onSubLater = appViewModel::snoozeSubSuggestion,
+                            onSubstitute = appViewModel::substitute,
+                            onAddPlayerScore = appViewModel::addPlayerScore,
+                            onAdjustTeamScore = appViewModel::adjustTeamScore,
+                            onAddOpponentScore = appViewModel::addOpponentScore,
+                            onAddFoul = appViewModel::addFoul,
+                            onAddMvpVote = appViewModel::addMvpVote,
+                            onToggleTimer = appViewModel::toggleTimer,
+                            onResetTimer = appViewModel::resetTimer,
+                            onSetGameTime = appViewModel::setGameTime,
                             onDeleteGame = appViewModel::deleteGame,
                             onExportGame = dataViewModel::exportGameCsv,
+                            onExportPlayers = dataViewModel::exportPlayersCsv,
+                            onAdvancePeriod = appViewModel::advancePeriod,
+                            onEndGame = appViewModel::endGame,
+                            gameDayActive = selectedGame?.id != null && selectedGame?.id == gameDayGameId,
+                            onStartGameDay = appViewModel::startGameDay,
+                            onStopGameDay = appViewModel::stopGameDay,
+                            onUpdateAbsentPlayers = appViewModel::updateAbsentPlayers,
+                            onUpdateNotes = appViewModel::updateGameNotes,
+                            onExportNotes = dataViewModel::exportGameNotesTxt,
+                            onUpdateEvent = appViewModel::updateEvent,
+                            onDeleteEvent = appViewModel::deleteEvent,
+                        )
+
+                        AppTab.TRAINING -> TrainingScreen(
+                            modifier = Modifier.fillMaxSize(),
+                            isExpanded = isExpanded,
+                            sport = sport,
+                            trainingViewModel = trainingViewModel,
+                        )
+
+                        AppTab.HISTORY -> {
+                            // Collected here rather than with the other state above, so season totals
+                            // are only computed while the History tab is showing.
+                            val season by appViewModel.seasonStats.collectAsState()
+                            GameHistoryScreen(
+                                modifier = Modifier.fillMaxSize(),
+                                games = games,
+                                season = season,
+                                infraction = sport.config.infraction,
+                                onViewGame = { gameId ->
+                                    appViewModel.selectGame(gameId)
+                                    currentTab = AppTab.GAME.name
+                                },
+                                onDeleteGame = appViewModel::deleteGame,
+                                onExportGame = dataViewModel::exportGameCsv,
+                            )
+                        }
+
+                        AppTab.SETTINGS -> SettingsScreen(
+                            modifier = Modifier.fillMaxSize(),
+                            onClearAllData = dataViewModel::clearAllData,
+                            onClearSelectedData = dataViewModel::clearSelectedData,
+                            apiKeys = apiKeys,
+                            selectedProvider = selectedAiProvider,
+                            hasBuiltInApiKey = trainingViewModel.hasBuiltInApiKey,
+                            customEndpoint = customAiEndpoint,
+                            onSelectProvider = trainingViewModel::selectProvider,
+                            onSaveApiKey = trainingViewModel::updateApiKey,
+                            onClearApiKey = trainingViewModel::clearApiKey,
+                            onSaveCustomEndpoint = trainingViewModel::updateCustomEndpoint,
+                            modelOverrides = aiModelOverrides,
+                            onSaveModel = trainingViewModel::updateModel,
+                            currentSport = sport,
+                            onSwitchSport = onSwitchSport,
+                            onBackup = dataViewModel::exportBackup,
+                            onRestore = dataViewModel::restoreBackup,
+                            minimumOnCourt = minimumOnCourt,
+                            suggestSubs = suggestSubs,
+                            onSuggestSubsChange = settingsViewModel::setSuggestSubs,
+                            notifySubs = notifySubs,
+                            onNotifySubsChange = onNotifySubsChange,
+                            onMinimumOnCourtChange = appViewModel::setMinimumOnCourt,
+                            clockNotification = clockNotification,
+                            onClockNotificationChange = onClockNotificationChange,
+                            keepScreenOnWhileClockRuns = keepScreenOnWhileClockRuns,
+                            onKeepScreenOnWhileClockRunsChange = settingsViewModel::setKeepScreenOnWhileClockRuns,
                         )
                     }
-
-                    AppTab.SETTINGS -> SettingsScreen(
-                        modifier = Modifier.fillMaxSize(),
-                        onClearAllData = dataViewModel::clearAllData,
-                        onClearSelectedData = dataViewModel::clearSelectedData,
-                        apiKeys = apiKeys,
-                        selectedProvider = selectedAiProvider,
-                        hasBuiltInApiKey = trainingViewModel.hasBuiltInApiKey,
-                        customEndpoint = customAiEndpoint,
-                        onSelectProvider = trainingViewModel::selectProvider,
-                        onSaveApiKey = trainingViewModel::updateApiKey,
-                        onClearApiKey = trainingViewModel::clearApiKey,
-                        onSaveCustomEndpoint = trainingViewModel::updateCustomEndpoint,
-                        modelOverrides = aiModelOverrides,
-                        onSaveModel = trainingViewModel::updateModel,
-                        currentSport = sport,
-                        onSwitchSport = onSwitchSport,
-                        onBackup = dataViewModel::exportBackup,
-                        onRestore = dataViewModel::restoreBackup,
-                        minimumOnCourt = minimumOnCourt,
-                        suggestSubs = suggestSubs,
-                        onSuggestSubsChange = settingsViewModel::setSuggestSubs,
-                        notifySubs = notifySubs,
-                        onNotifySubsChange = onNotifySubsChange,
-                        onMinimumOnCourtChange = appViewModel::setMinimumOnCourt,
-                        clockNotification = clockNotification,
-                        onClockNotificationChange = onClockNotificationChange,
-                        keepScreenOnWhileClockRuns = keepScreenOnWhileClockRuns,
-                        onKeepScreenOnWhileClockRunsChange = settingsViewModel::setKeepScreenOnWhileClockRuns,
-                    )
                 }
             }
         }

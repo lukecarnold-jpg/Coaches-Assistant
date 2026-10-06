@@ -1,22 +1,22 @@
 package com.lukearnold.coachesassistant.ui
 
 import android.app.Application
+import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.annotation.StringRes
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.AppDatabase
-import com.lukearnold.coachesassistant.data.GameRepository
 import com.lukearnold.coachesassistant.data.EventType
 import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.GameEventEntity
-import com.lukearnold.coachesassistant.data.PlayerEntity
-import com.lukearnold.coachesassistant.data.displayLabel
-import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.data.GameLineup
+import com.lukearnold.coachesassistant.data.GameRepository
+import com.lukearnold.coachesassistant.data.PlayerEntity
+import com.lukearnold.coachesassistant.data.Sport
+import com.lukearnold.coachesassistant.data.displayLabel
 import com.lukearnold.coachesassistant.data.remainingPeriodTimeMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -28,8 +28,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -173,7 +173,9 @@ class AppViewModel(
 
                 when {
                     gameList.isEmpty() -> selectedGameId.value = null
+
                     currentSelection == null -> selectedGameId.value = defaultGame(gameList)?.id
+
                     gameList.none { it.id == currentSelection } -> {
                         selectedGameId.value = defaultGame(gameList)?.id
                     }
@@ -428,11 +430,14 @@ class AppViewModel(
             val eventIds = pairs.mapNotNull { (playerIn, playerOut) -> repository.substitute(gameId, playerIn, playerOut) }
             when {
                 eventIds.isEmpty() -> _messages.emit(UiMessage(uiText(R.string.msg_substitution_stale)))
+
                 eventIds.size < pairs.size -> announceUndoable(
                     eventIds,
                     text = pluralText(R.plurals.msg_some_substitutions_recorded, pairs.size, eventIds.size, pairs.size),
                 )
+
                 eventIds.size == 1 -> announceUndoable(eventIds)
+
                 else -> announceUndoable(eventIds, text = pluralText(R.plurals.msg_substitutions_recorded, eventIds.size))
             }
         }
@@ -555,8 +560,6 @@ class AppViewModel(
             }
         }
     }
-
-
 }
 
 /**

@@ -210,7 +210,7 @@ Robolectric:
   Compose UI tests of screens (`ScreenBehaviourTest`).
 
 There are no instrumented (`androidTest`) tests. CI
-(`.github/workflows/android-ci.yml`) runs the tests, lint, and a release
+(`.github/workflows/android-ci.yml`) checks formatting, then runs the tests, lint, and a release
 build on every push and pull request to master, and builds a signed release
 bundle on pushes when the signing secrets are set (see README, "Publishing").
 
@@ -219,7 +219,8 @@ bundle on pushes when the signing secrets are set (see README, "Publishing").
 - `settings.gradle.kts` configures plugin/dependency repositories and includes
   the `:app` module.
 - Root `build.gradle.kts` declares shared Android, Kotlin Compose, and KSP
-  plugins.
+  plugins, and configures Spotless (ktlint) formatting: `./gradlew spotlessCheck`
+  checks it and `./gradlew spotlessApply` fixes it.
 - `app/build.gradle.kts` configures SDK levels, application ID, build types,
   Compose, Room/KSP, and runtime dependencies. It also derives the version
   (`versionCode` from the commit count, `versionName` from the latest `vX.Y.Z`

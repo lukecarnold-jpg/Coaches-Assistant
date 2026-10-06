@@ -97,10 +97,12 @@ object SubReminders {
                 if (lastNotified != null) cancel(context)
                 null
             }
+
             suggestion.key != lastNotified -> {
                 notify(context, gameId, suggestion)
                 suggestion.key
             }
+
             else -> lastNotified
         }
     }

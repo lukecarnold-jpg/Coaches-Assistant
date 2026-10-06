@@ -2,7 +2,6 @@ package com.lukearnold.coachesassistant.data
 
 import androidx.annotation.StringRes
 import com.lukearnold.coachesassistant.R
-
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -172,6 +171,9 @@ object BackupFormat {
  * stopped, so a restored game doesn't look as if its clock ran the whole time since the backup.
  */
 fun stopRunningClocks(games: List<GameEntity>, now: Long): List<GameEntity> = games.map { game ->
-    if (game.timerLastStartedAt == null) game
-    else game.copy(runningTimeMillis = game.currentGameTimeMillis(now), timerLastStartedAt = null)
+    if (game.timerLastStartedAt == null) {
+        game
+    } else {
+        game.copy(runningTimeMillis = game.currentGameTimeMillis(now), timerLastStartedAt = null)
+    }
 }

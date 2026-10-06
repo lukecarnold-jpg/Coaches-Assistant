@@ -130,10 +130,11 @@ fun offWithoutReplacement(events: List<GameEventEntity>): Set<Long> {
                 event.playerId?.let { out -= it }
                 if (event.playerId == null) event.relatedPlayerId?.let { out += it }
             }
+
             EventType.START_LINEUP -> out -= event.note.split(',').mapNotNull { it.trim().toLongOrNull() }.toSet()
+
             else -> Unit
         }
     }
     return out
 }
-

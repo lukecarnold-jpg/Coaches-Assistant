@@ -2,8 +2,8 @@ package com.lukearnold.coachesassistant.ui
 
 import com.lukearnold.coachesassistant.data.EventType
 import com.lukearnold.coachesassistant.data.GameEntity
-import com.lukearnold.coachesassistant.data.GameLineup
 import com.lukearnold.coachesassistant.data.GameEventEntity
+import com.lukearnold.coachesassistant.data.GameLineup
 import com.lukearnold.coachesassistant.data.MvpVotes
 import com.lukearnold.coachesassistant.data.PlayerEntity
 import org.junit.Assert.assertEquals

@@ -2,7 +2,6 @@ package com.lukearnold.coachesassistant.data
 
 import androidx.annotation.StringRes
 import com.lukearnold.coachesassistant.R
-
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
