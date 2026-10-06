@@ -11,7 +11,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Multi-sport: a landing screen lets the user pick from 16 supported team sports (categorized into Court, Field, and Ice & Water sports); each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 13)
-- AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash`), Anthropic Claude (`claude-sonnet-5`), OpenAI ChatGPT (`gpt-5.5`), or "Other" (any OpenAI-compatible endpoint the user configures, e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server) — and supplies that provider's API key (Gemini also falls back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
+- AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash`), Anthropic Claude (`claude-sonnet-5`), OpenAI ChatGPT (`gpt-5.5`), or "Other" (any OpenAI-compatible endpoint the user configures, e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server) — and supplies that provider's API key (debug builds of Gemini also fall back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests, lint, and a minified release build on every push/PR to `master`; Dependabot (`.github/dependabot.yml`) opens weekly PRs for dependency and Actions updates, which CI checks the same way
 
 ## Core features
@@ -69,7 +69,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - "Show the running clock in notifications" (off by default; asks for the notifications permission on Android 13+): while a clock runs, a silent notification shows the game, period, score, and a live countdown, including on the lock screen, with a Stop clock button. The system counts it down, so it stays right with the app closed, and it disappears when the clock stops or the period ends
   - Choose which AI provider generates drills, and add, update, or remove that provider's API key directly in the app, encrypted at rest on-device with an AES-256-GCM key held in the Android Keystore (`ai/AiSettingsStore.kt`)
   - Each provider requires its own API key; the app does not support signing in with a Gemini, Claude, or ChatGPT account (see "AI provider access" below for why)
-  - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY`; Anthropic, OpenAI, and the "Other" provider have no build-time fallback
+  - A Gemini key saved in-app takes priority over any build-time `GEMINI_API_KEY` (debug builds only); Anthropic, OpenAI, and the "Other" provider have no build-time fallback
   - "Other" also requires an endpoint URL and model name, since it can point at any OpenAI-compatible service
   - "Other" endpoints must use `https://`, except servers on the local network (localhost, private IP ranges including Tailscale's `100.64.0.0/10`, and `.local`/`.lan`/single-label hostnames), which may use plain `http://` and can be used without an API key — e.g. `http://192.168.1.20:11434/v1/chat/completions` for Ollama
   - On Android 17+, reaching a server on the local network needs the "local network access" (Nearby devices) permission; the app asks for it when a local endpoint is saved or used, and explains how to turn it on if it was declined
@@ -104,7 +104,7 @@ From the current Gradle configuration:
 2. Ensure JDK 17 is configured for Gradle.
 3. Add an optional API key for whichever AI provider you want the Training tab to use, either:
    - In-app: open the Settings tab, pick a provider chip (Google Gemini, Anthropic Claude, OpenAI ChatGPT, or Other), and paste its key into "AI training assistant" (no rebuild required; for Gemini this takes priority over the build-time key), or
-   - At build time, in `local.properties` at the project root (Gemini only):
+   - At build time, in `local.properties` at the project root (Gemini, debug builds only — release builds never include it, since a key in the APK can be extracted):
 
 ```properties
 GEMINI_API_KEY=your_key_here

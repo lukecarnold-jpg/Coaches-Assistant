@@ -212,6 +212,7 @@ Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see R
 - Offered for every sport; Gemini is called through its REST API; API keys are encrypted with an Android Keystore key
 - The Other (OpenAI-compatible) provider can use plain http to a server on the local network, with Android 17's local network permission
 - Drills are requested in the app's language
+- The build-time `GEMINI_API_KEY` is only used by debug builds, so a key can't ship inside a release APK
 
 **App-wide**
 - Application ID and package renamed to `com.lukearnold.coachesassistant`
@@ -231,6 +232,6 @@ Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see R
 - `./gradlew testDebugUnitTest` passes 206 tests, all on the JVM (Robolectric where Android is needed; there are no instrumented tests); `./gradlew lintDebug` has no findings; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
 - Room schema version 13, with every migration from version 5 tested against the exported schemas.
 - 16 sports share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position).
-- The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.
+- The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); in debug builds, Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.
 - The app is local-first: no backend, cloud sync, accounts, analytics, or crash reporting. The only network traffic is drill generation.
 - Before publishing: create the upload key, fill in and host the privacy policy, and tag the first release (see README, "Publishing").

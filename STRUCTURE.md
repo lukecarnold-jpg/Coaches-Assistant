@@ -128,9 +128,9 @@ The AI package is used by the Training tab (every sport):
   local network, which needs Android 17's local network permission.
 
 API keys are supplied by the user in Settings and encrypted on the device
-(`AiSettingsStore`, which also moves over settings from older versions). A
-Gemini build-time fallback may be supplied through `GEMINI_API_KEY` in
-`local.properties`.
+(`AiSettingsStore`, which also moves over settings from older versions). Debug
+builds can take a Gemini build-time fallback through `GEMINI_API_KEY` in
+`local.properties`; release builds never include it.
 
 ## Android resources
 

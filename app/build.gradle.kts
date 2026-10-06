@@ -89,9 +89,6 @@ android {
         targetSdk = 37
         versionCode = appVersionCode
         versionName = appVersionName
-
-        val apiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
-        buildConfigField("String", "GEMINI_API_KEY", "\"$apiKey\"")
     }
 
     signingConfigs {
@@ -106,7 +103,14 @@ android {
     }
 
     buildTypes {
+        // A development convenience only: anything in BuildConfig ships inside the APK, where a key
+        // can be pulled out in seconds, so release builds never carry one. Users enter their own.
+        debug {
+            val apiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+            buildConfigField("String", "GEMINI_API_KEY", "\"$apiKey\"")
+        }
         release {
+            buildConfigField("String", "GEMINI_API_KEY", "\"\"")
             signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
