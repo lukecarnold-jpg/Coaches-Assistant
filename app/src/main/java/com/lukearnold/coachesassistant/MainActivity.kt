@@ -1,6 +1,5 @@
 package com.lukearnold.coachesassistant
 
-import com.lukearnold.coachesassistant.ui.SubReminders
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.foundation.text.TextAutoSize
@@ -53,7 +52,6 @@ import com.lukearnold.coachesassistant.data.Sport
 import com.lukearnold.coachesassistant.ui.AppViewModel
 import com.lukearnold.coachesassistant.ui.AppTheme
 import com.lukearnold.coachesassistant.ui.AppViewModelFactory
-import com.lukearnold.coachesassistant.ui.DisplayPreferences
 import com.lukearnold.coachesassistant.ui.KeepScreenOn
 import com.lukearnold.coachesassistant.ui.shouldKeepScreenOn
 import com.lukearnold.coachesassistant.ui.GameHistoryScreen
@@ -61,6 +59,7 @@ import com.lukearnold.coachesassistant.ui.GameScreen
 import com.lukearnold.coachesassistant.ui.RosterScreen
 import com.lukearnold.coachesassistant.ui.LocalResponsiveLayout
 import com.lukearnold.coachesassistant.ui.SettingsScreen
+import com.lukearnold.coachesassistant.ui.SettingsViewModel
 import com.lukearnold.coachesassistant.ui.ResponsiveLayoutProvider
 import com.lukearnold.coachesassistant.ui.SportPreferences
 import com.lukearnold.coachesassistant.ui.SportSelectionScreen
@@ -68,6 +67,7 @@ import com.lukearnold.coachesassistant.ui.TrainingScreen
 import com.lukearnold.coachesassistant.ui.TrainingViewModel
 import com.lukearnold.coachesassistant.ui.config
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.merge
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -155,6 +155,7 @@ private fun SportApp(
         key = "AppViewModel-${sport.name}",
         factory = remember(sport) { AppViewModelFactory(application, sport) },
     )
+    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
     val navTabSpecs = remember(sport) { navTabSpecsFor(sport) }
 
     val players by appViewModel.players.collectAsState()
@@ -163,27 +164,14 @@ private fun SportApp(
     val gameDayGameId by appViewModel.gameDayGameId.collectAsState()
     val minimumOnCourt by appViewModel.minimumOnCourt.collectAsState()
     val isLoaded by appViewModel.isLoaded.collectAsState()
-    val context = LocalContext.current
-    var keepScreenOnWhileClockRuns by remember { mutableStateOf(DisplayPreferences.keepScreenOnWhileClockRuns(context)) }
-    var clockNotification by remember {
-        mutableStateOf(GameClockNotification.isEnabled(context) && GameClockNotification.canPost(context))
-    }
-    var suggestSubs by remember { mutableStateOf(SubReminders.suggestEnabled(context)) }
-    var notifySubs by remember {
-        mutableStateOf(SubReminders.notifyEnabled(context) && GameClockNotification.canPost(context))
-    }
-    val subNotificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        SubReminders.setNotifyEnabled(context, granted)
-        notifySubs = granted
-        if (granted) appViewModel.refreshSubReminders()
-        if (!granted) appViewModel.reportNotificationsDenied()
-    }
+    val keepScreenOnWhileClockRuns by settingsViewModel.keepScreenOnWhileClockRuns.collectAsState()
+    val clockNotification by settingsViewModel.clockNotification.collectAsState()
+    val suggestSubs by settingsViewModel.suggestSubs.collectAsState()
+    val notifySubs by settingsViewModel.notifySubs.collectAsState()
+    val onNotifySubsChange = rememberNotificationSetting(settingsViewModel::setNotifySubs, settingsViewModel::reportNotificationsDenied)
+    val onClockNotificationChange =
+        rememberNotificationSetting(settingsViewModel::setClockNotification, settingsViewModel::reportNotificationsDenied)
     val subSnooze by appViewModel.subSnooze.collectAsState()
-    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        appViewModel.setClockNotificationEnabled(granted)
-        clockNotification = granted
-        if (!granted) appViewModel.reportNotificationsDenied()
-    }
     KeepScreenOn(shouldKeepScreenOn(selectedGame, keepScreenOnWhileClockRuns))
     val lineup by appViewModel.selectedGameLineup.collectAsState()
     val events by appViewModel.selectedGameEvents.collectAsState()
@@ -211,9 +199,9 @@ private fun SportApp(
 
     val undoLabel = stringResource(R.string.undo)
     val resources = LocalResources.current
-    LaunchedEffect(appViewModel) {
+    LaunchedEffect(appViewModel, settingsViewModel) {
         // collectLatest: a new message replaces the one showing (and its Undo) straight away.
-        appViewModel.messages.collectLatest { message ->
+        merge(appViewModel.messages, settingsViewModel.messages).collectLatest { message ->
             val undo = message.undo
             val result = snackbarHostState.showSnackbar(
                 message = message.text.resolve(resources),
@@ -371,44 +359,14 @@ private fun SportApp(
                         onRestore = appViewModel::restoreBackup,
                         minimumOnCourt = minimumOnCourt,
                         suggestSubs = suggestSubs,
-                        onSuggestSubsChange = { enabled ->
-                            SubReminders.setSuggestEnabled(context, enabled)
-                            suggestSubs = enabled
-                            if (enabled) appViewModel.refreshSubReminders()
-                        },
+                        onSuggestSubsChange = settingsViewModel::setSuggestSubs,
                         notifySubs = notifySubs,
-                        onNotifySubsChange = { enabled ->
-                            if (enabled && !GameClockNotification.canPost(context) &&
-                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                            ) {
-                                subNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            } else if (enabled && !GameClockNotification.canPost(context)) {
-                                appViewModel.reportNotificationsDenied() // switched off in system settings
-                            } else {
-                                SubReminders.setNotifyEnabled(context, enabled)
-                                notifySubs = enabled
-                                if (enabled) appViewModel.refreshSubReminders()
-                            }
-                        },
+                        onNotifySubsChange = onNotifySubsChange,
                         onMinimumOnCourtChange = appViewModel::setMinimumOnCourt,
                         clockNotification = clockNotification,
-                        onClockNotificationChange = { enabled ->
-                            if (enabled && !GameClockNotification.canPost(context) &&
-                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                            ) {
-                                notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            } else if (enabled && !GameClockNotification.canPost(context)) {
-                                appViewModel.reportNotificationsDenied() // switched off in system settings
-                            } else {
-                                appViewModel.setClockNotificationEnabled(enabled)
-                                clockNotification = enabled
-                            }
-                        },
+                        onClockNotificationChange = onClockNotificationChange,
                         keepScreenOnWhileClockRuns = keepScreenOnWhileClockRuns,
-                        onKeepScreenOnWhileClockRunsChange = { enabled ->
-                            DisplayPreferences.setKeepScreenOnWhileClockRuns(context, enabled)
-                            keepScreenOnWhileClockRuns = enabled
-                        },
+                        onKeepScreenOnWhileClockRunsChange = settingsViewModel::setKeepScreenOnWhileClockRuns,
                     )
                 }
             }
@@ -430,3 +388,23 @@ private fun NavLabel(text: String) {
     )
 }
 
+/**
+ * The change handler for a setting that posts notifications: turning it on first asks for the
+ * notifications permission if needed (Android 13+), and [onDenied] explains if it's refused or
+ * notifications are switched off in system settings. [onSet] saves the result.
+ */
+@Composable
+private fun rememberNotificationSetting(onSet: (Boolean) -> Unit, onDenied: () -> Unit): (Boolean) -> Unit {
+    val context = LocalContext.current
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        onSet(granted)
+        if (!granted) onDenied()
+    }
+    return { enabled ->
+        when {
+            !enabled || GameClockNotification.canPost(context) -> onSet(enabled)
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> permission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            else -> onDenied() // switched off in system settings
+        }
+    }
+}
