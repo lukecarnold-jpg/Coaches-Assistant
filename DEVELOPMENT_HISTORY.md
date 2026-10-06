@@ -183,8 +183,8 @@ This history captures the key milestones in the app's evolution, from the initia
 - Expanded unit tests in `SportConfigTest.kt` to cover on-court team sizes, scoring options, and infraction pluralizations for all 16 sports (`26 passed, 0 failed`)
 - Updated `README.md` to document the 16 supported team sports and updated layout capabilities
 
-## Since version 3.2 (unreleased)
-Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see README, "Publishing").
+## Version 4.0.0 (First Tagged Release)
+Tagged `v4.0.0` in October 2026: the first release whose version comes from a `vX.Y.Z` git tag (see README, "Publishing"). It covers everything since 3.2.
 
 **Live game**
 - The game clock stops itself at the end of each period, and recorded times are capped at the period length, so an unattended clock can't credit extra playing time; the clock can't be moved earlier than events already recorded
@@ -242,4 +242,4 @@ Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see R
 - 16 sports share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position).
 - The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); in debug builds, Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.
 - The app is local-first: no backend, cloud sync, accounts, analytics, or crash reporting. The only network traffic is drill generation.
-- Before publishing: create the upload key, fill in and host the privacy policy, declare the foreground service in Play Console, and tag the first release (see README, "Publishing").
+- Before publishing: create the upload key, fill in and host the privacy policy, and declare the foreground service in Play Console (see README, "Publishing"). The latest release tag is `v4.0.0`.
