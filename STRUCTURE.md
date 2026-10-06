@@ -89,6 +89,7 @@ presentation helpers:
 - `SportConfig.kt` - sport-specific rules: players on court and the minimum to field a team, scoring, periods, positions, and infractions.
 - `SportPreferences.kt` - remembers the last selected sport.
 - `AppViewModel.kt` - screen state, user actions, and repository coordination.
+- `ViewModelActions.kt` - `launchSafely`, which turns a failed user action into a message instead of a crash.
 - `PlayerGameStats.kt` - the per-game player stats calculator (`calculatePlayerGameStats`).
 - `UiMessages.kt` - snackbar messages (with optional Undo) and their text.
 - `UiText.kt` - text built in code as a string resource and its arguments, resolved when shown.

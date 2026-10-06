@@ -429,6 +429,7 @@
     <string name="msg_clock_reset">Clock reset to %1$s.</string>
     <string name="clock_too_early">Can\'t set the clock back past %1$s: something was already recorded then this period, and moving before it would lose playing time.</string>
     <string name="msg_backup_saved">Backup saved: %1$s and %2$s across all sports.</string>
+    <string name="msg_action_failed">Couldn\'t save that change. Please try again.</string>
     <string name="msg_backup_failed">Backup failed.</string>
     <string name="msg_restored">Restored %1$s and %2$s.</string>
     <string name="msg_restore_failed">Restore failed. Nothing was changed.</string>
