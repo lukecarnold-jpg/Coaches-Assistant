@@ -291,4 +291,42 @@ class AppDatabaseMigrationTest {
             assertEquals(1, cursor.getInt(0))
         }
     }
+
+    @Test
+    fun migrate13To14_addsTheSportIndicesAndKeepsEveryRow() {
+        val dbName = "migration-test-13-to-14"
+
+        helper.createDatabase(dbName, 13).apply {
+            execSQL("INSERT INTO players (id, name, jerseyNumber, sport, position) VALUES (1, 'Alex', 23, 'NETBALL', 'GS')")
+            execSQL(
+                """
+                INSERT INTO games (
+                    id, title, opponent, createdAt, teamScore, opponentScore, mvpVotesJson,
+                    runningTimeMillis, timerLastStartedAt, isFinished, finishedAt,
+                    currentPeriod, periodDurationMillis, notes, sport, onCourtSize, periodCount
+                ) VALUES (
+                    1, 'Round 1', 'Rivals', 3000, 12, 9, '{}',
+                    0, NULL, 1, 4000, 4, 900000, '', 'NETBALL', 7, 4
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        // Validating against 14.json checks the new indices exist.
+        val migrated = helper.runMigrationsAndValidate(dbName, 14, true)
+
+        migrated.query("SELECT name, sport, position FROM players WHERE id = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Alex", cursor.getString(0))
+            assertEquals("NETBALL", cursor.getString(1))
+            assertEquals("GS", cursor.getString(2))
+        }
+        migrated.query("SELECT title, teamScore, sport FROM games WHERE id = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Round 1", cursor.getString(0))
+            assertEquals(12, cursor.getInt(1))
+            assertEquals("NETBALL", cursor.getString(2))
+        }
+    }
 }
