@@ -10,7 +10,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Application ID and Kotlin package: `com.lukearnold.coachesassistant`
 - Multi-sport: a landing screen lets the user pick from 16 supported team sports (categorized into Court, Field, and Ice & Water sports); each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
 - UI: Jetpack Compose + Material 3
-- Persistence: Room database (schema version 13)
+- Persistence: Room database (schema version 14)
 - AI drills: user picks a provider on the Settings tab — Google Gemini (`gemini-3.8-flash` by default), Anthropic Claude (`claude-sonnet-5` by default), OpenAI ChatGPT (`gpt-5.5` by default; each model can be changed in Settings, e.g. once one is retired), or "Other" (any OpenAI-compatible endpoint the user configures, e.g. OpenRouter, Groq, Mistral, Azure OpenAI, or a self-hosted Ollama/vLLM server) — and supplies that provider's API key (debug builds of Gemini also fall back to `GEMINI_API_KEY` from `local.properties` if none is saved in-app)
 - Build status: validated with the existing Gradle test task (`BUILD SUCCESSFUL`); a GitHub Actions workflow runs unit tests, lint, and a minified release build on every push/PR to `master`; Dependabot (`.github/dependabot.yml`) opens weekly PRs for dependency and Actions updates, which CI checks the same way
 

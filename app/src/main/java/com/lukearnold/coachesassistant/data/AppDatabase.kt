@@ -9,7 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [PlayerEntity::class, GameEntity::class, GameEventEntity::class, GamePlayerEntity::class],
-    version = 13,
+    version = 14,
     autoMigrations = [
         androidx.room.AutoMigration(from = 5, to = 6),
         androidx.room.AutoMigration(from = 6, to = 7),
@@ -19,6 +19,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         // Adds the game_events foreign keys (games -> CASCADE, players -> SET_NULL); no column
         // changes, so no AutoMigrationSpec is needed to backfill anything.
         androidx.room.AutoMigration(from = 10, to = 11),
+        // Adds indices on players.sport and games.sport.
+        androidx.room.AutoMigration(from = 13, to = 14),
     ],
     exportSchema = true,
 )

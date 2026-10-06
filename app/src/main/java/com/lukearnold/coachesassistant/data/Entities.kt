@@ -35,7 +35,8 @@ enum class EventType {
     }
 }
 
-@Entity(tableName = "players")
+// Indexed by sport: every roster screen and query reads one sport's players.
+@Entity(tableName = "players", indices = [Index("sport")])
 data class PlayerEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
@@ -46,7 +47,8 @@ data class PlayerEntity(
     val position: String? = null,
 )
 
-@Entity(tableName = "games")
+// Indexed by sport: every game list and season total reads one sport's games.
+@Entity(tableName = "games", indices = [Index("sport")])
 data class GameEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val title: String,
