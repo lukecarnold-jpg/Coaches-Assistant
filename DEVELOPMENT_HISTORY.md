@@ -207,6 +207,7 @@ Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see R
 **Data**
 - On-court and absent players moved into a `game_players` table; foreign keys with cascades on events (Room schema version 13, with migration tests)
 - Players and games indexed by sport (Room schema now version 14)
+- Android's own backup also keeps the display, substitution, and sport settings
 - Whole-app backup and restore to a file; a transition build moves data from the old `com.example.basketballrotation` app
 - Season stats (record, points, and each player's games, minutes, points, infractions, and MVP votes) at the top of the History tab
 - Roster CSV imports skip players already on the roster and keep positions; duplicate players are caught when added by hand
@@ -231,11 +232,11 @@ Not yet tagged as a release (release versions now come from `vX.Y.Z` tags; see R
 - Privacy policy draft and Play listing notes
 - CI checks formatting (Spotless/ktlint), runs unit tests, lint, and a minified release build, and builds a signed bundle when the signing secrets are set
 - View models take their dependencies through factories (and the data, settings, and game parts are separate view models), so they're unit tested
-- Tests grew from the core stat logic to 206: repository tests against an in-memory Room database, migration tests, backup, CSV, and Compose UI tests on Robolectric
+- Tests grew from the core stat logic to 217: repository tests against an in-memory Room database, migration tests, backup, CSV, view models, and Compose UI tests on Robolectric
 
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.
-- `./gradlew testDebugUnitTest` passes 206 tests, all on the JVM (Robolectric where Android is needed; there are no instrumented tests); `./gradlew lintDebug` has no findings; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
+- `./gradlew testDebugUnitTest` passes 217 tests, all on the JVM (Robolectric where Android is needed; there are no instrumented tests); `./gradlew lintDebug` has no findings; `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
 - Room schema version 14, with every migration from version 5 tested against the exported schemas.
 - 16 sports share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position).
 - The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); in debug builds, Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.
