@@ -64,6 +64,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, OpenAI ChatGPT, or a custom OpenAI-compatible endpoint
 - Settings tab
   - "Switch sport" returns to the sport landing screen
+  - "Language": the phone's language, English, Español, Français, or Italiano; the app switches straight away, and AI drills are generated in the chosen language. On Android 13+ the same choice is also in the phone's per-app language settings
   - "Minimum players to field a team" for the current sport, from 1 to a full side, defaulting to the sport's rules
   - Substitutions: "Suggest substitutions" (on by default) and "Notify me when it's time to sub" (off by default; asks for the notifications permission on Android 13+). While a clock runs with notifications on, a foreground service (shown as a silent "Sub reminders on" notification) checks every 15 seconds, so reminders keep coming with the phone locked and the app in the background; it stops when the clock stops. Game Day mode silences it like any other app's, unless the coach allows Coaches Assistant in that mode's settings
   - "Keep screen on while the clock runs" (on by default) stops the phone locking mid-game; the normal screen timeout returns as soon as the clock stops

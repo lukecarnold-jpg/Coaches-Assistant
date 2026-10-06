@@ -1,0 +1,593 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">Coaches Assistant</string>
+    <string name="content_language_tag">fr</string>
+    <string name="app_name_legacy" tools:ignore="UnusedResources">Coaches Assistant (ancienne)</string>
+
+    <!-- Screen text -->
+    <string name="roster">Effectif</string>
+    <string name="game">Match</string>
+    <string name="training">Entraînement</string>
+    <string name="history">Historique</string>
+    <string name="settings">Paramètres</string>
+    <string name="undo">Annuler</string>
+    <string name="sport">Sport</string>
+    <string name="switch_sport">Changer de sport</string>
+    <string name="display">Affichage</string>
+    <string name="keep_screen_on_while_the_clock_runs">Garder l’écran allumé pendant que le chrono tourne</string>
+    <string name="stops_the_phone_locking_mid_game_the_normal_scre">Empêche le téléphone de se verrouiller en plein match. La mise en veille normale revient quand le chrono s’arrête.</string>
+    <string name="language_setting">Langue</string>
+    <string name="language_setting_description">La langue de l’application. Les exercices d’entraînement générés par l’IA sont aussi dans cette langue.</string>
+    <string name="language_system_default">Langue du téléphone</string>
+    <string name="ai_training_assistant">Assistant d’entraînement IA</string>
+    <string name="choose_which_ai_generates_training_drills_then_a">Choisissez l’IA qui génère les exercices d’entraînement, puis ajoutez sa clé API. Chaque fournisseur demande sa propre clé : l’application ne permet pas de se connecter avec un compte Gemini, Claude ou ChatGPT.</string>
+    <string name="using_the_gemini_api_key_built_into_this_app_ai">Utilisation de la GEMINI_API_KEY intégrée à cette application. La génération d’exercices par IA est activée.</string>
+    <string name="no_api_key_saved_hosted_providers_need_one_a_loc">Aucune clé API enregistrée. Les fournisseurs en ligne en demandent une ; un serveur local (comme Ollama) n’en a généralement pas besoin.</string>
+    <string name="endpoint_url">URL du point de terminaison</string>
+    <string name="this_server_is_on_your_local_network_so_android">Ce serveur est sur votre réseau local : Android vous demandera d’autoriser l’accès au réseau local.</string>
+    <string name="model_name">Nom du modèle</string>
+    <string name="model_default_hint">Laissez vide pour utiliser %1$s</string>
+    <string name="hide_api_key">Masquer la clé API</string>
+    <string name="show_api_key">Afficher la clé API</string>
+    <string name="save">Enregistrer</string>
+    <string name="remove_saved_key">Supprimer la clé enregistrée</string>
+    <string name="backup">Sauvegarde</string>
+    <string name="this_is_the_old_app_updated_so_you_can_move_your">Ceci est l’ancienne application, mise à jour pour transférer vos données vers la nouvelle application Coaches Assistant : appuyez sur « Sauvegarder toutes les données » ci-dessous, puis ouvrez la nouvelle application et utilisez « Restaurer une sauvegarde » dans ses Paramètres. Saisissez ensuite à nouveau vos clés API d’IA.</string>
+    <string name="save_every_sport_s_players_and_games_to_a_file_e">Enregistrez les joueurs et les matchs de tous les sports dans un fichier, par exemple pour passer à un nouveau téléphone. Les clés API ne sont pas incluses ; ajoutez-les à nouveau après la restauration.</string>
+    <string name="back_up_all_data">Sauvegarder toutes les données</string>
+    <string name="restore_from_backup">Restaurer une sauvegarde</string>
+    <string name="data_management">Gestion des données</string>
+    <string name="delete_data">Supprimer des données</string>
+    <string name="exports">Exports</string>
+    <string name="to_view_exported_csv_files_use_your_device_s_fil">Pour voir les fichiers CSV exportés, utilisez le gestionnaire de fichiers de l’appareil (par exemple Fichiers ou Téléchargements).</string>
+    <string name="restore_from_backup_question">Restaurer la sauvegarde ?</string>
+    <string name="the_backup_replaces_all_current_players_games_an">La sauvegarde remplace tous les joueurs, matchs et événements actuels de tous les sports. C’est irréversible : sauvegardez d’abord si vous voulez garder les données d’aujourd’hui.</string>
+    <string name="choose_backup_file">Choisir le fichier de sauvegarde</string>
+    <string name="cancel">Annuler</string>
+    <string name="confirm_deletion">Confirmer la suppression</string>
+    <string name="delete_everything">Tout supprimer</string>
+    <string name="delete_local_data">Supprimer les données locales</string>
+    <string name="players">Joueurs</string>
+    <string name="games">Matchs</string>
+    <string name="events">Événements</string>
+    <string name="delete_all_data_every_sport">Supprimer toutes les données (tous les sports)</string>
+    <string name="delete_selected">Supprimer la sélection</string>
+    <string name="end_this_game_question">Terminer ce match ?</string>
+    <string name="end_game">Terminer le match</string>
+    <string name="keep_playing">Continuer à jouer</string>
+    <string name="next_period_question">Période suivante ?</string>
+    <string name="next_period">Période suivante</string>
+    <string name="game_clock_score">Chrono et score</string>
+    <string name="next_period_title">Période suivante</string>
+    <string name="end_game_title">Terminer le match</string>
+    <string name="manage_attendance_flag_absent">Gérer les présences (marquer les absents)</string>
+    <string name="game_finished">MATCH TERMINÉ</string>
+    <string name="us">Nous</string>
+    <string name="them">Eux</string>
+    <string name="export_game_csv">Exporter le CSV du match</string>
+    <string name="export_roster_csv">Exporter le CSV de l’effectif</string>
+    <string name="set_starting_lineup">Définir la composition de départ</string>
+    <string name="save_starting_lineup">Enregistrer la composition de départ</string>
+    <string name="players_on_court">Joueurs en jeu</string>
+    <string name="substitution">Remplacement</string>
+    <string name="select_players_to_come_out_and_players_to_come_i">Sélectionnez les joueurs qui sortent et ceux qui entrent. Un joueur peut aussi entrer sans échange ou sortir sans remplaçant.</string>
+    <string name="no_bench_players_available">Aucun joueur disponible sur le banc.</string>
+    <string name="reset_the_clock_question">Réinitialiser le chrono ?</string>
+    <string name="reset">Réinitialiser</string>
+    <string name="edit_time">Modifier le temps</string>
+    <string name="reset_clock">Réinitialiser le chrono</string>
+    <string name="stop">Arrêter</string>
+    <string name="start">Démarrer</string>
+    <string name="min_left">Min restantes</string>
+    <string name="sec_left">Sec restantes</string>
+    <string name="set">Valider</string>
+    <string name="delete_this_game_question">Supprimer ce match ?</string>
+    <string name="delete">Supprimer</string>
+    <string name="create_a_game">Créer un match</string>
+    <string name="game_title">Nom du match</string>
+    <string name="opponent">Adversaire</string>
+    <string name="periods">Périodes</string>
+    <string name="period_duration_minutes">Durée de la période (minutes)</string>
+    <string name="create_game">Créer le match</string>
+    <string name="no_games_yet">Aucun match pour l’instant.</string>
+    <string name="game_selected">Sélectionné</string>
+    <string name="select">Sélectionner</string>
+    <string name="export">Exporter</string>
+    <string name="game_stats">Statistiques du match</string>
+    <string name="no_stats_yet">Aucune statistique pour l’instant.</string>
+    <string name="on_court">EN JEU</string>
+    <string name="bench">BANC</string>
+    <string name="recent_events">Événements récents</string>
+    <string name="no_events_yet">Aucun événement pour l’instant.</string>
+    <string name="ages_5_6">5–6 ans</string>
+    <string name="under_8_s">Moins de 8 ans</string>
+    <string name="under_10_s">Moins de 10 ans</string>
+    <string name="under_12_s">Moins de 12 ans</string>
+    <string name="under_14_s">Moins de 14 ans</string>
+    <string name="under_16_s">Moins de 16 ans</string>
+    <string name="under_18_s">Moins de 18 ans</string>
+    <string name="training_drills">Exercices d’entraînement</string>
+    <string name="select_age_group">Choisissez la catégorie d’âge</string>
+    <string name="age_group">Catégorie d’âge</string>
+    <string name="generate_ai_drills">Générer des exercices par IA</string>
+    <string name="description">Description</string>
+    <string name="teaching_points">Points clés</string>
+    <string name="remove_this_player_question">Retirer ce joueur ?</string>
+    <string name="remove">Retirer</string>
+    <string name="team_roster">Effectif de l’équipe</string>
+    <string name="player_name">Nom du joueur</string>
+    <string name="jersey_number_optional">Numéro de maillot (facultatif)</string>
+    <string name="player_name_is_required">Le nom du joueur est obligatoire.</string>
+    <string name="add_player">Ajouter un joueur</string>
+    <string name="import_roster_csv">Importer le CSV de l’effectif</string>
+    <string name="no_players_yet_add_your_roster_first">Aucun joueur pour l’instant. Ajoutez d’abord votre effectif.</string>
+    <string name="edit">Modifier</string>
+    <string name="position_optional">Poste (facultatif)</string>
+    <string name="game_history">Historique des matchs</string>
+    <string name="no_completed_games_yet_games_appear_here_once_yo">Aucun match terminé pour l’instant. Les matchs apparaissent ici une fois terminés.</string>
+    <string name="win">VICTOIRE</string>
+    <string name="loss">DÉFAITE</string>
+    <string name="tie">NUL</string>
+    <string name="view">Voir</string>
+    <string name="manage_attendance">Gérer les présences</string>
+    <string name="select_players_who_are_absent_for_this_game">Sélectionnez les joueurs ABSENTS pour ce match.</string>
+    <string name="edit_event">Modifier l’événement</string>
+    <string name="remove_event">Retirer l’événement</string>
+    <string name="note">Note</string>
+    <string name="choose_a_sport">Choisissez un sport</string>
+    <string name="pick_the_sport_you_re_coaching_you_can_switch_sp">Choisissez le sport que vous entraînez. Vous pourrez en changer plus tard dans les Paramètres.</string>
+    <string name="court_sports">Sports en salle</string>
+    <string name="field_sports">Sports de terrain</string>
+    <string name="rugby">Rugby</string>
+    <string name="ice_water_sports">Sports de glace et aquatiques</string>
+    <string name="which_code_question">Quel rugby ?</string>
+    <string name="rugby_splits_into_two_codes_which_one_do_you_coa_question">Le rugby se joue à XV ou à XIII. Lequel entraînez-vous ?</string>
+    <string name="minus_one_point">-1 pt</string>
+    <string name="coaching_notes">Notes de l’entraîneur</string>
+    <string name="open_edit_notes">📝 Ouvrir et modifier les notes</string>
+    <string name="export_txt">📤 Exporter en TXT</string>
+    <string name="write_strategy_or_observations_here">Notez ici la stratégie ou vos observations…</string>
+    <string name="notes_keyboard_pen_support">Notes (clavier ou stylet)</string>
+    <string name="select_or_create_a_game_to_start_tracking">Sélectionnez ou créez un match pour commencer le suivi.</string>
+    <string name="game_tracker">Suivi du match</string>
+
+    <!-- Sports, positions, scoring and infractions -->
+    <string name="sport_basketball">Basket-ball</string>
+    <string name="sport_netball">Netball</string>
+    <string name="sport_soccer">Football</string>
+    <string name="sport_afl">AFL</string>
+    <string name="sport_rugby_union">Rugby à XV</string>
+    <string name="sport_rugby_league">Rugby à XIII</string>
+    <string name="sport_futsal">Futsal</string>
+    <string name="sport_field_hockey">Hockey sur gazon</string>
+    <string name="sport_ice_hockey">Hockey sur glace</string>
+    <string name="sport_touch_football">Touch rugby</string>
+    <string name="sport_water_polo">Water-polo</string>
+    <string name="sport_handball">Handball</string>
+    <string name="sport_lacrosse">Crosse</string>
+    <string name="sport_gaelic_football">Football gaélique</string>
+    <string name="sport_flag_football">Flag football</string>
+    <string name="sport_ultimate_frisbee">Ultimate frisbee</string>
+    <string name="position_pg">PG</string>
+    <string name="position_sg">SG</string>
+    <string name="position_sf">SF</string>
+    <string name="position_pf">PF</string>
+    <string name="position_c">C</string>
+    <string name="position_gs">GS</string>
+    <string name="position_ga">GA</string>
+    <string name="position_wa">WA</string>
+    <string name="position_wd">WD</string>
+    <string name="position_gd">GD</string>
+    <string name="position_gk">GK</string>
+    <string name="position_def">DÉF</string>
+    <string name="position_mid">MIL</string>
+    <string name="position_fwd">ATT</string>
+    <string name="position_full_forward">Avant de pointe</string>
+    <string name="position_half_forward">Demi-avant</string>
+    <string name="position_midfield">Milieu</string>
+    <string name="position_half_back">Demi-arrière</string>
+    <string name="position_full_back">Arrière de fond</string>
+    <string name="position_ruck">Ruck</string>
+    <string name="position_interchange">Remplaçant</string>
+    <string name="position_prop">Pilier</string>
+    <string name="position_hooker">Talonneur</string>
+    <string name="position_lock">Deuxième ligne</string>
+    <string name="position_flanker">Troisième ligne aile</string>
+    <string name="position_no_8">N° 8</string>
+    <string name="position_scrum_half">Demi de mêlée</string>
+    <string name="position_fly_half">Demi d’ouverture</string>
+    <string name="position_centre">Centre</string>
+    <string name="position_wing">Ailier</string>
+    <string name="position_fullback">Arrière</string>
+    <string name="position_second_row">Deuxième ligne</string>
+    <string name="position_halfback">Demi de mêlée</string>
+    <string name="position_five_eighth">Demi d’ouverture</string>
+    <string name="position_fix">FIX</string>
+    <string name="position_ala">ALA</string>
+    <string name="position_pivo">PIVO</string>
+    <string name="position_g">G</string>
+    <string name="position_ld">LD</string>
+    <string name="position_rd">RD</string>
+    <string name="position_lw">LW</string>
+    <string name="position_rw">RW</string>
+    <string name="position_link">Relais</string>
+    <string name="position_middle">Milieu</string>
+    <string name="position_driver">Attaquant</string>
+    <string name="position_hole_set">Pointe</string>
+    <string name="position_point">Meneur</string>
+    <string name="position_left_wing">Ailier gauche</string>
+    <string name="position_left_back">Arrière gauche</string>
+    <string name="position_centre_back">Demi-centre</string>
+    <string name="position_right_back">Arrière droit</string>
+    <string name="position_right_wing">Ailier droit</string>
+    <string name="position_pivot">Pivot</string>
+    <string name="position_defense">Défense</string>
+    <string name="position_attack">Attaque</string>
+    <string name="position_qb">QB</string>
+    <string name="position_wr">WR</string>
+    <string name="position_rb">RB</string>
+    <string name="position_db">DB</string>
+    <string name="position_rusher">Rusher</string>
+    <string name="position_handler">Handler</string>
+    <string name="position_cutter">Cutter</string>
+    <string name="position_deep">Deep</string>
+    <string name="score_goal">But</string>
+    <string name="score_goal_6">But (6)</string>
+    <string name="score_behind_1">Behind (1)</string>
+    <string name="score_try">Essai</string>
+    <string name="score_conversion">Transformation</string>
+    <string name="score_penalty">Pénalité</string>
+    <string name="score_drop_goal">Drop</string>
+    <string name="score_field_goal">Drop</string>
+    <string name="score_touchdown">Touchdown</string>
+    <string name="score_goal_3">But (3)</string>
+    <string name="score_point_1">Point (1)</string>
+    <string name="score_touchdown_6">Touchdown (6)</string>
+    <string name="score_1_pt_extra_1">Extra à 1 pt (1)</string>
+    <string name="score_2_pt_extra_2">Extra à 2 pts (2)</string>
+    <string name="score_safety_2">Safety (2)</string>
+    <string name="score_point">Point</string>
+    <string name="infraction_foul">Faute</string>
+    <string name="infraction_fouls">Fautes</string>
+    <plurals name="infraction_foul_count">
+        <item quantity="one">%d faute</item>
+        <item quantity="many">%d fautes</item>
+        <item quantity="other">%d fautes</item>
+    </plurals>
+    <string name="infraction_foul_event">Faute de %1$s</string>
+    <string name="infraction_foul_add">Ajouter une faute</string>
+    <string name="infraction_foul_remove">Retirer une faute</string>
+    <string name="infraction_penalty">Pénalité</string>
+    <string name="infraction_penalties">Pénalités</string>
+    <plurals name="infraction_penalty_count">
+        <item quantity="one">%d pénalité</item>
+        <item quantity="many">%d pénalités</item>
+        <item quantity="other">%d pénalités</item>
+    </plurals>
+    <string name="infraction_penalty_event">Pénalité de %1$s</string>
+    <string name="infraction_penalty_add">Ajouter une pénalité</string>
+    <string name="infraction_penalty_remove">Retirer une pénalité</string>
+    <string name="infraction_card">Carton</string>
+    <string name="infraction_cards">Cartons</string>
+    <plurals name="infraction_card_count">
+        <item quantity="one">%d carton</item>
+        <item quantity="many">%d cartons</item>
+        <item quantity="other">%d cartons</item>
+    </plurals>
+    <string name="infraction_card_event">Carton pour %1$s</string>
+    <string name="infraction_card_add">Ajouter un carton</string>
+    <string name="infraction_card_remove">Retirer un carton</string>
+    <string name="infraction_free_kick">Coup franc</string>
+    <string name="infraction_free_kicks">Coups francs</string>
+    <plurals name="infraction_free_kick_count">
+        <item quantity="one">%d coup franc</item>
+        <item quantity="many">%d coups francs</item>
+        <item quantity="other">%d coups francs</item>
+    </plurals>
+    <string name="infraction_free_kick_event">Coup franc contre %1$s</string>
+    <string name="infraction_free_kick_add">Ajouter un coup franc</string>
+    <string name="infraction_free_kick_remove">Retirer un coup franc</string>
+    <string name="infraction_exclusion">Exclusion</string>
+    <string name="infraction_exclusions">Exclusions</string>
+    <plurals name="infraction_exclusion_count">
+        <item quantity="one">%d exclusion</item>
+        <item quantity="many">%d exclusions</item>
+        <item quantity="other">%d exclusions</item>
+    </plurals>
+    <string name="infraction_exclusion_event">Exclusion de %1$s</string>
+    <string name="infraction_exclusion_add">Ajouter une exclusion</string>
+    <string name="infraction_exclusion_remove">Retirer une exclusion</string>
+    <string name="infraction_count_adjustment">Ajustement des %1$s</string>
+
+    <!-- Periods -->
+    <string name="period_count_halves">2 mi-temps</string>
+    <string name="period_count_periods">3 périodes</string>
+    <string name="period_count_quarters">4 quarts-temps</string>
+    <string name="period_label_half">MT%1$d</string>
+    <string name="period_label_quarter">Q%1$d</string>
+    <string name="period_label_other">P%1$d</string>
+    <string name="period_value">Période : %1$s</string>
+
+    <!-- Event log -->
+    <string name="event_starting_lineup">Composition de départ : %1$s</string>
+    <string name="event_substitution">%1$s remplace %2$s</string>
+    <string name="event_comes_on">%1$s entre</string>
+    <string name="event_goes_off">%1$s sort</string>
+    <string name="event_score">%1$s %2$s</string>
+    <string name="team_adjustment">Ajustement d’équipe</string>
+    <string name="removed_player">Joueur retiré</string>
+    <string name="event_mvp_vote">Vote MVP pour %1$s</string>
+    <string name="event_finished_period">Fin de la période %1$d</string>
+    <string name="event_game_ended">Match terminé</string>
+    <string name="event_when">%1$s %2$s · %3$s</string>
+    <string name="points">Points</string>
+
+    <!-- Game screens, with values filled in -->
+    <string name="score_line" tools:ignore="PluralsCandidate">Nous %1$d – %2$d %3$s</string>
+    <string name="score_line_no_opponent" tools:ignore="PluralsCandidate">Nous %1$d – %2$d Eux</string>
+    <string name="pace_on_pace">dans les temps</string>
+    <string name="pace_behind">%1$s de retard</string>
+    <string name="pace_ahead">%1$s d’avance</string>
+    <plurals name="select_exactly_players">
+        <item quantity="one">Sélectionnez exactement %d joueur.</item>
+        <item quantity="many">Sélectionnez exactement %d joueurs.</item>
+        <item quantity="other">Sélectionnez exactement %d joueurs.</item>
+    </plurals>
+    <string name="players_coming_out">Joueurs qui sortent (%1$d)</string>
+    <string name="players_coming_in">Joueurs qui entrent (%1$d) · les plus en retard d’abord</string>
+    <plurals name="confirm_rotation">
+        <item quantity="one">Confirmer la rotation (%d remplacement)</item>
+        <item quantity="many">Confirmer la rotation (%d remplacements)</item>
+        <item quantity="other">Confirmer la rotation (%d remplacements)</item>
+    </plurals>
+    <string name="player_card_stats" tools:ignore="PluralsCandidate">"Points : %1$d   %2$s : %3$d   Sorties : %4$d"</string>
+    <string name="shift_time">Présence : %1$s</string>
+    <string name="total_time_short">Total : %1$s</string>
+    <string name="target_and_pace">Objectif %1$s · %2$s</string>
+    <string name="mvp_vote_count">Vote MVP (%1$d)</string>
+    <string name="opponent_value">Adversaire : %1$s</string>
+    <string name="score_value">Score : %1$d</string>
+    <string name="game_stats_line" tools:ignore="PluralsCandidate">Points : %1$d | %2$s : %3$d | Votes : %4$d | Sorties : %5$d</string>
+    <string name="total_time">Temps total : %1$s</string>
+    <string name="total_time_with_target">Temps total : %1$s sur un objectif de %2$s · %3$s</string>
+    <string name="final_score_value" tools:ignore="PluralsCandidate">Final : %1$d – %2$d</string>
+    <plurals name="season_title">
+        <item quantity="one">Saison (%d match)</item>
+        <item quantity="many">Saison (%d matchs)</item>
+        <item quantity="other">Saison (%d matchs)</item>
+    </plurals>
+    <string name="season_record" tools:ignore="PluralsCandidate">V %1$d · D %2$d · N %3$d</string>
+    <string name="season_points" tools:ignore="PluralsCandidate">Points : %1$d marqués, %2$d encaissés (moy. %3$s–%4$s)</string>
+    <string name="season_player_line" tools:ignore="PluralsCandidate">%1$d MJ · %2$s joués (moy. %3$s) · %4$d pts · %5$s · %6$d MVP</string>
+
+    <!-- Confirmations -->
+    <string name="end_game_confirm">Score final : %1$s. Le match passera dans l’Historique et ne pourra pas être repris.</string>
+    <string name="end_game_confirm_early">Score final : %1$s. Vous n’en êtes qu’à %2$s sur %3$d. Le match passera dans l’Historique et ne pourra pas être repris.</string>
+    <string name="delete_game_confirm">Supprimer « %1$s » (%2$s) ? Ses événements et statistiques sont supprimés et il ne compte plus dans les totaux de la saison. C’est irréversible.</string>
+    <string name="remove_player_confirm">Retirer %1$s de l’effectif ? Le joueur est retiré des compositions des matchs, et les matchs passés affichent ses points sous « %2$s ». C’est irréversible.</string>
+    <string name="next_period_confirm">Passer à %1$s ? %2$s se termine au temps actuel du chrono, le chrono revient à %3$s et tout le monde sort du terrain jusqu’à ce que vous définissiez la composition suivante.</string>
+    <string name="reset_clock_confirm">Remettre le chrono de %1$s à %2$s ? À utiliser pour reprendre une période qui n’a pas vraiment commencé.</string>
+
+    <!-- Settings and Training, with values filled in -->
+    <string name="currently_coaching">Sport entraîné : %1$s %2$s.</string>
+    <string name="provider_gemini">Google Gemini</string>
+    <string name="provider_gemini_key_hint">Obtenez une clé gratuite sur Google AI Studio.</string>
+    <string name="provider_anthropic">Anthropic Claude</string>
+    <string name="provider_anthropic_key_hint">Obtenez une clé sur la console Anthropic.</string>
+    <string name="provider_openai">OpenAI ChatGPT</string>
+    <string name="provider_openai_key_hint">Obtenez une clé sur la plateforme OpenAI.</string>
+    <string name="provider_other">Autre (compatible OpenAI)</string>
+    <string name="provider_other_key_hint">Fonctionne avec tout fournisseur qui utilise l’API chat completions d’OpenAI (par exemple OpenRouter, Groq, Mistral, Azure OpenAI ou un serveur auto-hébergé comme Ollama). Indiquez aussi son URL de point de terminaison et le nom du modèle ci-dessus. Les fournisseurs en ligne demandent https:// et une clé ; un serveur sur votre réseau local peut utiliser http:// et se passer de clé.</string>
+    <string name="api_key_active">Votre clé API %1$s enregistrée est active. La génération d’exercices par IA est activée.</string>
+    <string name="api_key_missing">Aucune clé API %1$s configurée. Ajoutez-en une ci-dessous pour générer des exercices par IA dans l’onglet Entraînement.</string>
+    <string name="provider_api_key">Clé API %1$s</string>
+    <string name="key_hint_stored_on_device">%1$s La clé est enregistrée uniquement sur cet appareil.</string>
+    <string name="endpoint_not_a_url">Saisissez une URL complète commençant par https:// (ou http:// pour un serveur sur votre réseau local).</string>
+    <string name="endpoint_needs_https">Utilisez https:// pour les serveurs sur internet. http:// ne fonctionne qu’avec les serveurs de votre réseau local.</string>
+    <string name="data_management_description">Supprimez les joueurs, matchs ou événements de %1$s, ou tout pour tous les sports d’un coup. Ces actions sont irréversibles.</string>
+    <string name="data_management_description_no_sport">Supprimez les joueurs, matchs ou événements de ce sport, ou tout pour tous les sports d’un coup. Ces actions sont irréversibles.</string>
+    <string name="delete_all_confirm">Voulez-vous vraiment supprimer toutes les données ? Cela supprime tous les joueurs et matchs de tous les sports, pas seulement de %1$s.</string>
+    <string name="delete_all_confirm_no_sport">Voulez-vous vraiment supprimer toutes les données ? Cela supprime tous les joueurs et matchs de tous les sports, pas seulement de celui-ci.</string>
+    <string name="delete_selected_prompt">Sélectionnez les données de %1$s à supprimer. Les autres sports ne sont pas touchés.</string>
+    <string name="delete_selected_prompt_no_sport">Sélectionnez les données du sport actuel à supprimer. Les autres sports ne sont pas touchés.</string>
+    <string name="training_empty">Choisissez une catégorie d’âge et appuyez sur générer pour voir des exercices de %1$s adaptés par l’IA.</string>
+
+    <!-- Drill generation errors -->
+    <string name="local_network_denied">Coaches Assistant a besoin de l’accès au réseau local pour joindre votre serveur. Autorisez-le pour l’application dans les Paramètres du téléphone (Applications → Coaches Assistant → Autorisations), puis réessayez.</string>
+    <string name="add_api_key_to_generate">Ajoutez votre clé API %1$s dans les Paramètres pour générer des exercices.</string>
+    <string name="other_provider_not_set_up">Ajoutez une URL de point de terminaison et un nom de modèle pour le fournisseur Autre dans les Paramètres.</string>
+    <string name="drills_parse_failed">Impossible de lire les exercices. Réessayez.</string>
+    <string name="gemini_model_not_found">Le modèle Gemini sélectionné est introuvable. Il a peut-être été retiré : saisissez le nom d’un modèle actuel dans Paramètres → Assistant d’entraînement IA.</string>
+    <string name="request_failed_http">La requête a échoué (HTTP %1$d)</string>
+    <string name="refusing_plain_http">Envoi refusé en http non chiffré vers %1$s, qui n’est pas sur le réseau local.</string>
+    <string name="unknown_error">Une erreur inconnue s’est produite</string>
+
+    <!-- Snackbar messages -->
+    <string name="msg_period_ended">Fin de la période : chrono arrêté.</string>
+    <string name="msg_enter_player_name">Saisissez le nom d’un joueur.</string>
+    <string name="msg_jersey_not_numeric">Le numéro de maillot doit être un nombre.</string>
+    <string name="msg_player_added">Joueur ajouté.</string>
+    <string name="msg_name_empty">Le nom ne peut pas être vide.</string>
+    <string name="msg_player_updated">Joueur mis à jour.</string>
+    <string name="msg_player_already_on_roster">%1$s est déjà dans l’effectif.</string>
+    <string name="msg_number_shared">%1$s %2$s porte aussi le n° %3$d.</string>
+    <string name="msg_player_removed">Joueur retiré.</string>
+    <string name="msg_all_data_cleared">Toutes les données ont été supprimées.</string>
+    <string name="msg_selected_data_cleared">Données sélectionnées supprimées.</string>
+    <string name="msg_game_created">Match créé.</string>
+    <string name="msg_advanced_period">Passage à la période suivante.</string>
+    <string name="msg_game_finalized">Match terminé et terrain réinitialisé.</string>
+    <string name="msg_attendance_updated">Présences mises à jour.</string>
+    <string name="msg_event_updated">Événement mis à jour.</string>
+    <string name="msg_event_removed">Événement retiré.</string>
+    <string name="msg_event_cant_remove">Impossible de retirer ce remplacement : la composition a changé depuis.</string>
+    <string name="msg_event_removed_named">%1$s retiré</string>
+    <string name="msg_game_deleted">Match et événements associés supprimés.</string>
+    <string name="msg_select_game_first">Créez ou sélectionnez d’abord un match.</string>
+    <string name="msg_lineup_saved">Composition de départ enregistrée.</string>
+    <string name="msg_pick_in_and_out">Choisissez un joueur qui entre et un joueur qui sort.</string>
+    <string name="msg_in_and_out_same">Le joueur qui entre et celui qui sort doivent être différents.</string>
+    <string name="msg_substitution_stale">Remplacement non enregistré : la composition a changé.</string>
+    <string name="msg_undone">Annulé.</string>
+    <string name="msg_undo_stale">Impossible d’annuler : cela a déjà été modifié.</string>
+    <string name="msg_period_time_up">Le temps de cette période est écoulé. Passez à la période suivante ou ajustez le chrono.</string>
+    <string name="msg_clock_reset">Chrono remis à %1$s.</string>
+    <string name="clock_too_early">Impossible de reculer le chrono avant %1$s : un événement a déjà été enregistré à ce moment de la période, et revenir plus tôt ferait perdre du temps de jeu.</string>
+    <string name="msg_backup_saved">Sauvegarde enregistrée : %1$s et %2$s pour tous les sports.</string>
+    <string name="msg_action_failed">Impossible d’enregistrer cette modification. Réessayez.</string>
+    <string name="msg_backup_failed">La sauvegarde a échoué.</string>
+    <string name="msg_restored">%1$s et %2$s restaurés.</string>
+    <string name="msg_restore_failed">La restauration a échoué. Rien n’a été modifié.</string>
+    <string name="msg_roster_exported">CSV de l’effectif exporté.</string>
+    <string name="msg_import_failed">L’importation a échoué.</string>
+    <string name="msg_notes_exported">Notes de l’entraîneur exportées.</string>
+    <string name="msg_game_csv_exported">CSV du match exporté.</string>
+    <string name="msg_export_failed">L’exportation a échoué.</string>
+    <string name="import_none_found">Aucun joueur trouvé dans ce fichier.</string>
+    <plurals name="msg_lineup_needs_players">
+        <item quantity="one">Sélectionnez exactement %d joueur pour la composition de départ.</item>
+        <item quantity="many">Sélectionnez exactement %d joueurs pour la composition de départ.</item>
+        <item quantity="other">Sélectionnez exactement %d joueurs pour la composition de départ.</item>
+    </plurals>
+    <plurals name="msg_substitutions_recorded">
+        <item quantity="one">%d remplacement enregistré.</item>
+        <item quantity="many">%d remplacements enregistrés.</item>
+        <item quantity="other">%d remplacements enregistrés.</item>
+    </plurals>
+    <plurals name="msg_some_substitutions_recorded">
+        <item quantity="one">%1$d remplacement sur %2$d enregistré ; les autres ne correspondaient plus à la composition.</item>
+        <item quantity="many">%1$d remplacements sur %2$d enregistrés ; les autres ne correspondaient plus à la composition.</item>
+        <item quantity="other">%1$d remplacements sur %2$d enregistrés ; les autres ne correspondaient plus à la composition.</item>
+    </plurals>
+    <plurals name="import_added">
+        <item quantity="one">%d joueur importé.</item>
+        <item quantity="many">%d joueurs importés.</item>
+        <item quantity="other">%d joueurs importés.</item>
+    </plurals>
+    <plurals name="import_all_already_on_roster">
+        <item quantity="one">Aucun nouveau joueur : %d joueur était déjà dans l’effectif.</item>
+        <item quantity="many">Aucun nouveau joueur : les %d étaient déjà dans l’effectif.</item>
+        <item quantity="other">Aucun nouveau joueur : les %d étaient déjà dans l’effectif.</item>
+    </plurals>
+    <plurals name="player_count">
+        <item quantity="one">%d joueur</item>
+        <item quantity="many">%d joueurs</item>
+        <item quantity="other">%d joueurs</item>
+    </plurals>
+    <plurals name="game_count">
+        <item quantity="one">%d match</item>
+        <item quantity="many">%d matchs</item>
+        <item quantity="other">%d matchs</item>
+    </plurals>
+    <plurals name="import_added_and_skipped">
+        <item quantity="one">%1$s importé(s) (%2$d déjà dans l’effectif).</item>
+        <item quantity="many">%1$s importé(s) (%2$d déjà dans l’effectif).</item>
+        <item quantity="other">%1$s importé(s) (%2$d déjà dans l’effectif).</item>
+    </plurals>
+    <string name="default_game_title">Match %1$d</string>
+
+    <!-- File errors -->
+    <string name="backup_not_a_backup">Ce fichier n’est pas une sauvegarde Coaches Assistant.</string>
+    <string name="backup_from_newer_app">Cette sauvegarde a été créée par une version plus récente de l’application. Mettez l’application à jour pour la restaurer.</string>
+    <string name="backup_damaged">Ce fichier de sauvegarde est endommagé.</string>
+    <string name="backup_damaged_nothing_changed">Ce fichier de sauvegarde est endommagé. Rien n’a été modifié.</string>
+    <string name="backup_file_unopenable">Impossible d’ouvrir le fichier de sauvegarde</string>
+    <string name="export_file_unopenable">Impossible d’ouvrir le fichier d’exportation</string>
+    <string name="import_file_unopenable">Impossible d’ouvrir le fichier d’importation</string>
+    <string name="game_not_found">Match introuvable</string>
+
+    <!-- The summary at the top of an exported notes file -->
+    <string name="notes_file_game">Match : %1$s</string>
+    <string name="notes_file_opponent">Adversaire : %1$s</string>
+    <string name="notes_file_date">Date : %1$s</string>
+    <string name="notes_file_score" tools:ignore="PluralsCandidate">Score : Nous %1$d – %2$d %3$s</string>
+    <string name="notes_file_heading">--- NOTES DE L’ENTRAÎNEUR ---</string>
+
+    <!-- The game clock notification -->
+    <string name="game_clock_notification_setting">Afficher le chrono dans les notifications</string>
+    <string name="game_clock_notification_setting_description">Pendant que le chrono tourne, une notification silencieuse affiche la période, le score et le temps restant, y compris sur l’écran de verrouillage, avec un bouton pour arrêter le chrono.</string>
+    <string name="game_clock_notification_channel">Chrono du match</string>
+    <string name="game_clock_notification_channel_description">Le chrono du match pendant qu’une période se joue.</string>
+    <string name="game_clock_notification_title">%1$s · %2$s</string>
+    <string name="game_clock_notification_stop">Arrêter le chrono</string>
+    <string name="msg_notifications_denied">Les notifications de Coaches Assistant sont désactivées, le chrono ne peut donc pas y être affiché.</string>
+
+    <!-- Game Day mode -->
+    <string name="game_day_turn_on">🔕 Couper les notifications jusqu’à la fin du match</string>
+    <string name="game_day_turn_off">🔔 Désactiver le mode Jour de match</string>
+    <string name="game_day_on_explanation">Le mode Jour de match est activé : les notifications sont coupées jusqu’à la fin de ce match. Les appels des contacts favoris, les appels répétés et les alarmes passent toujours.</string>
+    <string name="game_day_access_title">Autoriser l’accès à Ne pas déranger</string>
+    <string name="game_day_access_explanation">Pour couper les notifications pendant le match, Coaches Assistant a besoin de l’accès à Ne pas déranger (appelé accès aux Modes sur les téléphones récents). Sur l’écran suivant, choisissez Coaches Assistant, autorisez-le, puis revenez.</string>
+    <string name="open_settings">Ouvrir les paramètres</string>
+    <string name="game_day_rule_name">Jour de match</string>
+    <string name="game_day_condition">Match en cours</string>
+    <string name="game_day_trigger">Dès que vous l’activez dans Coaches Assistant et jusqu’à la fin du match</string>
+    <string name="msg_game_day_on">Mode Jour de match activé : les notifications sont coupées jusqu’à la fin du match.</string>
+    <string name="msg_game_day_off">Mode Jour de match désactivé.</string>
+    <string name="msg_game_finalized_game_day_off">Match terminé et terrain réinitialisé. Les notifications sont rétablies.</string>
+    <string name="msg_game_day_no_access">Le mode Jour de match a besoin de l’accès à Ne pas déranger.</string>
+    <string name="msg_game_day_failed">Impossible d’activer le mode Jour de match. Vérifiez l’accès à Ne pas déranger (Modes) dans les Paramètres du téléphone.</string>
+    <string name="msg_game_day_stop_failed">Impossible de désactiver le mode Jour de match. Désactivez Ne pas déranger depuis les réglages rapides du téléphone.</string>
+
+    <!-- Fielding a team with the players who are here -->
+    <plurals name="lineup_too_few">
+        <item quantity="one">Seul %1$d joueur est présent, et il en faut au moins %2$d pour aligner une équipe. Marquez les joueurs présents dans Gérer les présences, ou changez le minimum dans les Paramètres.</item>
+        <item quantity="many">Seuls %1$d joueurs sont présents, et il en faut au moins %2$d pour aligner une équipe. Marquez les joueurs présents dans Gérer les présences, ou changez le minimum dans les Paramètres.</item>
+        <item quantity="other">Seuls %1$d joueurs sont présents, et il en faut au moins %2$d pour aligner une équipe. Marquez les joueurs présents dans Gérer les présences, ou changez le minimum dans les Paramètres.</item>
+    </plurals>
+    <plurals name="lineup_short_handed">
+        <item quantity="one">Seul %1$d joueur est présent, moins qu’une équipe complète de %2$d. Choisissez-en au moins %3$d pour jouer en infériorité.</item>
+        <item quantity="many">Seuls %1$d joueurs sont présents, moins qu’une équipe complète de %2$d. Choisissez-en au moins %3$d pour jouer en infériorité.</item>
+        <item quantity="other">Seuls %1$d joueurs sont présents, moins qu’une équipe complète de %2$d. Choisissez-en au moins %3$d pour jouer en infériorité.</item>
+    </plurals>
+    <plurals name="msg_lineup_short_handed_range">
+        <item quantity="one">Choisissez de %1$d à %2$d joueur pour la composition de départ.</item>
+        <item quantity="many">Choisissez de %1$d à %2$d joueurs pour la composition de départ.</item>
+        <item quantity="other">Choisissez de %1$d à %2$d joueurs pour la composition de départ.</item>
+    </plurals>
+    <string name="msg_lineup_too_few">Pas assez de joueurs présents pour aligner une équipe.</string>
+    <string name="minimum_on_court_title">Nombre minimum de joueurs pour aligner une équipe</string>
+    <plurals name="minimum_on_court_value">
+        <item quantity="one">%1$d sur %2$d en jeu</item>
+        <item quantity="many">%1$d sur %2$d en jeu</item>
+        <item quantity="other">%1$d sur %2$d en jeu</item>
+    </plurals>
+    <string name="minimum_on_court_explanation">Avec moins de joueurs présents qu’une équipe complète, vous pouvez quand même commencer en infériorité jusqu’à ce nombre. Règles de %1$s : %2$d. Modifiez-le si votre compétition autorise un autre nombre.</string>
+    <string name="minimum_on_court_reset">Revenir aux règles (%1$d)</string>
+    <string name="fewer">Moins</string>
+    <string name="more">Plus</string>
+
+    <!-- Substitutions with unequal numbers coming on and going off -->
+    <plurals name="rotation_joining">
+        <item quantity="one">%d entre en jeu sans échange.</item>
+        <item quantity="many">%d entrent en jeu sans échange.</item>
+        <item quantity="other">%d entrent en jeu sans échange.</item>
+    </plurals>
+    <plurals name="rotation_leaving">
+        <item quantity="one">%d sort sans remplaçant.</item>
+        <item quantity="many">%d sortent sans remplaçant.</item>
+        <item quantity="other">%d sortent sans remplaçant.</item>
+    </plurals>
+    <plurals name="rotation_court_full">
+        <item quantity="one">Il n’y a de la place en jeu que pour %d joueur de plus.</item>
+        <item quantity="many">Il n’y a de la place en jeu que pour %d joueurs de plus.</item>
+        <item quantity="other">Il n’y a de la place en jeu que pour %d joueurs de plus.</item>
+    </plurals>
+    <string name="rotation_court_already_full">L’équipe est au complet : choisissez quelqu’un qui sort pour chaque joueur qui entre.</string>
+    <string name="rotation_court_empty">Au moins un joueur doit rester en jeu.</string>
+    <string name="rotation_below_minimum">Il en reste %1$d en jeu, sous le minimum de %2$d.</string>
+
+    <!-- Substitution suggestions -->
+    <string name="sub_suggestion_title">C’est le moment de faire un changement</string>
+    <string name="sub_suggestion_line">%1$s sort (%2$s d’avance) · %3$s entre (%4$s de retard)</string>
+    <string name="sub_now">Changer maintenant</string>
+    <string name="sub_later">Plus tard</string>
+    <string name="sub_reminder_service_title">Rappels de changement activés</string>
+    <string name="sub_reminder_service_text">Suivi du temps de jeu pendant que le chrono tourne</string>
+    <string name="sub_reminders_channel">Rappels de changement</string>
+    <string name="sub_reminders_channel_description">Quand un joueur en jeu a nettement plus que sa part égale du temps de jeu et qu’un joueur sur le banc en a nettement moins.</string>
+    <string name="substitutions_settings">Remplacements</string>
+    <string name="suggest_substitutions_setting">Suggérer des changements</string>
+    <string name="suggest_substitutions_setting_description">Quand un joueur en jeu a 2 minutes d’avance sur une part égale du temps de jeu et qu’un joueur sur le banc a 2 minutes de retard, l’onglet Match propose de les échanger.</string>
+    <string name="notify_substitutions_setting">M’avertir quand il faut faire un changement</string>
+    <string name="notify_substitutions_setting_description">Envoie aussi la suggestion sous forme de notification, avec un bouton Changer maintenant, pendant que le chrono tourne. Fonctionne avec l’application ouverte ou en arrière-plan. Avec le mode Jour de match activé, elle arrive en silence, sauf si vous autorisez Coaches Assistant dans les paramètres du mode Jour de match (Paramètres du téléphone → Modes → Jour de match).</string>
+</resources>

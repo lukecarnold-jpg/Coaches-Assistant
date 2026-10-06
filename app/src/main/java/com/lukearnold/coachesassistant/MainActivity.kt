@@ -3,13 +3,13 @@ package com.lukearnold.coachesassistant
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -71,7 +71,8 @@ import com.lukearnold.coachesassistant.ui.shouldKeepScreenOn
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.merge
 
-class MainActivity : ComponentActivity() {
+// An AppCompatActivity so the language chosen in Settings applies on Android versions before 13.
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Transparent system bars whose icons follow the light/dark theme; without this, Android

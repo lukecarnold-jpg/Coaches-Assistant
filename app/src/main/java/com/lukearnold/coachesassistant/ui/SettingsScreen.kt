@@ -203,6 +203,10 @@ fun SettingsScreen(
             }
         }
 
+        SectionCard(title = stringResource(R.string.language_setting)) {
+            LanguageSetting()
+        }
+
         SectionCard(title = stringResource(R.string.ai_training_assistant)) {
             Text(stringResource(R.string.choose_which_ai_generates_training_drills_then_a))
             Spacer(Modifier.height(layout.smallGap))
@@ -570,5 +574,26 @@ private fun SettingSwitch(
             Text(description, style = MaterialTheme.typography.bodySmall)
         }
         Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+    }
+}
+
+/** Chips for the app's language (see AppLanguage); choosing one switches the app straight away. */
+@Composable
+private fun LanguageSetting() {
+    val layout = LocalResponsiveLayout.current
+    val current = remember { AppLanguage.current() }
+    Text(stringResource(R.string.language_setting_description))
+    Spacer(Modifier.height(layout.smallGap))
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(layout.smallGap),
+        verticalArrangement = Arrangement.spacedBy(layout.smallGap),
+    ) {
+        AppLanguage.entries.forEach { language ->
+            FilterChip(
+                selected = language == current,
+                onClick = { if (language != current) AppLanguage.apply(language) },
+                label = { Text(language.nativeName ?: stringResource(R.string.language_system_default)) },
+            )
+        }
     }
 }

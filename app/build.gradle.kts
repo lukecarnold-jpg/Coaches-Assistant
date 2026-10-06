@@ -180,6 +180,8 @@ dependencies {
     implementation(composeBom)
 
     implementation(libs.androidx.core.ktx)
+    // Per-app language (Settings → Language) on Android versions before 13; see ui/AppLanguage.kt.
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
