@@ -151,11 +151,6 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
         substitute(listOf(playerOn), listOf(playerOff))
     }
 
-    /** Starts the sub reminder service if a clock is running, e.g. once sub notifications are turned on. */
-    fun refreshSubReminders() {
-        viewModelScope.launch { SubReminderService.startIfNeeded(getApplication(), repository.games.first()) }
-    }
-
     init {
         // Game Day mode lasts until its game ends. End Game turns it off directly; this also covers
         // the game being deleted, cleared, or replaced by a restore, in any sport.
@@ -340,16 +335,6 @@ class AppViewModel(application: Application, private val sport: Sport) : Android
             GameDayMode.StartResult.FAILED -> R.string.msg_game_day_failed
         }
         _messages.tryEmit(UiMessage(uiText(message)))
-    }
-
-    /** Turns the game clock notification on or off, updating what's shown now. */
-    fun setClockNotificationEnabled(enabled: Boolean) {
-        GameClockNotification.setEnabled(getApplication(), enabled)
-        launchSafely { GameClockNotification.sync(getApplication(), repository.games.first()) }
-    }
-
-    fun reportNotificationsDenied() {
-        _messages.tryEmit(UiMessage(uiText(R.string.msg_notifications_denied)))
     }
 
     fun stopGameDay() {

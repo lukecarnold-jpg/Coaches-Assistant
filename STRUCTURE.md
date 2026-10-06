@@ -53,7 +53,7 @@ app/src/main/java/com/lukearnold/coachesassistant/
 - `MainActivity.kt` initializes the Compose content and routes between the
   sport-selection screen and the sport-specific application shell.
 - `SportApp` owns the top-level tab navigation, responsive navigation rail or
-  bottom navigation, shared `AppViewModel`, and screen composition.
+  bottom navigation, the view models, and screen composition.
 
 ### `ui/` - Compose screens and presentation logic
 
@@ -89,6 +89,7 @@ presentation helpers:
 - `SportConfig.kt` - sport-specific rules: players on court and the minimum to field a team, scoring, periods, positions, and infractions.
 - `SportPreferences.kt` - remembers the last selected sport.
 - `AppViewModel.kt` - screen state, user actions, and repository coordination.
+- `SettingsViewModel.kt` - the app-wide display and substitution settings.
 - `ViewModelActions.kt` - `launchSafely`, which turns a failed user action into a message instead of a crash.
 - `PlayerGameStats.kt` - the per-game player stats calculator (`calculatePlayerGameStats`).
 - `UiMessages.kt` - snackbar messages (with optional Undo) and their text.
@@ -234,7 +235,9 @@ flowchart LR
     subgraph ui["ui/"]
         Screens["Roster · Game · Training<br/>History · Settings screens"]
         AppVM["AppViewModel<br/>(one per sport)"]
+        SettingsVM["SettingsViewModel"]
         TrainingVM["TrainingViewModel"]
+        SubService["SubReminderService<br/>(while a clock runs)"]
     end
 
     subgraph data["data/"]
@@ -251,8 +254,11 @@ flowchart LR
     MainActivity --> Screens
     Screens --> AppVM
     Screens --> TrainingVM
+    Screens --> SettingsVM
     AppVM --> Repo
     AppVM --> Files
+    AppVM --> SubService
+    SubService --> Repo
     Repo --> Room
     Files --> Room
     TrainingVM --> Settings
