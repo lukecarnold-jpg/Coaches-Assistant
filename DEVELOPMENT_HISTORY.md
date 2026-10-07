@@ -235,7 +235,8 @@ Tagged `v4.0.0` in October 2026: the first release whose version comes from a `v
 - View models take their dependencies through factories (and the data, settings, and game parts are separate view models), so they're unit tested
 - Tests grew from the core stat logic to 221: repository tests against an in-memory Room database, migration tests, backup, CSV, view models, translations, and Compose UI tests on Robolectric
 
-## Since version 4.0.0 (unreleased)
+## Version 4.1.0 (Cricket)
+Tagged `v4.1.0` in October 2026.
 
 **Cricket**
 - Cricket is the 17th sport, recorded as a scorecard per player instead of live with a clock, periods, and substitutions, so it has its own Game tab
@@ -252,4 +253,4 @@ Tagged `v4.0.0` in October 2026: the first release whose version comes from a `v
 - 17 sports: 16 share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position), and cricket is recorded as scorecards with a field plan.
 - The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); in debug builds, Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.
 - The app is local-first: no backend, cloud sync, accounts, analytics, or crash reporting. The only network traffic is drill generation.
-- Before publishing: create the upload key, fill in and host the privacy policy, and declare the foreground service in Play Console (see README, "Publishing"). The latest release tag is `v4.0.0`.
+- Before publishing: create the upload key, fill in and host the privacy policy, and declare the foreground service in Play Console (see README, "Publishing"). The latest release tag is `v4.1.0`.
