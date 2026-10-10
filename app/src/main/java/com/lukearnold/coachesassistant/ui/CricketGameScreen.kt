@@ -23,7 +23,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.CricketScorecardEntity
 import com.lukearnold.coachesassistant.data.Dismissal
@@ -83,9 +83,9 @@ fun CricketGameScreen(
 
     val gameId = selectedGame?.id
     val scorecards by remember(gameId) { gameId?.let(cricketViewModel::scorecards) ?: flowOf(emptyList()) }
-        .collectAsState(initial = emptyList())
+        .collectAsStateWithLifecycle(initialValue = emptyList())
     val field by remember(gameId) { gameId?.let(cricketViewModel::field) ?: flowOf(emptyList()) }
-        .collectAsState(initial = emptyList())
+        .collectAsStateWithLifecycle(initialValue = emptyList())
     val cardByPlayer = scorecards.associateBy { it.playerId }
     val availablePlayers = players.filter { it.id !in lineup.absentIds }
 

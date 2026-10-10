@@ -186,6 +186,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    // collectAsStateWithLifecycle, so screens stop collecting (and Room stops querying) in the background.
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
