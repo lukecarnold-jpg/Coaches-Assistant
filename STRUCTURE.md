@@ -101,7 +101,8 @@ presentation helpers:
   clock notification, and substitution reminders in step with every sport's games.
 - `ViewModelActions.kt` - `launchSafely`, which turns a failed user action into a message instead of a crash.
 - `PlayerGameStats.kt` - the per-game player stats calculator (`calculatePlayerGameStats`).
-- `UiMessages.kt` - snackbar messages (with optional Undo) and their text.
+- `UiMessages.kt` - snackbar messages (with optional Undo) and their text, and
+  `MessageQueue`, which holds each view model's messages until the screen shows them.
 - `UiText.kt` - text built in code as a string resource and its arguments, resolved when shown.
 - `TrainingViewModel.kt` - AI provider selection, endpoint configuration, the
   model chosen for each provider, API key state, and drill generation (which

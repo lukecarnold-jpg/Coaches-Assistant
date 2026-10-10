@@ -9,10 +9,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.AppDatabase
 import com.lukearnold.coachesassistant.data.GameRepository
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -27,8 +25,8 @@ class SettingsViewModel(
     application: Application,
     private val repository: GameRepository,
 ) : AndroidViewModel(application) {
-    private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 1)
-    val messages = _messages.asSharedFlow()
+    private val _messages = MessageQueue()
+    val messages = _messages.messages
 
     private val _keepScreenOnWhileClockRuns = MutableStateFlow(DisplayPreferences.keepScreenOnWhileClockRuns(application))
     val keepScreenOnWhileClockRuns: StateFlow<Boolean> = _keepScreenOnWhileClockRuns.asStateFlow()

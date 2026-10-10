@@ -15,8 +15,6 @@ import com.lukearnold.coachesassistant.data.GameRepository
 import com.lukearnold.coachesassistant.data.Sport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 /** Moving data in and out for [sport]: backup and restore, CSV and notes files, and clearing data. */
@@ -27,8 +25,8 @@ class DataViewModel(
     private val csvIo: GameCsvIo,
     private val backupIo: BackupIo,
 ) : AndroidViewModel(application) {
-    private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 1)
-    val messages = _messages.asSharedFlow()
+    private val _messages = MessageQueue()
+    val messages = _messages.messages
 
     private fun launchSafely(block: suspend CoroutineScope.() -> Unit): Job = launchSafely(_messages, block = block)
 

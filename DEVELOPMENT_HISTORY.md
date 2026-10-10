@@ -261,6 +261,7 @@ Tagged `v4.1.0` in October 2026.
 - Game Day mode, the clock notification, and sub reminders are kept in step with every sport's games by one app-wide `GameSyncViewModel`; each sport's `AppViewModel` used to do it, and those stay alive after switching sport, so visiting three sports did it three times
 - `GameScreen` takes its state and one `GameActions` object instead of 27 separate callbacks, several of which had do-nothing defaults that could hide a missing connection
 - `AppViewModel`'s repeated "select a game first" check is one helper
+- Snackbar messages wait in a channel (`MessageQueue`) until the screen shows them, so one sent mid-rotation, or right after another, is no longer dropped
 
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.
