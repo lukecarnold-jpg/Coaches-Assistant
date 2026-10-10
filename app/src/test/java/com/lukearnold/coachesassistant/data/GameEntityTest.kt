@@ -30,6 +30,14 @@ class GameEntityTest {
     }
 
     @Test
+    fun currentGameTimeMillis_withThePhonesTimeSetBack_keepsTheTimeAlreadyPlayed() {
+        // 5 minutes played before the clock was restarted at 100s; the phone's time then goes back.
+        val running = baseGame.copy(runningTimeMillis = 300_000L, timerLastStartedAt = 100_000L)
+
+        assertEquals(300_000L, running.currentGameTimeMillis(now = 40_000L))
+    }
+
+    @Test
     fun currentGameTimeMillis_isCappedAtThePeriodLength() {
         // 10-minute period, clock left running for 15 minutes.
         val running = baseGame.copy(periodDurationMillis = 600_000L, timerLastStartedAt = 0L)

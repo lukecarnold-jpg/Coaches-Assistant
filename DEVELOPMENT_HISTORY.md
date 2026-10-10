@@ -253,6 +253,9 @@ Tagged `v4.1.0` in October 2026.
 - A successful reply that isn't JSON (a web page from a wrong endpoint URL, or a captive portal) says so and names the server, instead of "unknown error"
 - Anthropic replies get 4,096 output tokens instead of 2,048, since the translated languages need more; a reply from any provider that still stops at its length limit is reported as cut off rather than shown with its last drill half-written
 
+**Game clock**
+- Setting the phone's time back while a clock runs (by hand, or a network time correction) no longer takes time off the period already played; the clock just counts no time until the phone's time catches up
+
 **Under the hood**
 - Screens collect view model state with `collectAsStateWithLifecycle`, so the database queries behind them stop shortly after the app goes into the background instead of running until it's closed
 - Game Day mode, the clock notification, and sub reminders are kept in step with every sport's games by one app-wide `GameSyncViewModel`; each sport's `AppViewModel` used to do it, and those stay alive after switching sport, so visiting three sports did it three times
