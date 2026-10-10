@@ -227,6 +227,14 @@ The automated tests cover:
 - View models: lineup checks and failed writes being reported (`AppViewModel`, against an in-memory database), Game Day mode following every sport's games (`GameSyncViewModel`), and drill generation's key, model, and error handling (`TrainingViewModel`, with a fake provider)
 - Screens (Compose UI tests on Robolectric): confirmation dialogs, toggling rows by their label, the clock editor, and cancelling drill generation
 
+One instrumented smoke test (`app/src/androidTest/.../CoachSmokeTest.kt`) plays a whole game in the real app on a device: picks Basketball, adds six players, creates a game, sets the lineup, makes a substitution, ends the game, and finds it in History. It isn't run by CI, which has no emulator. Run it with an emulator running:
+
+```sh
+./gradlew connectedDebugAndroidTest
+```
+
+It deletes the app's data first so it always starts from an empty app, and so it only runs on an emulator (on a phone it's skipped).
+
 Last checked by hand on the Pixel 10 Pro emulator (API 37) in September 2026:
 
 - A live game: clock auto-stop and keep-screen-on, playing-time labels, scoring and substitution undo, End Game and other confirmations

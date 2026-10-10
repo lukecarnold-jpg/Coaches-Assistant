@@ -89,6 +89,7 @@ android {
         targetSdk = 37
         versionCode = appVersionCode
         versionName = appVersionName
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -227,4 +228,12 @@ dependencies {
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.compose.ui.junit4)
     debugImplementation(libs.compose.ui.manifest)
+
+    // The on-device smoke test (src/androidTest), for what Robolectric can't check; see README, "Testing".
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.compose.ui.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    // Newer than the one ui-test-junit4 brings, which calls an InputManager method recent Android removed.
+    androidTestImplementation(libs.androidx.test.espresso)
 }

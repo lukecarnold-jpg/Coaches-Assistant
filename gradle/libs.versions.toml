@@ -16,6 +16,8 @@ json = "20260814"
 okhttp = "5.5.0"
 robolectric = "4.17"
 androidxTestCore = "1.7.0"
+androidxTestRunner = "1.7.0"
+espresso = "3.7.0"
 baselineProfile = "1.5.0"
 profileInstaller = "1.4.1"
 uiautomator = "2.4.0"
@@ -53,6 +55,8 @@ okhttp-coroutines = { group = "com.squareup.okhttp3", name = "okhttp-coroutines"
 okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver3", version.ref = "okhttp" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
+androidx-test-espresso = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileInstaller" }
 androidx-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "baselineProfile" }
 androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
