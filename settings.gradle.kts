@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BasketballRotation"
+rootProject.name = "CoachesAssistant"
 include(":app")
 include(":baselineprofile")
