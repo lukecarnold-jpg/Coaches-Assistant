@@ -16,7 +16,7 @@ export, and persistence infrastructure.
 │       └── android-ci.yml             # Tests, lint, and a release build on pushes/PRs to master
 ├── app/
 │   ├── schemas/                       # Exported Room database schemas
-│   ├── proguard-rules.pro             # Release R8/ProGuard rules
+│   ├── proguard-rules.pro             # Release R8 rules (keeps line numbers for crash reports)
 │   ├── build.gradle.kts               # Android module configuration and dependencies
 │   └── src/
 │       ├── main/                      # Production Android application
