@@ -21,11 +21,9 @@ import com.lukearnold.coachesassistant.data.remainingPeriodTimeMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -61,8 +59,8 @@ class AppViewModel(
     val gameDayGameId: StateFlow<Long?> = gameDayMode.activeGameId
 
     private val selectedGameId = MutableStateFlow<Long?>(null)
-    private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 1)
-    val messages = _messages.asSharedFlow()
+    private val _messages = MessageQueue()
+    val messages = _messages.messages
 
     // Null until the database first answers, so "not loaded yet" isn't mistaken for "none".
     private val loadedPlayers: StateFlow<List<PlayerEntity>?> =

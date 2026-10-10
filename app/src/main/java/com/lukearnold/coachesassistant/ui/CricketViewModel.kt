@@ -16,10 +16,8 @@ import com.lukearnold.coachesassistant.data.Sport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
@@ -33,8 +31,8 @@ class CricketViewModel(
     gameRepository: GameRepository,
     private val repository: CricketRepository,
 ) : AndroidViewModel(application) {
-    private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 1)
-    val messages = _messages.asSharedFlow()
+    private val _messages = MessageQueue()
+    val messages = _messages.messages
 
     private fun launchSafely(block: suspend CoroutineScope.() -> Unit): Job = launchSafely(_messages, block = block)
 

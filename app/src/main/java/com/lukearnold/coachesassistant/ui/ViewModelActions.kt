@@ -8,7 +8,6 @@ import com.lukearnold.coachesassistant.data.UserFacingException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
 private const val TAG = "ViewModelActions"
@@ -19,7 +18,7 @@ private const val TAG = "ViewModelActions"
  * anything else shows [failure].
  */
 internal fun ViewModel.launchSafely(
-    messages: MutableSharedFlow<UiMessage>,
+    messages: MessageQueue,
     failure: Int = R.string.msg_action_failed,
     block: suspend CoroutineScope.() -> Unit,
 ): Job = viewModelScope.launch {
