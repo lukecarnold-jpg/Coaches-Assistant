@@ -1,5 +1,8 @@
 [versions]
 agp = "9.4.1"
+# The Compose compiler plugin is versioned with Kotlin.
+kotlin = "2.4.20"
+ksp = "2.3.12"
 coreKtx = "1.19.1"
 appcompat = "1.8.0"
 junit = "4.13.2"
@@ -58,5 +61,7 @@ androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-test = { id = "com.android.test", version.ref = "agp" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineProfile" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

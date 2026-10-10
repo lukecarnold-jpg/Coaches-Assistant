@@ -246,7 +246,8 @@ bundle on pushes when the signing secrets are set (see README, "Publishing").
   (`versionCode` from the commit count, `versionName` from the latest `vX.Y.Z`
   tag), signs release builds when an upload key is supplied, and builds the
   transition build over the old app ID with `-PlegacyAppId`.
-- `gradle/libs.versions.toml` centralizes dependency versions and aliases.
+- `gradle/libs.versions.toml` centralizes every dependency and plugin version
+  (including the Kotlin Compose compiler plugin and KSP) and their aliases.
 - Release builds use R8 minification and resource shrinking.
 
 ## Main runtime flow
