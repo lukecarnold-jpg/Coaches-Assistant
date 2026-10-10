@@ -198,6 +198,10 @@ RELEASE_KEY_PASSWORD=...
 
 To have CI build the signed bundle on every push to `master`, add these repository secrets (Settings → Secrets and variables → Actions): `RELEASE_KEYSTORE_BASE64` (the output of `base64 -i ~/keys/coaches-assistant-upload.jks`), `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, and `RELEASE_KEY_PASSWORD`. The bundle is attached to the workflow run as the `release-bundle` artifact. Without the secrets, that step is skipped.
 
+### Crash reports from release builds
+
+Release builds are obfuscated by R8 but keep line numbers (`app/proguard-rules.pro`), so a stack trace can be turned back into real names with that build's `app/build/outputs/mapping/release/mapping.txt`. A bundle built with `./gradlew bundleRelease` carries its mapping inside it, so Play Console deobfuscates its crash reports on its own. For anything else, keep the mapping from the build you shipped: CI attaches it to every run as the `r8-mapping` artifact, and `retrace` (in the Android SDK's `cmdline-tools`) applies it, e.g. `retrace mapping.txt stacktrace.txt`.
+
 ### Privacy policy and Play listing
 
 Play requires a privacy policy URL. A draft is in [`docs/privacy-policy.md`](docs/privacy-policy.md): fill in the contact email and effective date, then host it at a public URL. This repo is private, so it can't be linked from here; any public page works (a website, Google Sites, a public GitHub Gist, or GitHub Pages from a public repo).
@@ -213,7 +217,7 @@ The app declares a **foreground service** of type `specialUse` (`ui/SubReminderS
 
 ## Testing
 
-CI (`.github/workflows/android-ci.yml`) runs on every push and PR to `master`: a formatting check (Spotless/ktlint), the unit and UI tests, lint, and a minified release build.
+CI (`.github/workflows/android-ci.yml`) runs on every push and PR to `master`: a formatting check (Spotless/ktlint), the unit and UI tests, lint, and a minified release build, whose R8 mapping is kept as the `r8-mapping` artifact.
 
 The automated tests cover:
 
