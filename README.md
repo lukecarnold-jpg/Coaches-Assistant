@@ -70,7 +70,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 - Training tab (every sport)
   - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, OpenAI ChatGPT, or a custom OpenAI-compatible endpoint
   - A request in progress can be cancelled (e.g. a slow local server), which stops the network call and puts back the drills that were showing
-  - A reply that isn't from an AI (e.g. a web page from a mistyped "Other" endpoint URL, or hotel Wi-Fi's sign-in page) gets its own message naming the server
+  - A reply that isn't from an AI (e.g. a web page from a mistyped "Other" endpoint URL, or hotel Wi-Fi's sign-in page) gets its own message naming the server, and a reply cut off at the model's length limit is reported rather than shown with its last drill half-written
 - Settings tab
   - "Switch sport" returns to the sport landing screen
   - "Language": the phone's language, English, Español, Français, or Italiano; the app switches straight away, and AI drills are generated in the chosen language. On Android 13+ the same choice is also in the phone's per-app language settings
@@ -217,7 +217,7 @@ The automated tests cover:
 
 - Game logic: the player time/points/bench calculator (including legacy events past the period end), playing-time targets, season totals, clock rules (auto-stop, never moving before recorded events), and confirmation messages
 - Data: `GameRepository`'s transactions and undo against an in-memory Room database, every Room migration against the exported schemas, backup/restore round trips, and CSV import/export
-- AI: request/response parsing for each provider, the real request path against a local mock server (non-JSON and error replies), local-network endpoint rules, and settings storage
+- AI: request/response parsing for each provider (including replies cut off at the length limit), the real request path against a local mock server (non-JSON and error replies), local-network endpoint rules, and settings storage
 - View models: lineup checks and failed writes being reported (`AppViewModel`, against an in-memory database), and drill generation's key, model, and error handling (`TrainingViewModel`, with a fake provider)
 - Screens (Compose UI tests on Robolectric): confirmation dialogs, toggling rows by their label, the clock editor, and cancelling drill generation
 

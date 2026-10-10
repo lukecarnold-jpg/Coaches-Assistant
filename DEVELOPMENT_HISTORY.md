@@ -251,6 +251,7 @@ Tagged `v4.1.0` in October 2026.
 **Training**
 - Drills being generated can be cancelled from the Training tab: the network call stops straight away (through `okhttp-coroutines`) instead of running on to the two-minute read timeout, and the drills that were showing come back. Asking again while a request is running replaces it
 - A successful reply that isn't JSON (a web page from a wrong endpoint URL, or a captive portal) says so and names the server, instead of "unknown error"
+- Anthropic replies get 4,096 output tokens instead of 2,048, since the translated languages need more; a reply from any provider that still stops at its length limit is reported as cut off rather than shown with its last drill half-written
 
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.

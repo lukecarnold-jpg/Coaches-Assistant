@@ -2,6 +2,8 @@ package com.lukearnold.coachesassistant.ai
 
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ResponseTextTest {
@@ -35,5 +37,15 @@ class ResponseTextTest {
         val json = JSONObject("""{"choices":[{"message":{"role":"assistant","content":"TITLE: C"}}]}""")
 
         assertEquals("TITLE: C", openAiResponseText(json))
+    }
+
+    @Test
+    fun eachProvider_reportsAReplyCutOffAtItsLengthLimit() {
+        assertTrue(geminiWasCutOff(JSONObject("""{"candidates":[{"finishReason":"MAX_TOKENS"}]}""")))
+        assertFalse(geminiWasCutOff(JSONObject("""{"candidates":[{"finishReason":"STOP"}]}""")))
+        assertTrue(anthropicWasCutOff(JSONObject("""{"stop_reason":"max_tokens"}""")))
+        assertFalse(anthropicWasCutOff(JSONObject("""{"stop_reason":"end_turn"}""")))
+        assertTrue(openAiWasCutOff(JSONObject("""{"choices":[{"finish_reason":"length"}]}""")))
+        assertFalse(openAiWasCutOff(JSONObject("""{"choices":[{"finish_reason":"stop"}]}""")))
     }
 }
