@@ -259,6 +259,7 @@ Tagged `v4.1.0` in October 2026.
 **Build and publishing**
 - Gradle's build cache and configuration cache are on: an unchanged rerun of the tests goes from about 16 seconds to under one
 - An instrumented smoke test plays a whole game on an emulator (sport, players, game, lineup, a substitution, End Game, History), for what Robolectric can't check; it runs by hand, not in CI
+- The baseline profile is regenerated for the new and renamed UI code
 - Release builds keep line numbers (with source file names hidden), so crash reports deobfuscate to real lines; CI keeps every release build's R8 mapping as the `r8-mapping` artifact, and README explains using it
 
 **Under the hood**
