@@ -21,7 +21,8 @@ export, and persistence infrastructure.
 │   └── src/
 │       ├── main/                      # Production Android application
 │       ├── release/generated/baselineProfiles/  # Generated baseline profile (see README)
-│       └── test/                      # Unit and UI tests (JVM, Robolectric)
+│       ├── test/                      # Unit and UI tests (JVM, Robolectric)
+│       └── androidTest/               # On-device smoke test (emulator only)
 ├── baselineprofile/                   # Generates the baseline profile; startup benchmark
 ├── docs/
 │   └── privacy-policy.md              # Privacy policy draft for the Play listing
@@ -214,7 +215,7 @@ that isn't to the local network.
 
 ## Tests
 
-All tests are under `app/src/test/` and run on the JVM
+Almost all tests are under `app/src/test/` and run on the JVM
 (`./gradlew testDebugUnitTest`), with no emulator. Those needing Android use
 Robolectric:
 
@@ -229,7 +230,9 @@ Robolectric:
   `AppViewModel`, `GameSyncViewModel`, and `TrainingViewModel` (with a fake AI provider), and
   Compose UI tests of screens (`ScreenBehaviourTest`).
 
-There are no instrumented (`androidTest`) tests. CI
+`app/src/androidTest/` holds one instrumented smoke test, `CoachSmokeTest`, which
+plays a whole game in the real app (`./gradlew connectedDebugAndroidTest`, emulator
+only, since it deletes the app's data first). CI
 (`.github/workflows/android-ci.yml`) checks formatting, then runs the tests, lint, and a release
 build on every push and pull request to master, and builds a signed release
 bundle on pushes when the signing secrets are set (see README, "Publishing").

@@ -258,6 +258,7 @@ Tagged `v4.1.0` in October 2026.
 
 **Build and publishing**
 - Gradle's build cache and configuration cache are on: an unchanged rerun of the tests goes from about 16 seconds to under one
+- An instrumented smoke test plays a whole game on an emulator (sport, players, game, lineup, a substitution, End Game, History), for what Robolectric can't check; it runs by hand, not in CI
 - Release builds keep line numbers (with source file names hidden), so crash reports deobfuscate to real lines; CI keeps every release build's R8 mapping as the `r8-mapping` artifact, and README explains using it
 
 **Under the hood**
@@ -271,7 +272,7 @@ Tagged `v4.1.0` in October 2026.
 
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.
-- `./gradlew testDebugUnitTest` passes 234 tests, all on the JVM (Robolectric where Android is needed; there are no instrumented tests); `./gradlew lintDebug` has one warning, that Kotlin 2.4.21 is out (lint can see the Kotlin version now that it's in the version catalog); `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
+- `./gradlew testDebugUnitTest` passes 246 tests on the JVM (Robolectric where Android is needed), and `./gradlew connectedDebugAndroidTest` runs one instrumented smoke test on an emulator; `./gradlew lintDebug` has one warning, that Kotlin 2.4.21 is out (lint can see the Kotlin version now that it's in the version catalog); `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
 - Room schema version 15, with every migration from version 5 tested against the exported schemas.
 - 17 sports: 16 share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position), and cricket is recorded as scorecards with a field plan.
 - The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); in debug builds, Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.
