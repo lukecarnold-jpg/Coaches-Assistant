@@ -64,6 +64,8 @@ presentation helpers:
 - `SportSelectionScreen.kt` - landing screen for choosing one of the 17 sports.
 - `RosterScreen.kt` - roster management, CSV import, and CSV export.
 - `GameScreen.kt` - top-level live-game screen.
+- `GameActions.kt` - everything the Game tab can ask for, as one interface that
+  `MainActivity` implements with the sport's `AppViewModel` and `DataViewModel`.
 - `GameControlPanel.kt` - timer, scoring, lineup, and substitution controls.
 - `GameStatsPanel.kt` - game selection, player statistics, and event display.
 - `PlayerActionCard.kt` - per-player live game actions.

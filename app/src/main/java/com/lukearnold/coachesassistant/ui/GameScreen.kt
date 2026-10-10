@@ -1,6 +1,5 @@
 package com.lukearnold.coachesassistant.ui
 
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -26,40 +25,14 @@ fun GameScreen(
     lineup: GameLineup,
     stats: List<PlayerGameStat>,
     events: List<GameEventEntity>,
-    onCreateGame: (title: String, opponent: String, periodCount: Int, periodMins: Int) -> Unit,
-    onSelectGame: (Long) -> Unit,
-    onSetLineup: (List<Long>) -> Unit,
     /** The fewest players the team can take the field with (see SportConfig.minimumOnCourt). */
     minimumOnCourt: Int,
-    /** Players coming on and going off; see AppViewModel.substitute for how they pair up. */
-    onSubstitute: (playersIn: List<Long>, playersOut: List<Long>) -> Unit,
-    /** Substitution suggestions (see subSuggestion): whether to show them, and what to do with one. */
-    suggestSubs: Boolean = false,
-    subSnooze: SubSnooze? = null,
-    onSubNow: (playerOn: Long, playerOff: Long) -> Unit = { _, _ -> },
-    onSubLater: (key: Pair<Long, Long>, gameTimeMillis: Long) -> Unit = { _, _ -> },
-    onAddPlayerScore: (playerId: Long, points: Int) -> Unit,
-    onAdjustTeamScore: (points: Int) -> Unit,
-    onAddOpponentScore: (points: Int) -> Unit,
-    onAddFoul: (Long, Int) -> Unit,
-    onAddMvpVote: (Long) -> Unit,
-    onToggleTimer: () -> Unit,
-    onResetTimer: () -> Unit,
-    onSetGameTime: (Long) -> Unit,
-    onDeleteGame: (Long) -> Unit,
-    onExportGame: (Long, Uri) -> Unit,
-    onExportPlayers: (Uri) -> Unit,
-    onAdvancePeriod: () -> Unit,
-    onEndGame: () -> Unit,
+    /** Whether to show substitution suggestions (see subSuggestion), and the one put off with "Later". */
+    suggestSubs: Boolean,
+    subSnooze: SubSnooze?,
     /** Whether Game Day mode is on for the selected game (see GameDayMode). */
-    gameDayActive: Boolean = false,
-    onStartGameDay: () -> Unit = {},
-    onStopGameDay: () -> Unit = {},
-    onUpdateAbsentPlayers: (List<Long>) -> Unit,
-    onUpdateNotes: (String) -> Unit,
-    onExportNotes: (Long, Uri) -> Unit,
-    onUpdateEvent: (GameEventEntity) -> Unit,
-    onDeleteEvent: (GameEventEntity) -> Unit,
+    gameDayActive: Boolean,
+    actions: GameActions,
 ) {
     val layout = LocalResponsiveLayout.current
     val sportConfig = sport.config
@@ -71,13 +44,13 @@ fun GameScreen(
     var showAttendanceDialog by remember { mutableStateOf(false) }
     var showNotesDialog by rememberSaveable { mutableStateOf(false) }
 
-    val exportGame = rememberIdFileExportLauncher(mimeType = "text/csv", onExport = onExportGame)
-    val exportNotes = rememberIdFileExportLauncher(mimeType = "text/plain", onExport = onExportNotes)
+    val exportGame = rememberIdFileExportLauncher(mimeType = "text/csv", onExport = actions::exportGame)
+    val exportNotes = rememberIdFileExportLauncher(mimeType = "text/plain", onExport = actions::exportNotes)
 
     val exportRosterLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv"),
     ) { uri ->
-        uri?.let(onExportPlayers)
+        uri?.let(actions::exportPlayers)
     }
 
     val startingLineupSelection = remember(selectedGame?.id, selectedGame?.currentPeriod) { mutableStateListOf<Long>() }
@@ -117,12 +90,12 @@ fun GameScreen(
                         gameTimeMillis = gameTimeMillis,
                         fairShareAt = fairShareAt,
                         sportConfig = sportConfig,
-                        onToggleTimer = onToggleTimer,
-                        onResetTimer = onResetTimer,
-                        onSetGameTime = onSetGameTime,
-                        onAddPlayerScore = onAddPlayerScore,
-                        onAdjustTeamScore = onAdjustTeamScore,
-                        onAddOpponentScore = onAddOpponentScore,
+                        onToggleTimer = actions::toggleTimer,
+                        onResetTimer = actions::resetTimer,
+                        onSetGameTime = actions::setGameTime,
+                        onAddPlayerScore = actions::addPlayerScore,
+                        onAdjustTeamScore = actions::adjustTeamScore,
+                        onAddOpponentScore = actions::addOpponentScore,
                         onCourtIds = onCourtIds,
                         onExportGame = {
                             exportGame(selectedGame.id, "game_${selectedGame.id}.csv")
@@ -131,15 +104,15 @@ fun GameScreen(
                         availablePlayers = availablePlayers,
                         minimumOnCourt = minimumOnCourt,
                         startingLineupSelection = startingLineupSelection,
-                        onSetLineup = onSetLineup,
+                        onSetLineup = actions::setLineup,
                         onCourtStats = onCourtStats,
-                        onAddFoul = onAddFoul,
-                        onAddMvpVote = onAddMvpVote,
-                        onAdvancePeriod = onAdvancePeriod,
-                        onEndGame = onEndGame,
+                        onAddFoul = actions::addFoul,
+                        onAddMvpVote = actions::addMvpVote,
+                        onAdvancePeriod = actions::advancePeriod,
+                        onEndGame = actions::endGame,
                         gameDayActive = gameDayActive,
-                        onStartGameDay = onStartGameDay,
-                        onStopGameDay = onStopGameDay,
+                        onStartGameDay = actions::startGameDay,
+                        onStopGameDay = actions::stopGameDay,
                         onManageAttendance = { showAttendanceDialog = true },
                         pendingOut = pendingOut,
                         onPlayerOutClick = { id ->
@@ -151,15 +124,15 @@ fun GameScreen(
                             if (pendingIn.contains(id)) pendingIn.remove(id) else pendingIn.add(id)
                         },
                         onSubstitute = {
-                            onSubstitute(pendingIn.toList(), pendingOut.toList())
+                            actions.substitute(pendingIn.toList(), pendingOut.toList())
                             pendingIn.clear()
                             pendingOut.clear()
                         },
                         suggestSubs = suggestSubs,
                         events = events,
                         subSnooze = subSnooze,
-                        onSubNow = onSubNow,
-                        onSubLater = onSubLater,
+                        onSubNow = actions::subNow,
+                        onSubLater = actions::subLater,
                     )
                 } else {
                     EmptyMessage(stringResource(R.string.select_or_create_a_game_to_start_tracking))
@@ -188,7 +161,7 @@ fun GameScreen(
                     opponentName = selectedGame?.opponent.orEmpty(),
                     infraction = sportConfig.infraction,
                     onEditEvent = { editingEvent = it },
-                    onDeleteEvent = onDeleteEvent,
+                    onDeleteEvent = actions::deleteEvent,
                     gameTitle = gameTitle,
                     onGameTitleChange = { gameTitle = it },
                     opponent = opponent,
@@ -198,13 +171,13 @@ fun GameScreen(
                     periodMins = periodMins,
                     onPeriodMinsChange = { periodMins = it },
                     onCreateGame = {
-                        onCreateGame(gameTitle, opponent, periodCount, periodMins.toIntOrNull() ?: 10)
+                        actions.createGame(gameTitle, opponent, periodCount, periodMins.toIntOrNull() ?: 10)
                         gameTitle = ""
                         opponent = ""
                     },
                     games = activeGames,
-                    onSelectGame = onSelectGame,
-                    onDeleteGame = onDeleteGame,
+                    onSelectGame = actions::selectGame,
+                    onDeleteGame = actions::deleteGame,
                     onExportGame = { gId ->
                         exportGame(gId, "game_$gId.csv")
                     },
@@ -242,13 +215,13 @@ fun GameScreen(
                 periodMins = periodMins,
                 onPeriodMinsChange = { periodMins = it },
                 onCreateGame = {
-                    onCreateGame(gameTitle, opponent, periodCount, periodMins.toIntOrNull() ?: 10)
+                    actions.createGame(gameTitle, opponent, periodCount, periodMins.toIntOrNull() ?: 10)
                     gameTitle = ""
                     opponent = ""
                 },
                 games = activeGames,
-                onSelectGame = onSelectGame,
-                onDeleteGame = onDeleteGame,
+                onSelectGame = actions::selectGame,
+                onDeleteGame = actions::deleteGame,
                 selectedGameId = selectedGame?.id,
                 onlyManagement = true,
             )
@@ -263,12 +236,12 @@ fun GameScreen(
                     gameTimeMillis = gameTimeMillis,
                     fairShareAt = fairShareAt,
                     sportConfig = sportConfig,
-                    onToggleTimer = onToggleTimer,
-                    onResetTimer = onResetTimer,
-                    onSetGameTime = onSetGameTime,
-                    onAddPlayerScore = onAddPlayerScore,
-                    onAdjustTeamScore = onAdjustTeamScore,
-                    onAddOpponentScore = onAddOpponentScore,
+                    onToggleTimer = actions::toggleTimer,
+                    onResetTimer = actions::resetTimer,
+                    onSetGameTime = actions::setGameTime,
+                    onAddPlayerScore = actions::addPlayerScore,
+                    onAdjustTeamScore = actions::adjustTeamScore,
+                    onAddOpponentScore = actions::addOpponentScore,
                     onCourtIds = onCourtIds,
                     onExportGame = {
                         exportGame(selectedGame.id, "game_${selectedGame.id}.csv")
@@ -277,15 +250,15 @@ fun GameScreen(
                     availablePlayers = availablePlayers,
                     minimumOnCourt = minimumOnCourt,
                     startingLineupSelection = startingLineupSelection,
-                    onSetLineup = onSetLineup,
+                    onSetLineup = actions::setLineup,
                     onCourtStats = onCourtStats,
-                    onAddFoul = onAddFoul,
-                    onAddMvpVote = onAddMvpVote,
-                    onAdvancePeriod = onAdvancePeriod,
-                    onEndGame = onEndGame,
+                    onAddFoul = actions::addFoul,
+                    onAddMvpVote = actions::addMvpVote,
+                    onAdvancePeriod = actions::advancePeriod,
+                    onEndGame = actions::endGame,
                     gameDayActive = gameDayActive,
-                    onStartGameDay = onStartGameDay,
-                    onStopGameDay = onStopGameDay,
+                    onStartGameDay = actions::startGameDay,
+                    onStopGameDay = actions::stopGameDay,
                     onManageAttendance = { showAttendanceDialog = true },
                     pendingOut = pendingOut,
                     onPlayerOutClick = { id ->
@@ -297,15 +270,15 @@ fun GameScreen(
                         if (pendingIn.contains(id)) pendingIn.remove(id) else pendingIn.add(id)
                     },
                     onSubstitute = {
-                        onSubstitute(pendingIn.toList(), pendingOut.toList())
+                        actions.substitute(pendingIn.toList(), pendingOut.toList())
                         pendingIn.clear()
                         pendingOut.clear()
                     },
                     suggestSubs = suggestSubs,
                     events = events,
                     subSnooze = subSnooze,
-                    onSubNow = onSubNow,
-                    onSubLater = onSubLater,
+                    onSubNow = actions::subNow,
+                    onSubLater = actions::subLater,
                 )
 
                 GameStatsPanel(
@@ -318,7 +291,7 @@ fun GameScreen(
                     opponentName = selectedGame.opponent,
                     infraction = sportConfig.infraction,
                     onEditEvent = { editingEvent = it },
-                    onDeleteEvent = onDeleteEvent,
+                    onDeleteEvent = actions::deleteEvent,
                     onlyStats = true,
                     onExportGame = { gId ->
                         exportGame(gId, "game_$gId.csv")
@@ -335,7 +308,7 @@ fun GameScreen(
             onDismiss = { editingEvent = null },
             infraction = sportConfig.infraction,
         ) { updated ->
-            onUpdateEvent(updated)
+            actions.updateEvent(updated)
             editingEvent = null
         }
     }
@@ -346,7 +319,7 @@ fun GameScreen(
             absentPlayerIds = lineup.absentIds.toList(),
             onDismiss = { showAttendanceDialog = false },
             onConfirm = { ids ->
-                onUpdateAbsentPlayers(ids)
+                actions.updateAbsentPlayers(ids)
                 showAttendanceDialog = false
             },
         )
@@ -357,11 +330,11 @@ fun GameScreen(
             notes = selectedGame.notes,
             onDismiss = { showNotesDialog = false },
             onSave = { newNotes ->
-                if (newNotes != selectedGame.notes) onUpdateNotes(newNotes)
+                if (newNotes != selectedGame.notes) actions.updateNotes(newNotes)
                 showNotesDialog = false
             },
             onExport = { newNotes ->
-                if (newNotes != selectedGame.notes) onUpdateNotes(newNotes)
+                if (newNotes != selectedGame.notes) actions.updateNotes(newNotes)
                 exportNotes(selectedGame.id, "notes_${selectedGame.id}.txt")
             },
         )

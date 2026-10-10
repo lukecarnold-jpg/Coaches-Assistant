@@ -259,6 +259,7 @@ Tagged `v4.1.0` in October 2026.
 **Under the hood**
 - Screens collect view model state with `collectAsStateWithLifecycle`, so the database queries behind them stop shortly after the app goes into the background instead of running until it's closed
 - Game Day mode, the clock notification, and sub reminders are kept in step with every sport's games by one app-wide `GameSyncViewModel`; each sport's `AppViewModel` used to do it, and those stay alive after switching sport, so visiting three sports did it three times
+- `GameScreen` takes its state and one `GameActions` object instead of 27 separate callbacks, several of which had do-nothing defaults that could hide a missing connection
 
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.
