@@ -155,18 +155,8 @@ class AppViewModel(
     }
 
     init {
-        // Game Day mode lasts until its game ends. End Game turns it off directly; this also covers
-        // the game being deleted, cleared, or replaced by a restore, in any sport.
-        viewModelScope.launch {
-            repository.games.collect { allGames ->
-                gameDayMode.stopUnlessPlaying(allGames.filter { !it.isFinished }.map { it.id })
-                // Every sport's running clocks, so the notification follows whichever is running.
-                GameClockNotification.sync(getApplication(), allGames)
-                // Substitution reminders, which keep running with the app in the background.
-                SubReminderService.startIfNeeded(getApplication(), allGames)
-            }
-        }
-
+        // Game Day mode, the clock notification, and sub reminders follow every sport's games, so
+        // they're kept in step once for the whole app, by GameSyncViewModel.
         viewModelScope.launch {
             games.collect { gameList ->
                 val currentSelection = selectedGameId.value

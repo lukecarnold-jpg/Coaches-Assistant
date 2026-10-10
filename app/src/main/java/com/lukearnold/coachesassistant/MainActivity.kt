@@ -56,6 +56,7 @@ import com.lukearnold.coachesassistant.ui.DataViewModel
 import com.lukearnold.coachesassistant.ui.GameClockNotification
 import com.lukearnold.coachesassistant.ui.GameHistoryScreen
 import com.lukearnold.coachesassistant.ui.GameScreen
+import com.lukearnold.coachesassistant.ui.GameSyncViewModel
 import com.lukearnold.coachesassistant.ui.KeepScreenOn
 import com.lukearnold.coachesassistant.ui.LocalResponsiveLayout
 import com.lukearnold.coachesassistant.ui.ResponsiveLayoutProvider
@@ -100,6 +101,9 @@ class MainActivity : AppCompatActivity() {
 @Composable
 private fun RotationApp() {
     val context = LocalContext.current
+    // Created here, above the sport picker, so there's one for the whole app however many sports
+    // are visited.
+    viewModel<GameSyncViewModel>(factory = GameSyncViewModel.Factory)
     var selectedSport by rememberSaveable { mutableStateOf(SportPreferences.load(context)) }
 
     val sport = selectedSport
