@@ -190,6 +190,10 @@ class AppViewModel(
 
     private fun launchSafely(block: suspend CoroutineScope.() -> Unit): Job = launchSafely(_messages, block = block)
 
+    /** The selected game's id, or null after asking the coach to pick a game first. */
+    private fun selectedGameIdOrAsk(): Long? = selectedGame.value?.id
+        ?: null.also { _messages.tryEmit(UiMessage(uiText(R.string.msg_select_game_first))) }
+
     /** Whether this sport has a game that hasn't ended, read from the database (not the UI state). */
     suspend fun hasGameInProgress(): Boolean = repository.gamesForSport(sport).first().any { !it.isFinished }
 
@@ -364,11 +368,7 @@ class AppViewModel(
     }
 
     fun setStartingLineup(playerIds: List<Long>) {
-        val gameId = selectedGame.value?.id
-        if (gameId == null) {
-            _messages.tryEmit(UiMessage(uiText(R.string.msg_select_game_first)))
-            return
-        }
+        val gameId = selectedGameIdOrAsk() ?: return
         val requiredSize = sport.config.onCourtSize
         val absent = selectedGameLineup.value.absentIds
         val available = players.value.count { it.id !in absent }
@@ -396,11 +396,7 @@ class AppViewModel(
      * going off leaves without a replacement (see GameRepository.substitute).
      */
     fun substitute(playersIn: List<Long>, playersOut: List<Long>) {
-        val gameId = selectedGame.value?.id
-        if (gameId == null) {
-            _messages.tryEmit(UiMessage(uiText(R.string.msg_select_game_first)))
-            return
-        }
+        val gameId = selectedGameIdOrAsk() ?: return
         if (playersIn.isEmpty() && playersOut.isEmpty()) {
             _messages.tryEmit(UiMessage(uiText(R.string.msg_pick_in_and_out)))
             return
@@ -435,11 +431,7 @@ class AppViewModel(
 
     /** Scores for a player on our team. */
     fun addPlayerScore(playerId: Long, points: Int) {
-        val gameId = selectedGame.value?.id
-        if (gameId == null) {
-            _messages.tryEmit(UiMessage(uiText(R.string.msg_select_game_first)))
-            return
-        }
+        val gameId = selectedGameIdOrAsk() ?: return
 
         launchSafely {
             repository.addTeamScore(gameId, playerId, points)?.let { announceUndoable(listOf(it)) }
@@ -448,11 +440,7 @@ class AppViewModel(
 
     /** Corrects our team's score without crediting or debiting any player. */
     fun adjustTeamScore(points: Int) {
-        val gameId = selectedGame.value?.id
-        if (gameId == null) {
-            _messages.tryEmit(UiMessage(uiText(R.string.msg_select_game_first)))
-            return
-        }
+        val gameId = selectedGameIdOrAsk() ?: return
 
         launchSafely {
             repository.addTeamScore(gameId, playerId = null, points = points)?.let { announceUndoable(listOf(it)) }
@@ -460,11 +448,7 @@ class AppViewModel(
     }
 
     fun addOpponentScore(points: Int) {
-        val gameId = selectedGame.value?.id
-        if (gameId == null) {
-            _messages.tryEmit(UiMessage(uiText(R.string.msg_select_game_first)))
-            return
-        }
+        val gameId = selectedGameIdOrAsk() ?: return
 
         launchSafely {
             repository.addOpponentScore(gameId, points)?.let { announceUndoable(listOf(it)) }
@@ -472,11 +456,7 @@ class AppViewModel(
     }
 
     fun addFoul(playerId: Long, adjustment: Int = 1) {
-        val gameId = selectedGame.value?.id
-        if (gameId == null) {
-            _messages.tryEmit(UiMessage(uiText(R.string.msg_select_game_first)))
-            return
-        }
+        val gameId = selectedGameIdOrAsk() ?: return
 
         launchSafely {
             repository.addFoul(gameId, playerId, adjustment)?.let { announceUndoable(listOf(it)) }
