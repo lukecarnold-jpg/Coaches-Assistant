@@ -246,7 +246,8 @@ Tagged `v4.1.0` in October 2026.
 - Scorecards and field plans are in backups (older backups still restore), the game CSV export, and data clearing; Room schema version 15
 - Translated into Spanish, French, and Italian, keeping cricket's English terms (overs, LBW, run out) where those languages' cricket does
 
-## Since version 4.1.0 (unreleased)
+## Version 4.2.0 (Training Reliability & Release Tooling)
+Tagged `v4.2.0` in October 2026.
 
 **Training**
 - Drills being generated can be cancelled from the Training tab: the network call stops straight away (through `okhttp-coroutines`) instead of running on to the two-minute read timeout, and the drills that were showing come back. Asking again while a request is running replaces it
@@ -278,4 +279,4 @@ Tagged `v4.1.0` in October 2026.
 - 17 sports: 16 share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position), and cricket is recorded as scorecards with a field plan.
 - The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); in debug builds, Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.
 - The app is local-first: no backend, cloud sync, accounts, analytics, or crash reporting. The only network traffic is drill generation.
-- Before publishing: create the upload key, fill in and host the privacy policy, and declare the foreground service in Play Console (see README, "Publishing"). The latest release tag is `v4.1.0`.
+- Before publishing: create the upload key, fill in and host the privacy policy, and declare the foreground service in Play Console (see README, "Publishing"). The latest release tag is `v4.2.0`.
