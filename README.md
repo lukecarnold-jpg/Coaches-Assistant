@@ -317,6 +317,7 @@ The class filter matters: without it the run also includes the profile generator
 - Destructive migration is intentionally enabled for downgrades in `AppDatabase.kt`; this protects the normal upgrade workflow but will clear local data if the app is downgraded.
 - A game's score and MVP totals are stored on the game row for quick display, but are always recomputed from its events (the source of truth) whenever events change.
 - The project is local-first and does not currently include a backend, cross-device sync, or account-based auth system.
+- The game clock is timed against the phone's wall-clock time, so it survives the app being closed or the phone restarting. If the phone's time is set back while a clock runs, no time is taken off what was already played; if it's set forward, the clock jumps forward too (never past the end of the period). Timing against `elapsedRealtime` as well would need a schema change and isn't done.
 
 ## Roadmap and history
 

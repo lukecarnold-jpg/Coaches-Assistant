@@ -191,9 +191,13 @@ fun idsToCsv(ids: Collection<Long>): String = ids.joinToString(",")
  * Elapsed time in the current period as of [now], capped at [GameEntity.periodDurationMillis].
  * The cap is what keeps a clock nobody stopped (app backgrounded, coach distracted) from running
  * past the end of the period and crediting on-court players with minutes that were never played.
+ *
+ * The clock runs on the phone's wall-clock time, so if that's set back while it runs (by hand, or
+ * a network time correction), [now] can be before [GameEntity.timerLastStartedAt]. That counts as
+ * no time since the clock started rather than taking time off what was already played.
  */
 fun GameEntity.currentGameTimeMillis(now: Long = System.currentTimeMillis()): Long =
-    capToPeriod(runningTimeMillis + (timerLastStartedAt?.let { now - it } ?: 0L), periodDurationMillis)
+    capToPeriod(runningTimeMillis + (timerLastStartedAt?.let { maxOf(0L, now - it) } ?: 0L), periodDurationMillis)
 
 /**
  * The latest clock time recorded by an event in the current period, given a game's [events] in
