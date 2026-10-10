@@ -21,6 +21,8 @@ import com.lukearnold.coachesassistant.ai.needsLocalNetworkPermission
 import com.lukearnold.coachesassistant.ai.parseDrills
 import com.lukearnold.coachesassistant.ai.textGeneratorFor
 import com.lukearnold.coachesassistant.data.Sport
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -63,6 +65,11 @@ class TrainingViewModel(
 
     private val _uiState = MutableStateFlow<TrainingUiState>(TrainingUiState.Idle)
     val uiState = _uiState.asStateFlow()
+
+    private var generation: Job? = null
+
+    // What was showing before the drills in progress were asked for, so Cancel can put it back.
+    private var stateBeforeGenerating: TrainingUiState = TrainingUiState.Idle
 
     fun selectProvider(provider: AiProvider) {
         store.selectedProvider = provider
@@ -126,8 +133,10 @@ class TrainingViewModel(
             return
         }
 
-        viewModelScope.launch {
-            _uiState.value = TrainingUiState.Loading
+        generation?.cancel()
+        if (_uiState.value !is TrainingUiState.Loading) stateBeforeGenerating = _uiState.value
+        _uiState.value = TrainingUiState.Loading
+        generation = viewModelScope.launch {
             try {
                 val text = generatorFor(provider, customEndpoint, _modelOverrides.value[provider].orEmpty())
                     .generateText(buildDrillPrompt(sport, ageGroup, languageTag), apiKey)
@@ -137,10 +146,20 @@ class TrainingViewModel(
                 } else {
                     TrainingUiState.Success(drills)
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _uiState.value = TrainingUiState.Error(describeError(provider, e))
             }
         }
+    }
+
+    /** Stops the drills being generated, cancelling the request, and shows what was there before. */
+    fun cancelGeneration() {
+        if (_uiState.value !is TrainingUiState.Loading) return
+        generation?.cancel()
+        generation = null
+        _uiState.value = stateBeforeGenerating
     }
 
     private fun describeError(provider: AiProvider, e: Exception): UiText = when {

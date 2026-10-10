@@ -12,6 +12,7 @@ import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
 import com.lukearnold.coachesassistant.ai.DrillTextGenerator
 import com.lukearnold.coachesassistant.ai.SecretCipher
 import com.lukearnold.coachesassistant.data.Sport
+import kotlinx.coroutines.awaitCancellation
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -41,7 +42,7 @@ class TrainingViewModelTest {
     private data class Call(val provider: AiProvider, val model: String, val apiKey: String)
 
     private val calls = mutableListOf<Call>()
-    private var reply: () -> String = { WELL_FORMED_DRILLS }
+    private var reply: suspend () -> String = { WELL_FORMED_DRILLS }
 
     private lateinit var store: AiSettingsStore
 
@@ -126,6 +127,50 @@ class TrainingViewModelTest {
         vm.updateApiKey(AiProvider.GEMINI, "key")
 
         assertEquals(TrainingUiState.Error(uiText(R.string.drills_parse_failed)), vm.generate())
+    }
+
+    @Test
+    fun cancel_stopsTheRequestAndPutsBackWhatWasShowing() {
+        var requestCancelled = false
+        val vm = viewModel()
+        vm.updateApiKey(AiProvider.GEMINI, "key")
+        val earlier = vm.generate()
+        reply = {
+            try {
+                awaitCancellation()
+            } finally {
+                requestCancelled = true
+            }
+        }
+
+        assertEquals(TrainingUiState.Loading, vm.generate())
+        vm.cancelGeneration()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(requestCancelled)
+        // The earlier drills, not an error: cancelling isn't a failure.
+        assertEquals(earlier, vm.uiState.value)
+    }
+
+    @Test
+    fun askingAgainWhileGenerating_replacesTheRequestInProgress() {
+        var firstCancelled = false
+        val vm = viewModel()
+        vm.updateApiKey(AiProvider.GEMINI, "key")
+        reply = {
+            try {
+                awaitCancellation()
+            } finally {
+                firstCancelled = true
+            }
+        }
+        vm.generate()
+        reply = { WELL_FORMED_DRILLS }
+
+        val state = vm.generate()
+
+        assertTrue(firstCancelled)
+        assertTrue(state is TrainingUiState.Success)
     }
 
     private companion object {

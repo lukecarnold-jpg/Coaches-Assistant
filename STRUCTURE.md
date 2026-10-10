@@ -100,7 +100,8 @@ presentation helpers:
 - `UiMessages.kt` - snackbar messages (with optional Undo) and their text.
 - `UiText.kt` - text built in code as a string resource and its arguments, resolved when shown.
 - `TrainingViewModel.kt` - AI provider selection, endpoint configuration, the
-  model chosen for each provider, API key state, and drill generation.
+  model chosen for each provider, API key state, and drill generation (which
+  can be cancelled, cancelling its network call).
 
 ### `data/` - domain and persistence
 

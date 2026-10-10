@@ -255,4 +255,16 @@ class ScreenBehaviourTest {
         compose.onNodeWithText("Only 1 player is here, and you need at least 5", substring = true).assertExists()
         compose.onNodeWithText("Save starting lineup").assertDoesNotExist()
     }
+
+    @Test
+    fun drillsBeingGenerated_canBeCancelled() {
+        var cancelled = 0
+        compose.setContent {
+            TrainingResultsPanel(uiState = TrainingUiState.Loading, sport = Sport.BASKETBALL, onCancel = { cancelled++ })
+        }
+
+        compose.onNodeWithText("Cancel").performClick()
+
+        assertEquals(1, cancelled)
+    }
 }
