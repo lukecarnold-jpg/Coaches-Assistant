@@ -12,6 +12,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.coroutines.executeAsync
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 
 /**
@@ -190,7 +191,18 @@ private suspend fun executeForText(request: Request, extract: (JSONObject) -> St
             throw AiRequestException(response.code, apiMessage?.takeIf { it.isNotBlank() })
         }
 
-        return extract(JSONObject(bodyString))
+        // A success that isn't JSON at all, e.g. a web page from a wrong endpoint URL or a captive
+        // portal, rather than a generic "something went wrong".
+        val json = try {
+            JSONObject(bodyString)
+        } catch (_: JSONException) {
+            throw UserFacingException(
+                R.string.ai_unexpected_response,
+                listOf(request.url.host),
+                "The reply from ${request.url.host} wasn't JSON.",
+            )
+        }
+        return extract(json)
     }
 }
 

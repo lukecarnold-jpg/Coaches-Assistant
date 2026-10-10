@@ -397,6 +397,7 @@
     <string name="add_api_key_to_generate">Ajoutez votre clé API %1$s dans les Paramètres pour générer des exercices.</string>
     <string name="other_provider_not_set_up">Ajoutez une URL de point de terminaison et un nom de modèle pour le fournisseur Autre dans les Paramètres.</string>
     <string name="drills_parse_failed">Impossible de lire les exercices. Réessayez.</string>
+    <string name="ai_unexpected_response">%1$s a renvoyé autre chose qu’une réponse d’IA. Si vous avez configuré le fournisseur Autre, vérifiez que l’URL du point de terminaison est une adresse de chat completions (se terminant généralement par /chat/completions).</string>
     <string name="gemini_model_not_found">Le modèle Gemini sélectionné est introuvable. Il a peut-être été retiré : saisissez le nom d’un modèle actuel dans Paramètres → Assistant d’entraînement IA.</string>
     <string name="request_failed_http">La requête a échoué (HTTP %1$d)</string>
     <string name="refusing_plain_http">Envoi refusé en http non chiffré vers %1$s, qui n’est pas sur le réseau local.</string>

@@ -250,6 +250,7 @@ Tagged `v4.1.0` in October 2026.
 
 **Training**
 - Drills being generated can be cancelled from the Training tab: the network call stops straight away (through `okhttp-coroutines`) instead of running on to the two-minute read timeout, and the drills that were showing come back. Asking again while a request is running replaces it
+- A successful reply that isn't JSON (a web page from a wrong endpoint URL, or a captive portal) says so and names the server, instead of "unknown error"
 
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.
