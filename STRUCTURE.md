@@ -30,7 +30,7 @@ export, and persistence infrastructure.
 │   └── wrapper/                       # Gradle wrapper configuration
 ├── build.gradle.kts                   # Root plugin declarations
 ├── settings.gradle.kts                # Project and repository configuration
-├── gradle.properties                  # Gradle build properties
+├── gradle.properties                  # Gradle build properties (build and configuration cache on)
 ├── gradlew / gradlew.bat              # Gradle wrapper entry points
 ├── README.md                          # Product overview, setup, and feature documentation
 ├── DEVELOPMENT_HISTORY.md             # Version and implementation history
@@ -248,6 +248,8 @@ bundle on pushes when the signing secrets are set (see README, "Publishing").
   transition build over the old app ID with `-PlegacyAppId`.
 - `gradle/libs.versions.toml` centralizes every dependency and plugin version
   (including the Kotlin Compose compiler plugin and KSP) and their aliases.
+- `gradle.properties` turns on Gradle's build cache and configuration cache, so
+  repeat builds reuse task outputs and skip re-running the build scripts.
 - Release builds use R8 minification and resource shrinking.
 
 ## Main runtime flow

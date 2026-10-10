@@ -257,6 +257,7 @@ Tagged `v4.1.0` in October 2026.
 - Setting the phone's time back while a clock runs (by hand, or a network time correction) no longer takes time off the period already played; the clock just counts no time until the phone's time catches up
 
 **Build and publishing**
+- Gradle's build cache and configuration cache are on: an unchanged rerun of the tests goes from about 16 seconds to under one
 - Release builds keep line numbers (with source file names hidden), so crash reports deobfuscate to real lines; CI keeps every release build's R8 mapping as the `r8-mapping` artifact, and README explains using it
 
 **Under the hood**
