@@ -246,6 +246,11 @@ Tagged `v4.1.0` in October 2026.
 - Scorecards and field plans are in backups (older backups still restore), the game CSV export, and data clearing; Room schema version 15
 - Translated into Spanish, French, and Italian, keeping cricket's English terms (overs, LBW, run out) where those languages' cricket does
 
+## Since version 4.1.0 (unreleased)
+
+**Training**
+- Drills being generated can be cancelled from the Training tab: the network call stops straight away (through `okhttp-coroutines`) instead of running on to the two-minute read timeout, and the drills that were showing come back. Asking again while a request is running replaces it
+
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.
 - `./gradlew testDebugUnitTest` passes 234 tests, all on the JVM (Robolectric where Android is needed; there are no instrumented tests); `./gradlew lintDebug` has no findings; `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.

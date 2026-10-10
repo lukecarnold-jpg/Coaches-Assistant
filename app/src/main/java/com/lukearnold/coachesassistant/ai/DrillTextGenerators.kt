@@ -10,6 +10,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.coroutines.executeAsync
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -174,9 +175,13 @@ private suspend fun openAiCompatibleRequest(url: String, apiKey: String, model: 
         executeForText(request, ::openAiResponseText)
     }
 
-private fun executeForText(request: Request, extract: (JSONObject) -> String): String {
-    httpClient.newCall(request).execute().use { response ->
-        val bodyString = response.body.string()
+/**
+ * Sends [request] and reads the text out of the reply with [extract]. The call is cancelled along
+ * with the coroutine (e.g. Cancel on the Training tab) rather than running on to the read timeout.
+ */
+private suspend fun executeForText(request: Request, extract: (JSONObject) -> String): String {
+    httpClient.newCall(request).executeAsync().use { response ->
+        val bodyString = withContext(Dispatchers.IO) { response.body.string() }
 
         if (!response.isSuccessful) {
             val apiMessage = runCatching {

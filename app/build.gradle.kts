@@ -206,6 +206,8 @@ dependencies {
 
     implementation(libs.androidx.security.crypto)
     implementation(libs.okhttp)
+    // Call.executeAsync(), so leaving the Training tab cancels a drill request in flight.
+    implementation(libs.okhttp.coroutines)
 
     testImplementation(libs.junit)
     // Real org.json implementation for JVM unit tests: the android.jar used to compile/run

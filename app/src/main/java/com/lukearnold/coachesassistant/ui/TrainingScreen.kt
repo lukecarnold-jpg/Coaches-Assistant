@@ -98,7 +98,7 @@ fun TrainingScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
                 ) {
-                    TrainingResultsPanel(uiState = uiState, sport = sport)
+                    TrainingResultsPanel(uiState = uiState, sport = sport, onCancel = trainingViewModel::cancelGeneration)
                 }
             }
         }
@@ -128,7 +128,7 @@ fun TrainingScreen(
                 isLoading = uiState is TrainingUiState.Loading,
             )
 
-            TrainingResultsPanel(uiState = uiState, sport = sport)
+            TrainingResultsPanel(uiState = uiState, sport = sport, onCancel = trainingViewModel::cancelGeneration)
         }
     }
 }
@@ -191,15 +191,24 @@ fun TrainingSelectionPanel(
 }
 
 @Composable
-fun TrainingResultsPanel(uiState: TrainingUiState, sport: Sport) {
+fun TrainingResultsPanel(uiState: TrainingUiState, sport: Sport, onCancel: () -> Unit) {
     when (uiState) {
         is TrainingUiState.Idle -> {
             EmptyMessage(stringResource(R.string.training_empty, stringResource(sport.label)))
         }
 
         is TrainingUiState.Loading -> {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            // A request can take a minute or more (a local server loading its model), so it can be
+            // called off rather than waited out.
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(LocalResponsiveLayout.current.smallGap),
+            ) {
                 CircularProgressIndicator()
+                TextButton(onClick = onCancel) {
+                    Text(stringResource(R.string.cancel))
+                }
             }
         }
 
