@@ -395,6 +395,7 @@
     <string name="add_api_key_to_generate">Add your %1$s API key in Settings to generate drills.</string>
     <string name="other_provider_not_set_up">Add an endpoint URL and model name for the Other provider in Settings.</string>
     <string name="drills_parse_failed">Failed to parse drills. Try again.</string>
+    <string name="ai_unexpected_response">%1$s sent back something that isn\'t an AI reply. If you set up the Other provider, check its endpoint URL is a chat completions address (usually ending in /chat/completions).</string>
     <string name="gemini_model_not_found">The selected Gemini model was not found. It may have been retired: enter a current model name in Settings → AI training assistant.</string>
     <string name="request_failed_http">Request failed (HTTP %1$d)</string>
     <string name="refusing_plain_http">Refusing to send a request over plain http to %1$s, which isn\'t on the local network.</string>

@@ -213,7 +213,8 @@ All tests are under `app/src/test/` and run on the JVM
 (`./gradlew testDebugUnitTest`), with no emulator. Those needing Android use
 Robolectric:
 
-- `ai/` - drill prompt and parsing, provider response parsing, endpoint URL
+- `ai/` - drill prompt and parsing, provider response parsing, requests
+  against a local mock server (`DrillTextGeneratorsTest`), endpoint URL
   checks, local network detection, and the encrypted settings store.
 - `data/` - the repository against an in-memory Room database, database
   migrations (from the exported schemas), backup format and restore, CSV

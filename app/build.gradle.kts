@@ -210,6 +210,8 @@ dependencies {
     implementation(libs.okhttp.coroutines)
 
     testImplementation(libs.junit)
+    // A local HTTP server, so DrillTextGeneratorsTest runs the real request and reply handling.
+    testImplementation(libs.okhttp.mockwebserver)
     // Real org.json implementation for JVM unit tests: the android.jar used to compile/run
     // `test` sources only stubs org.json (as it does the rest of the Android SDK), so
     // MvpVotesTest needs a working implementation on the unit test classpath.
