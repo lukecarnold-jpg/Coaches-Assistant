@@ -33,7 +33,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +44,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.data.Sport
@@ -174,28 +174,28 @@ private fun SportApp(
     }
     val navTabSpecs = remember(sport) { navTabSpecsFor(sport) }
 
-    val players by appViewModel.players.collectAsState()
-    val games by appViewModel.games.collectAsState()
-    val selectedGame by appViewModel.selectedGame.collectAsState()
-    val gameDayGameId by appViewModel.gameDayGameId.collectAsState()
-    val minimumOnCourt by appViewModel.minimumOnCourt.collectAsState()
-    val isLoaded by appViewModel.isLoaded.collectAsState()
-    val keepScreenOnWhileClockRuns by settingsViewModel.keepScreenOnWhileClockRuns.collectAsState()
-    val clockNotification by settingsViewModel.clockNotification.collectAsState()
-    val suggestSubs by settingsViewModel.suggestSubs.collectAsState()
-    val notifySubs by settingsViewModel.notifySubs.collectAsState()
+    val players by appViewModel.players.collectAsStateWithLifecycle()
+    val games by appViewModel.games.collectAsStateWithLifecycle()
+    val selectedGame by appViewModel.selectedGame.collectAsStateWithLifecycle()
+    val gameDayGameId by appViewModel.gameDayGameId.collectAsStateWithLifecycle()
+    val minimumOnCourt by appViewModel.minimumOnCourt.collectAsStateWithLifecycle()
+    val isLoaded by appViewModel.isLoaded.collectAsStateWithLifecycle()
+    val keepScreenOnWhileClockRuns by settingsViewModel.keepScreenOnWhileClockRuns.collectAsStateWithLifecycle()
+    val clockNotification by settingsViewModel.clockNotification.collectAsStateWithLifecycle()
+    val suggestSubs by settingsViewModel.suggestSubs.collectAsStateWithLifecycle()
+    val notifySubs by settingsViewModel.notifySubs.collectAsStateWithLifecycle()
     val onNotifySubsChange = rememberNotificationSetting(settingsViewModel::setNotifySubs, settingsViewModel::reportNotificationsDenied)
     val onClockNotificationChange =
         rememberNotificationSetting(settingsViewModel::setClockNotification, settingsViewModel::reportNotificationsDenied)
-    val subSnooze by appViewModel.subSnooze.collectAsState()
+    val subSnooze by appViewModel.subSnooze.collectAsStateWithLifecycle()
     KeepScreenOn(shouldKeepScreenOn(selectedGame, keepScreenOnWhileClockRuns))
-    val lineup by appViewModel.selectedGameLineup.collectAsState()
-    val events by appViewModel.selectedGameEvents.collectAsState()
-    val stats by appViewModel.selectedGameStats.collectAsState()
-    val apiKeys by trainingViewModel.apiKeys.collectAsState()
-    val selectedAiProvider by trainingViewModel.selectedProvider.collectAsState()
-    val customAiEndpoint by trainingViewModel.customEndpoint.collectAsState()
-    val aiModelOverrides by trainingViewModel.modelOverrides.collectAsState()
+    val lineup by appViewModel.selectedGameLineup.collectAsStateWithLifecycle()
+    val events by appViewModel.selectedGameEvents.collectAsStateWithLifecycle()
+    val stats by appViewModel.selectedGameStats.collectAsStateWithLifecycle()
+    val apiKeys by trainingViewModel.apiKeys.collectAsStateWithLifecycle()
+    val selectedAiProvider by trainingViewModel.selectedProvider.collectAsStateWithLifecycle()
+    val customAiEndpoint by trainingViewModel.customEndpoint.collectAsStateWithLifecycle()
+    val aiModelOverrides by trainingViewModel.modelOverrides.collectAsStateWithLifecycle()
 
     var currentTab by rememberSaveable(sport) { mutableStateOf(AppTab.ROSTER) }
     // Open on the Game tab if a game is in progress (e.g. reopening the app mid-game), unless the
@@ -374,8 +374,8 @@ private fun SportApp(
                         AppTab.HISTORY -> {
                             // Collected here rather than with the other state above, so season totals
                             // are only computed while the History tab is showing.
-                            val season by appViewModel.seasonStats.collectAsState()
-                            val cricketSeason = cricketViewModel?.season?.collectAsState()?.value
+                            val season by appViewModel.seasonStats.collectAsStateWithLifecycle()
+                            val cricketSeason = cricketViewModel?.season?.collectAsStateWithLifecycle()?.value
                             GameHistoryScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 games = games,

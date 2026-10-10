@@ -286,4 +286,6 @@ flowchart LR
 
 The selected sport is persisted independently from roster and game data.
 `AppViewModel` and `DataViewModel` instances are keyed by sport so each sport's state remains
-isolated while using the same application screens and repository patterns.
+isolated while using the same application screens and repository patterns. Screens collect state
+with `collectAsStateWithLifecycle`, so the view models' `WhileSubscribed` flows (and their Room
+queries) stop a few seconds after the app goes into the background.

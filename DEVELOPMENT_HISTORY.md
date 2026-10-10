@@ -253,6 +253,9 @@ Tagged `v4.1.0` in October 2026.
 - A successful reply that isn't JSON (a web page from a wrong endpoint URL, or a captive portal) says so and names the server, instead of "unknown error"
 - Anthropic replies get 4,096 output tokens instead of 2,048, since the translated languages need more; a reply from any provider that still stops at its length limit is reported as cut off rather than shown with its last drill half-written
 
+**Under the hood**
+- Screens collect view model state with `collectAsStateWithLifecycle`, so the database queries behind them stop shortly after the app goes into the background instead of running until it's closed
+
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.
 - `./gradlew testDebugUnitTest` passes 234 tests, all on the JVM (Robolectric where Android is needed; there are no instrumented tests); `./gradlew lintDebug` has no findings; `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
