@@ -71,6 +71,7 @@ import com.lukearnold.coachesassistant.ui.appViewModelFactory
 import com.lukearnold.coachesassistant.ui.config
 import com.lukearnold.coachesassistant.ui.cricketViewModelFactory
 import com.lukearnold.coachesassistant.ui.dataViewModelFactory
+import com.lukearnold.coachesassistant.ui.gameActions
 import com.lukearnold.coachesassistant.ui.shouldKeepScreenOn
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
@@ -177,6 +178,7 @@ private fun SportApp(
         null
     }
     val navTabSpecs = remember(sport) { navTabSpecsFor(sport) }
+    val gameActions = remember(appViewModel, dataViewModel) { gameActions(appViewModel, dataViewModel) }
 
     val players by appViewModel.players.collectAsStateWithLifecycle()
     val games by appViewModel.games.collectAsStateWithLifecycle()
@@ -335,36 +337,11 @@ private fun SportApp(
                                 lineup = lineup,
                                 stats = stats,
                                 events = events,
-                                onCreateGame = appViewModel::createGame,
-                                onSelectGame = appViewModel::selectGame,
-                                onSetLineup = appViewModel::setStartingLineup,
                                 minimumOnCourt = minimumOnCourt,
                                 suggestSubs = suggestSubs,
                                 subSnooze = subSnooze,
-                                onSubNow = appViewModel::acceptSubSuggestion,
-                                onSubLater = appViewModel::snoozeSubSuggestion,
-                                onSubstitute = appViewModel::substitute,
-                                onAddPlayerScore = appViewModel::addPlayerScore,
-                                onAdjustTeamScore = appViewModel::adjustTeamScore,
-                                onAddOpponentScore = appViewModel::addOpponentScore,
-                                onAddFoul = appViewModel::addFoul,
-                                onAddMvpVote = appViewModel::addMvpVote,
-                                onToggleTimer = appViewModel::toggleTimer,
-                                onResetTimer = appViewModel::resetTimer,
-                                onSetGameTime = appViewModel::setGameTime,
-                                onDeleteGame = appViewModel::deleteGame,
-                                onExportGame = dataViewModel::exportGameCsv,
-                                onExportPlayers = dataViewModel::exportPlayersCsv,
-                                onAdvancePeriod = appViewModel::advancePeriod,
-                                onEndGame = appViewModel::endGame,
                                 gameDayActive = selectedGame?.id != null && selectedGame?.id == gameDayGameId,
-                                onStartGameDay = appViewModel::startGameDay,
-                                onStopGameDay = appViewModel::stopGameDay,
-                                onUpdateAbsentPlayers = appViewModel::updateAbsentPlayers,
-                                onUpdateNotes = appViewModel::updateGameNotes,
-                                onExportNotes = dataViewModel::exportGameNotesTxt,
-                                onUpdateEvent = appViewModel::updateEvent,
-                                onDeleteEvent = appViewModel::deleteEvent,
+                                actions = gameActions,
                             )
                         }
 
