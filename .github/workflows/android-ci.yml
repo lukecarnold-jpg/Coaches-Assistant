@@ -48,6 +48,14 @@ jobs:
       - name: Build release APK
         run: ./gradlew assembleRelease
 
+      # R8's mapping for this build, which turns an obfuscated release stack trace back into real
+      # class, method, and line names. Kept for every build since any commit might be released.
+      - name: Upload R8 mapping
+        uses: actions/upload-artifact@v7
+        with:
+          name: r8-mapping
+          path: app/build/outputs/mapping/release/mapping.txt
+
       # A signed bundle for Google Play, on pushes to master once the signing secrets are set
       # (repo Settings -> Secrets and variables -> Actions): RELEASE_KEYSTORE_BASE64 (the upload
       # keystore, base64-encoded), RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD.
