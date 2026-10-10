@@ -64,6 +64,13 @@ class DrillTextGeneratorsTest {
     }
 
     @Test
+    fun aReplyCutOffAtTheLengthLimit_isRefused() {
+        reply(body = """{"choices":[{"message":{"content":"TITLE: A\nDESCRIPTION: Half"},"finish_reason":"length"}]}""")
+
+        assertEquals(R.string.drills_cut_off, failure().messageRes)
+    }
+
+    @Test
     fun anErrorReply_carriesTheStatusAndTheApisMessage() {
         reply(code = 401, body = """{"error":{"message":"bad key"}}""")
 

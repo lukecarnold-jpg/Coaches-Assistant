@@ -398,6 +398,7 @@
     <string name="other_provider_not_set_up">Aggiungi un URL dell’endpoint e un nome del modello per il fornitore Altro nelle Impostazioni.</string>
     <string name="drills_parse_failed">Impossibile leggere gli esercizi. Riprova.</string>
     <string name="ai_unexpected_response">%1$s ha restituito qualcosa che non è una risposta dell’IA. Se hai configurato il fornitore Altro, controlla che l’URL dell’endpoint sia un indirizzo di chat completions (di solito termina con /chat/completions).</string>
+    <string name="drills_cut_off">La risposta è stata interrotta prima della fine degli esercizi. Riprova o scegli un modello che dia risposte più lunghe.</string>
     <string name="gemini_model_not_found">Il modello Gemini selezionato non è stato trovato. Potrebbe essere stato ritirato: inserisci il nome di un modello attuale in Impostazioni → Assistente di allenamento IA.</string>
     <string name="request_failed_http">Richiesta non riuscita (HTTP %1$d)</string>
     <string name="refusing_plain_http">Invio rifiutato tramite http non cifrato a %1$s, che non è sulla rete locale.</string>

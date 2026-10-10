@@ -89,7 +89,7 @@ class GeminiTextGenerator(private val model: String) : DrillTextGenerator {
             .post(body.toString().toRequestBody(jsonMediaType))
             .build()
 
-        executeForText(request, ::geminiResponseText)
+        executeForText(request, ::geminiResponseText, ::geminiWasCutOff)
     }
 }
 
@@ -97,7 +97,9 @@ class AnthropicTextGenerator(private val model: String) : DrillTextGenerator {
     override suspend fun generateText(prompt: String, apiKey: String): String = withContext(Dispatchers.IO) {
         val body = JSONObject().apply {
             put("model", model)
-            put("max_tokens", 2048)
+            // Room for three drills with headroom, since the translated languages take more
+            // tokens than English; a reply that still runs out is reported (see anthropicWasCutOff).
+            put("max_tokens", 4096)
             put(
                 "messages",
                 JSONArray().put(
@@ -116,7 +118,7 @@ class AnthropicTextGenerator(private val model: String) : DrillTextGenerator {
             .post(body.toString().toRequestBody(jsonMediaType))
             .build()
 
-        executeForText(request, ::anthropicResponseText)
+        executeForText(request, ::anthropicResponseText, ::anthropicWasCutOff)
     }
 }
 
@@ -173,14 +175,20 @@ private suspend fun openAiCompatibleRequest(url: String, apiKey: String, model: 
             .post(body.toString().toRequestBody(jsonMediaType))
             .build()
 
-        executeForText(request, ::openAiResponseText)
+        executeForText(request, ::openAiResponseText, ::openAiWasCutOff)
     }
 
 /**
  * Sends [request] and reads the text out of the reply with [extract]. The call is cancelled along
  * with the coroutine (e.g. Cancel on the Training tab) rather than running on to the read timeout.
+ * A reply that [wasCutOff] at the model's length limit is refused, since its last drill would be
+ * missing its end.
  */
-private suspend fun executeForText(request: Request, extract: (JSONObject) -> String): String {
+private suspend fun executeForText(
+    request: Request,
+    extract: (JSONObject) -> String,
+    wasCutOff: (JSONObject) -> Boolean,
+): String {
     httpClient.newCall(request).executeAsync().use { response ->
         val bodyString = withContext(Dispatchers.IO) { response.body.string() }
 
@@ -202,6 +210,7 @@ private suspend fun executeForText(request: Request, extract: (JSONObject) -> St
                 "The reply from ${request.url.host} wasn't JSON.",
             )
         }
+        if (wasCutOff(json)) throw UserFacingException(R.string.drills_cut_off)
         return extract(json)
     }
 }
@@ -235,3 +244,14 @@ internal fun openAiResponseText(json: JSONObject): String =
         ?.optJSONObject("message")
         ?.optString("content")
         .orEmpty()
+
+/** Whether a Gemini reply stopped at its output token limit. */
+internal fun geminiWasCutOff(json: JSONObject): Boolean =
+    json.optJSONArray("candidates")?.optJSONObject(0)?.optString("finishReason") == "MAX_TOKENS"
+
+/** Whether an Anthropic reply stopped at `max_tokens`. */
+internal fun anthropicWasCutOff(json: JSONObject): Boolean = json.optString("stop_reason") == "max_tokens"
+
+/** Whether an OpenAI-compatible reply stopped at its length limit. */
+internal fun openAiWasCutOff(json: JSONObject): Boolean =
+    json.optJSONArray("choices")?.optJSONObject(0)?.optString("finish_reason") == "length"
