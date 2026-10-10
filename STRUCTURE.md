@@ -95,6 +95,8 @@ presentation helpers:
 - `AppViewModel.kt` - one sport's roster and live game: screen state, user actions, and repository coordination.
 - `DataViewModel.kt` - backup and restore, CSV and notes files, and clearing data.
 - `SettingsViewModel.kt` - the app-wide display and substitution settings.
+- `GameSyncViewModel.kt` - one for the whole app: keeps Game Day mode, the game
+  clock notification, and substitution reminders in step with every sport's games.
 - `ViewModelActions.kt` - `launchSafely`, which turns a failed user action into a message instead of a crash.
 - `PlayerGameStats.kt` - the per-game player stats calculator (`calculatePlayerGameStats`).
 - `UiMessages.kt` - snackbar messages (with optional Undo) and their text.
@@ -221,7 +223,7 @@ Robolectric:
   import and export, event types, game totals, and MVP votes.
 - `ui/` - player and season stats, playing-time targets, sport configuration,
   confirmation and other message text, the clock editor, keep-screen-on, the
-  `AppViewModel` and `TrainingViewModel` (with a fake AI provider), and
+  `AppViewModel`, `GameSyncViewModel`, and `TrainingViewModel` (with a fake AI provider), and
   Compose UI tests of screens (`ScreenBehaviourTest`).
 
 There are no instrumented (`androidTest`) tests. CI
@@ -254,6 +256,7 @@ flowchart LR
         Screens["Roster · Game · Training<br/>History · Settings screens"]
         AppVM["AppViewModel · DataViewModel<br/>(one per sport)"]
         SettingsVM["SettingsViewModel"]
+        SyncVM["GameSyncViewModel<br/>(one for the app)"]
         TrainingVM["TrainingViewModel"]
         SubService["SubReminderService<br/>(while a clock runs)"]
     end
@@ -270,12 +273,14 @@ flowchart LR
     end
 
     MainActivity --> Screens
+    MainActivity --> SyncVM
     Screens --> AppVM
     Screens --> TrainingVM
     Screens --> SettingsVM
     AppVM --> Repo
     AppVM --> Files
-    AppVM --> SubService
+    SyncVM --> Repo
+    SyncVM --> SubService
     SubService --> Repo
     Repo --> Room
     Files --> Room
@@ -286,6 +291,8 @@ flowchart LR
 
 The selected sport is persisted independently from roster and game data.
 `AppViewModel` and `DataViewModel` instances are keyed by sport so each sport's state remains
-isolated while using the same application screens and repository patterns. Screens collect state
+isolated while using the same application screens and repository patterns. What follows every
+sport's games at once (Game Day mode, the clock notification, sub reminders) lives in the single
+`GameSyncViewModel` instead, so visiting several sports doesn't repeat it. Screens collect state
 with `collectAsStateWithLifecycle`, so the view models' `WhileSubscribed` flows (and their Room
 queries) stop a few seconds after the app goes into the background.
