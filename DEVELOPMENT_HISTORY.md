@@ -272,9 +272,17 @@ Tagged `v4.2.0` in October 2026.
 - The Kotlin Compose compiler plugin and KSP versions moved from `build.gradle.kts` into the version catalog with everything else
 - Snackbar messages wait in a channel (`MessageQueue`) until the screen shows them, so one sent mid-rotation, or right after another, is no longer dropped
 
+## Unreleased
+
+**Security**
+- The repository is public, with a full `SECURITY.md`: supported versions, private reporting (GitHub's private vulnerability reporting, or email), disclosure, scope, the app's security design, and its known limitations
+- Exported CSVs put a `'` in front of any value starting with `=`, `+`, `-`, or `@`, so a player or game name can't run as a formula when the file is opened in a spreadsheet; importing a roster removes it again
+- CI's GitHub token is read-only in the workflow itself, and every action is pinned to a commit SHA (Dependabot updates the pins)
+- The Gradle wrapper checks the distribution's SHA-256 checksum
+
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.
-- `./gradlew testDebugUnitTest` passes 246 tests on the JVM (Robolectric where Android is needed), and `./gradlew connectedDebugAndroidTest` runs one instrumented smoke test on an emulator; `./gradlew lintDebug` has one warning, that Kotlin 2.4.21 is out (lint can see the Kotlin version now that it's in the version catalog); `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
+- `./gradlew testDebugUnitTest` passes 250 tests on the JVM (Robolectric where Android is needed), and `./gradlew connectedDebugAndroidTest` runs one instrumented smoke test on an emulator; `./gradlew lintDebug` has one warning, that Kotlin 2.4.21 is out (lint can see the Kotlin version now that it's in the version catalog); `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
 - Room schema version 15, with every migration from version 5 tested against the exported schemas.
 - 17 sports: 16 share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position), and cricket is recorded as scorecards with a field plan.
 - The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); in debug builds, Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.
