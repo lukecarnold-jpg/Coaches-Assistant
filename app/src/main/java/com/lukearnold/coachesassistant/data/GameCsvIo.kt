@@ -71,7 +71,7 @@ class GameCsvIo(private val database: AppDatabase) {
             var skipped = 0
             for (line in rows) {
                 if (line.isBlank()) continue
-                val parts = parseCsvLine(line).map { it.trim().removeSurrounding("\"") }
+                val parts = parseCsvLine(line).map { unescapeCsvFormula(it.trim().removeSurrounding("\"")) }
                 val name = parts.getOrNull(1).orEmpty()
                 if (name.isBlank()) continue
                 val jersey = parts.getOrNull(2)?.toIntOrNull()
@@ -267,10 +267,22 @@ internal fun formatDuration(millis: Long): String {
     return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
 }
 
+/**
+ * Quotes [value] as a CSV field. A value a spreadsheet would treat as a formula (starting with `=`,
+ * `+`, `-`, `@`, tab, or carriage return, e.g. a player named `=HYPERLINK(...)`) is prefixed with
+ * `'` so it opens as text; [unescapeCsvFormula] undoes that on import.
+ */
 internal fun escapeCsv(value: String): String {
-    val escaped = value.replace("\"", "\"\"")
+    val safe = if (value.firstOrNull() in FORMULA_TRIGGERS) "'$value" else value
+    val escaped = safe.replace("\"", "\"\"")
     return "\"$escaped\""
 }
+
+/** Removes the `'` that [escapeCsv] puts in front of a formula-like value. */
+internal fun unescapeCsvFormula(value: String): String =
+    if (value.length >= 2 && value[0] == '\'' && value[1] in FORMULA_TRIGGERS) value.substring(1) else value
+
+private val FORMULA_TRIGGERS = setOf('=', '+', '-', '@', '\t', '\r')
 
 internal fun parseCsvLine(line: String): List<String> {
     val result = mutableListOf<String>()
