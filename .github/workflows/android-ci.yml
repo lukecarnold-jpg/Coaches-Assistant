@@ -6,6 +6,14 @@ on:
   pull_request:
     branches: [master]
 
+# The job only reads the repo; outputs go out as workflow artifacts, which need no token scope. Set
+# here rather than relying on the repository's default, so a settings change can't widen it.
+permissions:
+  contents: read
+
+# Actions are pinned to commit SHAs (with the version alongside) because a tag can be moved to
+# different code, and the signing step below runs with the release keystore. Dependabot updates
+# the SHA and the comment together.
 jobs:
   build:
     # Pinned rather than ubuntu-latest (which moves to Ubuntu 26 on 2026-10-19), so the build
@@ -18,20 +26,20 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Full history: versionCode is the commit count (see app/build.gradle.kts), which a
           # shallow clone would get wrong.
           fetch-depth: 0
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
 
       # Formatting and basic Kotlin style (ktlint); `./gradlew spotlessApply` fixes most of it.
       - name: Check formatting
@@ -51,7 +59,7 @@ jobs:
       # R8's mapping for this build, which turns an obfuscated release stack trace back into real
       # class, method, and line names. Kept for every build since any commit might be released.
       - name: Upload R8 mapping
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: r8-mapping
           path: app/build/outputs/mapping/release/mapping.txt
@@ -74,14 +82,14 @@ jobs:
 
       - name: Upload signed release bundle
         if: github.event_name == 'push' && env.HAS_RELEASE_KEYSTORE == 'true'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-bundle
           path: app/build/outputs/bundle/release/*.aab
 
       - name: Upload test and lint reports
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: reports
           path: |
