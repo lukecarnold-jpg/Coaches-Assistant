@@ -12,6 +12,27 @@ class GameCsvIoFormattingTest {
     }
 
     @Test
+    fun escapeCsv_prefixesValuesASpreadsheetWouldRunAsFormulas() {
+        assertEquals("\"'=HYPERLINK(\"\"http://x\"\")\"", escapeCsv("=HYPERLINK(\"http://x\")"))
+        assertEquals("\"'+1\"", escapeCsv("+1"))
+        assertEquals("\"'- tired legs\"", escapeCsv("- tired legs"))
+        assertEquals("\"'@SUM(A1)\"", escapeCsv("@SUM(A1)"))
+        assertEquals("\"'\tx\"", escapeCsv("\tx"))
+        // Only the first character matters.
+        assertEquals("\"Alex = MVP\"", escapeCsv("Alex = MVP"))
+        assertEquals("\"\"", escapeCsv(""))
+    }
+
+    @Test
+    fun unescapeCsvFormula_undoesEscapeCsvAndLeavesOtherApostrophesAlone() {
+        assertEquals("=1+1", unescapeCsvFormula("'=1+1"))
+        assertEquals("-5", unescapeCsvFormula("'-5"))
+        assertEquals("'Tis", unescapeCsvFormula("'Tis"))
+        assertEquals("'", unescapeCsvFormula("'"))
+        assertEquals("O'Brien", unescapeCsvFormula("O'Brien"))
+    }
+
+    @Test
     fun parseCsvLine_splitsOnUnquotedCommas() {
         assertEquals(listOf("1", "Alex", "23"), parseCsvLine("1,Alex,23"))
     }

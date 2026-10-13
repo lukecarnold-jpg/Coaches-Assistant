@@ -325,6 +325,7 @@ The class filter matters: without it the run also includes the profile generator
 - Game export data includes metadata and event detail such as:
   - `gameId,gameTitle,opponent,createdAt,teamScoreAtExport,gameNotes,...`
 - Coaching notes export is plain text and includes a header plus the game notes body.
+- A CSV value starting with `=`, `+`, `-`, or `@` is written with a leading `'`, so a spreadsheet shows it as text instead of running it as a formula; roster import removes the `'` again. See `SECURITY.md`.
 
 ## Known notes and risks
 

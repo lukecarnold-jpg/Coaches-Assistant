@@ -71,6 +71,24 @@ class GameCsvIoTest {
     }
 
     @Test
+    fun exportThenImportPlayersCsv_keepsNamesThatLookLikeFormulas() = runBlocking {
+        repository.addPlayer(Sport.BASKETBALL, "=HYPERLINK(\"http://x\")", 1)
+        repository.addPlayer(Sport.BASKETBALL, "-Dash", 2)
+        val uri = fileUri("roster.csv")
+
+        csvIo.exportPlayersCsv(contentResolver, uri, Sport.BASKETBALL)
+        val exported = File(uri.path!!).readText()
+        assertTrue(exported, "\"'=HYPERLINK(" in exported && "\"'-Dash\"" in exported)
+        csvIo.importPlayersCsv(contentResolver, uri, Sport.NETBALL)
+
+        val imported = database.playerDao().getAllBySport(Sport.NETBALL.name)
+        assertEquals(
+            setOf("=HYPERLINK(\"http://x\")" to 1, "-Dash" to 2),
+            imported.map { it.name to it.jerseyNumber }.toSet(),
+        )
+    }
+
+    @Test
     fun importPlayersCsv_survivesAQuotedNameContainingACommaAndSkipsBlankLines() = runBlocking {
         val uri = fileUri("roster.csv")
         File(uri.path!!).writeText(
