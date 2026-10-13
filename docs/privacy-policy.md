@@ -1,6 +1,6 @@
 # Coaches Assistant — Privacy Policy
 
-_Effective: [DATE]_
+_Effective: 14 October 2026_
 
 Coaches Assistant is an app for sports coaches to manage team rosters, track games, and generate training drills. This policy explains what information the app handles and where it goes.
 
@@ -56,4 +56,4 @@ If this policy changes, the new version will be posted at this address with a ne
 
 ## Contact
 
-Questions about this policy: [CONTACT EMAIL]
+Questions about this policy: lukec.arnold@gmail.com
