@@ -12,10 +12,12 @@ data class UiMessage(val text: UiText, val undo: (() -> Unit)? = null)
 /**
  * A view model's snackbar messages, each shown once. They wait in a channel until the screen
  * collects them, so one sent while there's no collector (mid-rotation, or two in quick succession)
- * is shown rather than dropped, as it would be by a SharedFlow.
+ * is shown rather than dropped, as it would be by a SharedFlow. The channel is unbounded so that
+ * holds however many arrive; a bounded one would drop the overflow silently in [tryEmit].
+ * There's one collector (MainActivity); a second would take only some of the messages.
  */
 class MessageQueue {
-    private val channel = Channel<UiMessage>(Channel.BUFFERED)
+    private val channel = Channel<UiMessage>(Channel.UNLIMITED)
 
     val messages: Flow<UiMessage> = channel.receiveAsFlow()
 

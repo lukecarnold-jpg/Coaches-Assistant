@@ -22,6 +22,18 @@ class MessageQueueTest {
     }
 
     @Test
+    fun manyMessagesSentWithNoOneCollecting_areAllKept() = runBlocking {
+        val queue = MessageQueue()
+        val count = 200
+        repeat(count) { queue.tryEmit(UiMessage(UiText.Plain("Message $it"))) }
+
+        val shown = queue.messages.take(count).toList().map { it.text }
+
+        assertEquals(UiText.Plain("Message 0"), shown.first())
+        assertEquals(UiText.Plain("Message ${count - 1}"), shown.last())
+    }
+
+    @Test
     fun eachMessageIsShownOnlyOnce() = runBlocking {
         val queue = MessageQueue()
         queue.tryEmit(UiMessage(UiText.Plain("Undone.")))
