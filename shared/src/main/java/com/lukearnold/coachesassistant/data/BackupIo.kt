@@ -4,7 +4,7 @@ import android.content.ContentResolver
 import android.database.sqlite.SQLiteConstraintException
 import android.net.Uri
 import androidx.room.withTransaction
-import com.lukearnold.coachesassistant.R
+import com.lukearnold.coachesassistant.shared.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

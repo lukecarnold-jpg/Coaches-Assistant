@@ -4,7 +4,7 @@ import android.content.ContentResolver
 import android.content.res.Resources
 import android.net.Uri
 import androidx.room.withTransaction
-import com.lukearnold.coachesassistant.R
+import com.lukearnold.coachesassistant.shared.R
 import java.io.Writer
 import java.text.SimpleDateFormat
 import java.util.Date

@@ -271,7 +271,7 @@ The class filter matters: without it the run also includes the profile generator
 - App entry
   - `app/src/main/java/com/lukearnold/coachesassistant/MainActivity.kt` — routes between the sport landing screen and the per-sport app shell (`SportApp`), and creates the view models (sport-keyed `AppViewModel` and `DataViewModel`, plus `SettingsViewModel` and `TrainingViewModel`, and one app-wide `GameSyncViewModel` that keeps Game Day mode, the clock notification, and sub reminders in step with every sport's games)
 - Sport layer
-  - `app/src/main/java/com/lukearnold/coachesassistant/data/Sport.kt` — the `Sport` enum (domain concept, shared by the DAOs/repository and the UI)
+  - `shared/src/main/java/com/lukearnold/coachesassistant/data/Sport.kt` — the `Sport` enum (domain concept, shared by the DAOs/repository and the UI)
   - `app/src/main/java/com/lukearnold/coachesassistant/ui/SportConfig.kt` — per-sport rotation/scoring configuration (on-court size, squad positions, period defaults, scoring options, infraction label)
   - `app/src/main/java/com/lukearnold/coachesassistant/ui/SportSelectionScreen.kt` — the landing screen, including the Rugby Union/League picker dialog
   - `app/src/main/java/com/lukearnold/coachesassistant/ui/SportPreferences.kt` — remembers the last-picked sport across app restarts
@@ -301,12 +301,12 @@ The class filter matters: without it the run also includes the profile generator
   - `Drill.kt` — the parsed-drill domain model
   - `DrillParsing.kt` — pure prompt-building and response-parsing functions (unit tested)
   - `DrillTextGenerators.kt` — one `DrillTextGenerator` implementation per provider, each a direct REST call (Other and OpenAI share an `openAiCompatibleRequest` helper)
-- Data layer
-  - Entities: `app/src/main/java/com/lukearnold/coachesassistant/data/Entities.kt`
-  - DAOs: `app/src/main/java/com/lukearnold/coachesassistant/data/Dao.kt`
-  - Repository: `app/src/main/java/com/lukearnold/coachesassistant/data/GameRepository.kt`
-  - Database: `app/src/main/java/com/lukearnold/coachesassistant/data/AppDatabase.kt`
-  - MVP-vote serialization: `app/src/main/java/com/lukearnold/coachesassistant/data/MvpVotes.kt`
+- Data layer (the `:shared` module, which has no screens, so a companion app can reuse it; its unit tests run with `./gradlew :shared:testDebugUnitTest`)
+  - Entities: `shared/src/main/java/com/lukearnold/coachesassistant/data/Entities.kt`
+  - DAOs: `shared/src/main/java/com/lukearnold/coachesassistant/data/Dao.kt`
+  - Repository: `shared/src/main/java/com/lukearnold/coachesassistant/data/GameRepository.kt`
+  - Database: `shared/src/main/java/com/lukearnold/coachesassistant/data/AppDatabase.kt`
+  - MVP-vote serialization: `shared/src/main/java/com/lukearnold/coachesassistant/data/MvpVotes.kt`
   - Room schema exports: `app/schemas/com.lukearnold.coachesassistant.data.AppDatabase/`
 
 ## Data model summary

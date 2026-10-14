@@ -1,6 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
     alias(libs.plugins.android.test) apply false
     alias(libs.plugins.baselineprofile) apply false
     alias(libs.plugins.kotlin.compose) apply false
@@ -32,11 +33,11 @@ val ktlintRules = mapOf(
 
 spotless {
     kotlin {
-        target("app/src/**/*.kt", "baselineprofile/src/**/*.kt")
+        target("app/src/**/*.kt", "shared/src/**/*.kt", "baselineprofile/src/**/*.kt")
         ktlint(libs.versions.ktlint.get()).editorConfigOverride(ktlintRules)
     }
     kotlinGradle {
-        target("*.gradle.kts", "app/*.gradle.kts", "baselineprofile/*.gradle.kts")
+        target("*.gradle.kts", "app/*.gradle.kts", "shared/*.gradle.kts", "baselineprofile/*.gradle.kts")
         ktlint(libs.versions.ktlint.get()).editorConfigOverride(ktlintRules)
     }
 }

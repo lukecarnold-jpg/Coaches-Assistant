@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "CoachesAssistant"
 include(":app")
+include(":shared")
 include(":baselineprofile")
