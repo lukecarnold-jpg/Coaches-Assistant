@@ -408,9 +408,11 @@ fun RosterList(
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                             )
-                            if (!player.position.isNullOrBlank()) {
+                            // Read into a local so the null check smart-casts (the property is in :shared).
+                            val position = player.position
+                            if (!position.isNullOrBlank()) {
                                 Text(
-                                    text = positionLabel(player.position).asString(),
+                                    text = positionLabel(position).asString(),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.secondary,
                                 )

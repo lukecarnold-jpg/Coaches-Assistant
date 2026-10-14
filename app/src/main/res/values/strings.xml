@@ -166,23 +166,6 @@
 
     <!-- Sports, and the positions, scoring buttons and infractions each uses. Position codes are stored
          on players and in roster CSVs untranslated; these are only how they're shown. -->
-    <string name="sport_basketball">Basketball</string>
-    <string name="sport_netball">Netball</string>
-    <string name="sport_soccer">Soccer</string>
-    <string name="sport_afl">AFL</string>
-    <string name="sport_rugby_union">Rugby Union</string>
-    <string name="sport_rugby_league">Rugby League</string>
-    <string name="sport_futsal">Futsal</string>
-    <string name="sport_field_hockey">Field Hockey</string>
-    <string name="sport_ice_hockey">Ice Hockey</string>
-    <string name="sport_touch_football">Touch Football</string>
-    <string name="sport_water_polo">Water Polo</string>
-    <string name="sport_handball">Handball</string>
-    <string name="sport_lacrosse">Lacrosse</string>
-    <string name="sport_gaelic_football">Gaelic Football</string>
-    <string name="sport_flag_football">Flag Football</string>
-    <string name="sport_ultimate_frisbee">Ultimate Frisbee</string>
-    <string name="sport_cricket">Cricket</string>
     <string name="position_pg">PG</string>
     <string name="position_sg">SG</string>
     <string name="position_sf">SF</string>
@@ -490,21 +473,8 @@
     <string name="default_game_title">Game %1$d</string>
 
     <!-- File errors -->
-    <string name="backup_not_a_backup">That file isn\'t a Coaches Assistant backup.</string>
-    <string name="backup_from_newer_app">This backup was made by a newer version of the app. Update the app to restore it.</string>
-    <string name="backup_damaged">This backup file is damaged.</string>
-    <string name="backup_damaged_nothing_changed">This backup file is damaged. Nothing was changed.</string>
-    <string name="backup_file_unopenable">Unable to open the backup file</string>
-    <string name="export_file_unopenable">Unable to open export file</string>
-    <string name="import_file_unopenable">Unable to open import file</string>
-    <string name="game_not_found">Game not found</string>
 
     <!-- The summary at the top of an exported notes file -->
-    <string name="notes_file_game">Game: %1$s</string>
-    <string name="notes_file_opponent">Opponent: %1$s</string>
-    <string name="notes_file_date">Date: %1$s</string>
-    <string name="notes_file_score" tools:ignore="PluralsCandidate">Score: Us %1$d – %2$d %3$s</string>
-    <string name="notes_file_heading">--- COACHING NOTES ---</string>
 
     <!-- The game clock notification -->
     <string name="game_clock_notification_setting">Show the running clock in notifications</string>

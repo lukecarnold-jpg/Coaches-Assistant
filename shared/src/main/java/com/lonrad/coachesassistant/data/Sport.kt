@@ -1,7 +1,7 @@
 package com.lonrad.coachesassistant.data
 
 import androidx.annotation.StringRes
-import com.lonrad.coachesassistant.R
+import com.lonrad.coachesassistant.shared.R
 
 /** Sports the app can be used to coach. */
 enum class Sport(@param:StringRes val label: Int, val emoji: String) {

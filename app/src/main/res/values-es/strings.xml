@@ -161,23 +161,6 @@
     <string name="game_tracker">Registro del partido</string>
 
     <!-- Sports, positions, scoring and infractions -->
-    <string name="sport_basketball">Baloncesto</string>
-    <string name="sport_netball">Netball</string>
-    <string name="sport_soccer">Fútbol</string>
-    <string name="sport_afl">AFL</string>
-    <string name="sport_rugby_union">Rugby a 15</string>
-    <string name="sport_rugby_league">Rugby a 13</string>
-    <string name="sport_futsal">Fútbol sala</string>
-    <string name="sport_field_hockey">Hockey sobre hierba</string>
-    <string name="sport_ice_hockey">Hockey sobre hielo</string>
-    <string name="sport_touch_football">Touch rugby</string>
-    <string name="sport_water_polo">Waterpolo</string>
-    <string name="sport_handball">Balonmano</string>
-    <string name="sport_lacrosse">Lacrosse</string>
-    <string name="sport_gaelic_football">Fútbol gaélico</string>
-    <string name="sport_flag_football">Flag football</string>
-    <string name="sport_ultimate_frisbee">Ultimate frisbee</string>
-    <string name="sport_cricket">Críquet</string>
     <string name="position_pg">PG</string>
     <string name="position_sg">SG</string>
     <string name="position_sf">SF</string>
@@ -499,21 +482,8 @@
     <string name="default_game_title">Partido %1$d</string>
 
     <!-- File errors -->
-    <string name="backup_not_a_backup">Ese archivo no es una copia de seguridad de Coaches Assistant.</string>
-    <string name="backup_from_newer_app">Esta copia se hizo con una versión más reciente de la app. Actualiza la app para restaurarla.</string>
-    <string name="backup_damaged">Este archivo de copia está dañado.</string>
-    <string name="backup_damaged_nothing_changed">Este archivo de copia está dañado. No se ha cambiado nada.</string>
-    <string name="backup_file_unopenable">No se puede abrir el archivo de copia</string>
-    <string name="export_file_unopenable">No se puede abrir el archivo de exportación</string>
-    <string name="import_file_unopenable">No se puede abrir el archivo de importación</string>
-    <string name="game_not_found">Partido no encontrado</string>
 
     <!-- The summary at the top of an exported notes file -->
-    <string name="notes_file_game">Partido: %1$s</string>
-    <string name="notes_file_opponent">Rival: %1$s</string>
-    <string name="notes_file_date">Fecha: %1$s</string>
-    <string name="notes_file_score" tools:ignore="PluralsCandidate">Marcador: Nosotros %1$d – %2$d %3$s</string>
-    <string name="notes_file_heading">--- NOTAS DEL ENTRENADOR ---</string>
 
     <!-- The game clock notification -->
     <string name="game_clock_notification_setting">Mostrar el reloj en las notificaciones</string>
