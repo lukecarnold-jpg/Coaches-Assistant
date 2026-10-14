@@ -5,7 +5,7 @@
  *
  *   ./gradlew :app:generateReleaseBaselineProfile   (writes app/src/release/generated/baselineProfiles)
  *   ./gradlew :baselineprofile:connectedBenchmarkReleaseAndroidTest \
- *     -Pandroid.testInstrumentationRunnerArguments.class=com.lukearnold.coachesassistant.baselineprofile.StartupBenchmark
+ *     -Pandroid.testInstrumentationRunnerArguments.class=com.lonrad.coachesassistant.baselineprofile.StartupBenchmark
  *
  * See README, "Baseline profile".
  */
@@ -15,7 +15,7 @@ plugins {
 }
 
 android {
-    namespace = "com.lukearnold.coachesassistant.baselineprofile"
+    namespace = "com.lonrad.coachesassistant.baselineprofile"
     compileSdk = 37
 
     defaultConfig {
