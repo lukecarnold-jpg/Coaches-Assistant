@@ -56,4 +56,4 @@ If this policy changes, the new version will be posted at this address with a ne
 
 ## Contact
 
-Questions about this policy: lukec.arnold@gmail.com
+Questions about this policy: lonrad.apps@gmail.com
