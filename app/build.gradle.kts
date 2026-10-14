@@ -78,11 +78,11 @@ val releaseSigning: Map<String, String>? = releaseSigningNames.associateWith { r
 val legacyTransitionBuild: Boolean = providers.gradleProperty("legacyAppId").isPresent
 
 android {
-    namespace = "com.lukearnold.coachesassistant"
+    namespace = "com.lonrad.coachesassistant"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = if (legacyTransitionBuild) "com.example.basketballrotation" else "com.lukearnold.coachesassistant"
+        applicationId = if (legacyTransitionBuild) "com.example.basketballrotation" else "com.lonrad.coachesassistant"
         buildConfigField("boolean", "LEGACY_TRANSITION_BUILD", legacyTransitionBuild.toString())
         manifestPlaceholders["appLabel"] = if (legacyTransitionBuild) "@string/app_name_legacy" else "@string/app_name"
         minSdk = 26

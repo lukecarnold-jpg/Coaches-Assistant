@@ -16,7 +16,7 @@ val ktlintRules = mapOf(
     "max_line_length" to "off",
     "ij_kotlin_allow_trailing_comma" to true,
     "ij_kotlin_allow_trailing_comma_on_call_site" to true,
-    "ij_kotlin_packages_to_use_import_on_demand" to "java.util.*,androidx.compose.**,com.lukearnold.coachesassistant.**",
+    "ij_kotlin_packages_to_use_import_on_demand" to "java.util.*,androidx.compose.**,com.lonrad.coachesassistant.**",
     "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
     "ktlint_standard_function-signature" to "disabled",
     "ktlint_standard_class-signature" to "disabled",

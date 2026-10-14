@@ -274,6 +274,9 @@ Tagged `v4.2.0` in October 2026.
 
 ## Unreleased
 
+**App ID**
+- Application ID, namespace, and Kotlin package renamed from `com.lukearnold.coachesassistant` to `com.lonrad.coachesassistant`, before the first Google Play upload makes the ID permanent. Installs of 4.0–4.2 move their data across with Settings → Backup and Restore (README, "Moving from the old app")
+
 **Training**
 - Each generated drill can be reported, as Google Play's AI-generated content policy requires: a reason and optional details, then the drill comes off the list and the coach's email app opens with the report (the drill, how it was generated, and the app and Android versions; never the API key or an "Other" endpoint's address). The privacy policy describes it
 

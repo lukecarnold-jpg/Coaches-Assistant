@@ -7,7 +7,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
 ## Project status
 
 - Android app (`:app`), plus a `:baselineprofile` module that generates its baseline profile (see "Baseline profile")
-- Application ID and Kotlin package: `com.lukearnold.coachesassistant`
+- Application ID and Kotlin package: `com.lonrad.coachesassistant`
 - Multi-sport: a landing screen lets the user pick from 17 supported team sports (categorized into Court, Field, and Ice & Water sports); each sport gets its own roster and game history, plus sport-correct on-court size, scoring values, and period defaults (see "Sport support" below)
 - UI: Jetpack Compose + Material 3
 - Persistence: Room database (schema version 15)
@@ -129,7 +129,19 @@ If no key is set for the selected provider, the app still builds, but the Traini
 
 ## Moving from the old app
 
-Before the rename, the app was installed as `com.example.basketballrotation`. Android can't update that install to the new app ID (`com.lukearnold.coachesassistant`), and one app can't read another's data, so the two install side by side. To move your data across:
+The app ID is `com.lonrad.coachesassistant`. Earlier builds used other IDs, and Android can't update an install to a different ID. One app can't read another's data, so the old and new apps install side by side, and data moves across through a backup file.
+
+### From 4.0–4.2 (`com.lukearnold.coachesassistant`)
+
+These versions already have backup and restore, so no special build is needed:
+
+1. In the old app (installed first, so both show as "Coaches Assistant"), go to **Settings → Backup → Back up all data**.
+2. Install the new app, go to **Settings → Restore from backup**, and pick that file.
+3. Re-enter your AI API keys in the new app (backups never include them), then uninstall the old one.
+
+### From before the rename (`com.example.basketballrotation`)
+
+Those versions have no backup, so the move goes through a transition build:
 
 1. With the device connected, install the transition build over the old app: `./gradlew installDebug -PlegacyAppId` (Windows: `gradlew.bat installDebug -PlegacyAppId`). It's today's code under the old app ID, so it installs as an update: your data is migrated and kept. It shows up as "Old Coaches Assistant".
 2. Open it and go to **Settings → Backup → Back up all data**.
@@ -263,7 +275,7 @@ To measure what it saves, time cold starts with and without it (a real phone giv
 
 ```bash
 ./gradlew :baselineprofile:connectedBenchmarkReleaseAndroidTest \
-  -Pandroid.testInstrumentationRunnerArguments.class=com.lukearnold.coachesassistant.baselineprofile.StartupBenchmark
+  -Pandroid.testInstrumentationRunnerArguments.class=com.lonrad.coachesassistant.baselineprofile.StartupBenchmark
 ```
 
 The class filter matters: without it the run also includes the profile generator's tests, which skip themselves outside profile generation, and Gradle counts those skips as failures. Neither command runs in CI, which builds with the committed profile.
@@ -271,45 +283,45 @@ The class filter matters: without it the run also includes the profile generator
 ## High-level project structure
 
 - App entry
-  - `app/src/main/java/com/lukearnold/coachesassistant/MainActivity.kt` — routes between the sport landing screen and the per-sport app shell (`SportApp`), and creates the view models (sport-keyed `AppViewModel` and `DataViewModel`, plus `SettingsViewModel` and `TrainingViewModel`, and one app-wide `GameSyncViewModel` that keeps Game Day mode, the clock notification, and sub reminders in step with every sport's games)
+  - `app/src/main/java/com/lonrad/coachesassistant/MainActivity.kt` — routes between the sport landing screen and the per-sport app shell (`SportApp`), and creates the view models (sport-keyed `AppViewModel` and `DataViewModel`, plus `SettingsViewModel` and `TrainingViewModel`, and one app-wide `GameSyncViewModel` that keeps Game Day mode, the clock notification, and sub reminders in step with every sport's games)
 - Sport layer
-  - `app/src/main/java/com/lukearnold/coachesassistant/data/Sport.kt` — the `Sport` enum (domain concept, shared by the DAOs/repository and the UI)
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/SportConfig.kt` — per-sport rotation/scoring configuration (on-court size, squad positions, period defaults, scoring options, infraction label)
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/SportSelectionScreen.kt` — the landing screen, including the Rugby Union/League picker dialog
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/SportPreferences.kt` — remembers the last-picked sport across app restarts
+  - `app/src/main/java/com/lonrad/coachesassistant/data/Sport.kt` — the `Sport` enum (domain concept, shared by the DAOs/repository and the UI)
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/SportConfig.kt` — per-sport rotation/scoring configuration (on-court size, squad positions, period defaults, scoring options, infraction label)
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/SportSelectionScreen.kt` — the landing screen, including the Rugby Union/League picker dialog
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/SportPreferences.kt` — remembers the last-picked sport across app restarts
 - UI screens
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/RosterScreen.kt`
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/GameScreen.kt` — top-level Game tab layout; delegates to:
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/RosterScreen.kt`
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/GameScreen.kt` — top-level Game tab layout; delegates to:
     - `GameControlPanel.kt` (clock/score controls, lineup, substitution)
     - `GameStatsPanel.kt` (game creation/list, stats, event log)
     - `PlayerActionCard.kt` (per-player on-court action card)
     - `GameDialogs.kt` (attendance and event-edit dialogs)
     - `GameNotesPanel.kt` (coaching notes panel and dialog)
     - `GameFormatting.kt` (event description, period label, and time formatting helpers)
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/GameHistoryScreen.kt`
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/TrainingScreen.kt`
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/SettingsScreen.kt`
-  - Shared components: `app/src/main/java/com/lukearnold/coachesassistant/ui/Components.kt` (includes `GameListCard`, used by both the Game and Game History screens)
-  - Theme: `app/src/main/java/com/lukearnold/coachesassistant/ui/Theme.kt`
-  - Shared file-export launcher: `app/src/main/java/com/lukearnold/coachesassistant/ui/FileExport.kt`
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/GameHistoryScreen.kt`
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/TrainingScreen.kt`
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/SettingsScreen.kt`
+  - Shared components: `app/src/main/java/com/lonrad/coachesassistant/ui/Components.kt` (includes `GameListCard`, used by both the Game and Game History screens)
+  - Theme: `app/src/main/java/com/lonrad/coachesassistant/ui/Theme.kt`
+  - Shared file-export launcher: `app/src/main/java/com/lonrad/coachesassistant/ui/FileExport.kt`
 - State and logic
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/AppViewModel.kt`, with the pure `calculatePlayerGameStats` function in `PlayerGameStats.kt`
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/DataViewModel.kt` (backup, CSV, clearing data) and `SettingsViewModel.kt` (display and substitution settings)
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/TrainingViewModel.kt`
-  - `app/src/main/java/com/lukearnold/coachesassistant/ui/SubReminderService.kt` — the foreground service behind substitution reminders
-- AI provider layer (`app/src/main/java/com/lukearnold/coachesassistant/ai/`)
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/AppViewModel.kt`, with the pure `calculatePlayerGameStats` function in `PlayerGameStats.kt`
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/DataViewModel.kt` (backup, CSV, clearing data) and `SettingsViewModel.kt` (display and substitution settings)
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/TrainingViewModel.kt`
+  - `app/src/main/java/com/lonrad/coachesassistant/ui/SubReminderService.kt` — the foreground service behind substitution reminders
+- AI provider layer (`app/src/main/java/com/lonrad/coachesassistant/ai/`)
   - `AiProvider.kt` — the Gemini/Anthropic/OpenAI/Other enum, each provider's preferences key, display strings, and default model
   - `CustomEndpointConfig.kt` — user-supplied endpoint URL and model name for the "Other" provider
   - `Drill.kt` — the parsed-drill domain model
   - `DrillParsing.kt` — pure prompt-building and response-parsing functions (unit tested)
   - `DrillTextGenerators.kt` — one `DrillTextGenerator` implementation per provider, each a direct REST call (Other and OpenAI share an `openAiCompatibleRequest` helper)
 - Data layer
-  - Entities: `app/src/main/java/com/lukearnold/coachesassistant/data/Entities.kt`
-  - DAOs: `app/src/main/java/com/lukearnold/coachesassistant/data/Dao.kt`
-  - Repository: `app/src/main/java/com/lukearnold/coachesassistant/data/GameRepository.kt`
-  - Database: `app/src/main/java/com/lukearnold/coachesassistant/data/AppDatabase.kt`
-  - MVP-vote serialization: `app/src/main/java/com/lukearnold/coachesassistant/data/MvpVotes.kt`
-  - Room schema exports: `app/schemas/com.lukearnold.coachesassistant.data.AppDatabase/`
+  - Entities: `app/src/main/java/com/lonrad/coachesassistant/data/Entities.kt`
+  - DAOs: `app/src/main/java/com/lonrad/coachesassistant/data/Dao.kt`
+  - Repository: `app/src/main/java/com/lonrad/coachesassistant/data/GameRepository.kt`
+  - Database: `app/src/main/java/com/lonrad/coachesassistant/data/AppDatabase.kt`
+  - MVP-vote serialization: `app/src/main/java/com/lonrad/coachesassistant/data/MvpVotes.kt`
+  - Room schema exports: `app/schemas/com.lonrad.coachesassistant.data.AppDatabase/`
 
 ## Data model summary
 
