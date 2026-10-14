@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="backup_damaged">Questo file di backup è danneggiato.</string>
+    <string name="backup_damaged_nothing_changed">Questo file di backup è danneggiato. Non è stato modificato nulla.</string>
+    <string name="backup_file_unopenable">Impossibile aprire il file di backup</string>
+    <string name="backup_from_newer_app">Questo backup è stato creato da una versione più recente dell’app. Aggiorna l’app per ripristinarlo.</string>
+    <string name="backup_not_a_backup">Quel file non è un backup di Coaches Assistant.</string>
+    <string name="export_file_unopenable">Impossibile aprire il file di esportazione</string>
+    <string name="game_not_found">Partita non trovata</string>
+    <string name="import_file_unopenable">Impossibile aprire il file di importazione</string>
+    <string name="notes_file_date">Data: %1$s</string>
+    <string name="notes_file_game">Partita: %1$s</string>
+    <string name="notes_file_heading">--- NOTE DELL’ALLENATORE ---</string>
+    <string name="notes_file_opponent">Avversario: %1$s</string>
+    <string name="notes_file_score" tools:ignore="PluralsCandidate">Punteggio: Noi %1$d – %2$d %3$s</string>
+    <string name="sport_afl">AFL</string>
+    <string name="sport_basketball">Pallacanestro</string>
+    <string name="sport_cricket">Cricket</string>
+    <string name="sport_field_hockey">Hockey su prato</string>
+    <string name="sport_flag_football">Flag football</string>
+    <string name="sport_futsal">Calcio a 5</string>
+    <string name="sport_gaelic_football">Calcio gaelico</string>
+    <string name="sport_handball">Pallamano</string>
+    <string name="sport_ice_hockey">Hockey su ghiaccio</string>
+    <string name="sport_lacrosse">Lacrosse</string>
+    <string name="sport_netball">Netball</string>
+    <string name="sport_rugby_league">Rugby a 13</string>
+    <string name="sport_rugby_union">Rugby a 15</string>
+    <string name="sport_soccer">Calcio</string>
+    <string name="sport_touch_football">Touch rugby</string>
+    <string name="sport_ultimate_frisbee">Ultimate frisbee</string>
+    <string name="sport_water_polo">Pallanuoto</string>
+</resources>

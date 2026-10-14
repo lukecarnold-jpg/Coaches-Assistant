@@ -1,7 +1,7 @@
 package com.lonrad.coachesassistant.data
 
 import androidx.annotation.StringRes
-import com.lonrad.coachesassistant.R
+import com.lonrad.coachesassistant.shared.R
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
