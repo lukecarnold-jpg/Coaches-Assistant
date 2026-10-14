@@ -71,6 +71,7 @@ The app is built with Kotlin, Jetpack Compose, Room, and an optional AI-powered 
   - Age-group drill generation via a user-chosen AI provider: Google Gemini, Anthropic Claude, OpenAI ChatGPT, or a custom OpenAI-compatible endpoint
   - A request in progress can be cancelled (e.g. a slow local server), which stops the network call and puts back the drills that were showing
   - A reply that isn't from an AI (e.g. a web page from a mistyped "Other" endpoint URL, or hotel Wi-Fi's sign-in page) gets its own message naming the server, and a reply cut off at the model's length limit is reported rather than shown with its last drill half-written
+  - Each drill has a Report button, as Google Play requires for AI-generated content: the coach picks a reason (offensive, unsafe, wrong, or something else) and can add details, then the drill comes off the list and their email app opens with a report to the developer (`ai/DrillReport.kt`). It holds the drill, the reason, how it was generated (sport, age group, provider, model), and the app and Android versions, but never the API key or an "Other" endpoint's address. With no email app, the dialog stays open and gives the address instead
 - Settings tab
   - "Switch sport" returns to the sport landing screen
   - "Language": the phone's language, English, Español, Français, or Italiano; the app switches straight away, and AI drills are generated in the chosen language. On Android 13+ the same choice is also in the phone's per-app language settings
@@ -204,7 +205,7 @@ Release builds are obfuscated by R8 but keep line numbers (`app/proguard-rules.p
 
 ### Privacy policy and Play listing
 
-Play requires a privacy policy URL. A draft is in [`docs/privacy-policy.md`](docs/privacy-policy.md): fill in the contact email and effective date, then host it at a public URL. This repo is private, so it can't be linked from here; any public page works (a website, Google Sites, a public GitHub Gist, or GitHub Pages from a public repo).
+Play requires a privacy policy URL. The policy is [`docs/privacy-policy.md`](docs/privacy-policy.md), and since this repository is public it can be linked directly: <https://github.com/lukecarnold-jpg/Coaches-Assistant/blob/master/docs/privacy-policy.md>. GitHub Pages would give it a shorter address. Update its effective date whenever it changes.
 
 For Play's **Data safety** form, the relevant facts (review them against Google's current definitions before submitting):
 
@@ -212,6 +213,7 @@ For Play's **Data safety** form, the relevant facts (review them against Google'
 - The only network traffic is generating drills: the selected sport and age group (and the app's language, when it isn't English), plus the user's own API key, go to the AI provider the user chose. No player or game data is sent.
 - Data is encrypted in transit (all built-in providers use HTTPS; plain HTTP is only allowed to a server on the user's local network).
 - Users can delete their data in the app (Settings → Delete data) or by uninstalling.
+- Reporting a drill opens the user's own email app with the report; the app itself sends nothing, and the user decides whether to send the email.
 
 The app declares a **foreground service** of type `specialUse` (`ui/SubReminderService.kt`), so Play Console's App content → Foreground service permissions needs a declaration. What it does: while a game clock the coach started is running and substitution notifications are on, it checks playing time every 15 seconds and notifies when a substitution would even out minutes; it stops when the clock stops. Play may ask for a short video of the feature.
 

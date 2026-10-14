@@ -274,6 +274,9 @@ Tagged `v4.2.0` in October 2026.
 
 ## Unreleased
 
+**Training**
+- Each generated drill can be reported, as Google Play's AI-generated content policy requires: a reason and optional details, then the drill comes off the list and the coach's email app opens with the report (the drill, how it was generated, and the app and Android versions; never the API key or an "Other" endpoint's address). The privacy policy describes it
+
 **Security**
 - The repository is public, with a full `SECURITY.md`: supported versions, private reporting (GitHub's private vulnerability reporting, or email), disclosure, scope, the app's security design, and its known limitations
 - Exported CSVs put a `'` in front of any value starting with `=`, `+`, `-`, or `@`, so a player or game name can't run as a formula when the file is opened in a spreadsheet; importing a roster removes it again
@@ -282,7 +285,7 @@ Tagged `v4.2.0` in October 2026.
 
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.
-- `./gradlew testDebugUnitTest` passes 250 tests on the JVM (Robolectric where Android is needed), and `./gradlew connectedDebugAndroidTest` runs one instrumented smoke test on an emulator; `./gradlew lintDebug` has one warning, that Kotlin 2.4.21 is out (lint can see the Kotlin version now that it's in the version catalog); `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
+- `./gradlew testDebugUnitTest` passes 258 tests on the JVM (Robolectric where Android is needed), and `./gradlew connectedDebugAndroidTest` runs one instrumented smoke test on an emulator; `./gradlew lintDebug` has one warning, that Kotlin 2.4.21 is out (lint can see the Kotlin version now that it's in the version catalog); `./gradlew spotlessCheck` passes; `./gradlew assembleRelease` builds with R8 minification, resource shrinking, and the baseline profile.
 - Room schema version 15, with every migration from version 5 tested against the exported schemas.
 - 17 sports: 16 share one rotation-tracking engine, configured per sport (on-court size, minimum to field a team, positions, periods, scoring, infraction, keeper position), and cricket is recorded as scorecards with a field plan.
 - The training assistant works for every sport, with the provider and API key chosen in Settings (keys encrypted with an Android Keystore key); in debug builds, Gemini also falls back to `GEMINI_API_KEY` in `local.properties`.

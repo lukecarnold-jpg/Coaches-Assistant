@@ -9,6 +9,7 @@ Coaches Assistant is an app for sports coaches to manage team rosters, track gam
 - Your rosters, games, and notes stay on your device.
 - The app has no accounts, no advertising, no analytics, and no crash reporting.
 - The only information sent over the internet is when you generate training drills: the sport and age group you pick (and the app's language, if it isn't English) go to the AI provider you chose, using your own API key.
+- If you report a drill, your email app opens with a report for you to send us. Nothing is sent unless you send it.
 
 ## Information stored on your device
 
@@ -30,9 +31,19 @@ When you tap **Generate AI Drills**, the app sends a request to the AI provider 
 
 No player names, game data, notes, or other information from the app is included. The provider's own privacy policy governs how it handles these requests. If you configure a server on your local network (for example, one you run yourself), the request goes only to that server.
 
+## Reporting a drill
+
+If a generated drill is offensive, unsafe, or wrong, you can tap **Report** on it. You choose a reason and can add details, and then your email app opens with a message to us. The message contains:
+
+- the drill, the reason you chose, and any details you added;
+- the sport, age group, AI provider, and model the drill came from; and
+- the app version and Android version.
+
+It doesn't include your API key, player names, game data, or the address of a server you configured. Nothing is sent unless you send that email yourself, and we receive whatever your email app sends with it, such as your email address. We use reports only to look into the problem and improve the drills, and we don't share them.
+
 ## Backups and exports
 
-- **Android backup:** if you have Android's backup turned on, your rosters and games may be included in your device's backup (for example, to your Google account) and restored to a new device, like other apps' data. API keys and settings are not included.
+- **Android backup:** if you have Android's backup turned on, your rosters and games may be included in your device's backup (for example, to your Google account) and restored to a new device, like other apps' data, along with your sport and display settings. API keys and AI provider settings are not included.
 - **Files you create:** backups, roster CSVs, game CSVs, and notes you export are saved where you choose. What happens to those files afterwards is up to you.
 
 ## Permissions

@@ -1,11 +1,13 @@
 package com.lukearnold.coachesassistant.ui
 
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasAnyAncestor
@@ -14,21 +16,29 @@ import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
+import com.lukearnold.coachesassistant.ai.AiProvider
+import com.lukearnold.coachesassistant.ai.DRILL_REPORT_EMAIL
+import com.lukearnold.coachesassistant.ai.Drill
+import com.lukearnold.coachesassistant.ai.DrillSource
 import com.lukearnold.coachesassistant.data.EventType
 import com.lukearnold.coachesassistant.data.GameEntity
 import com.lukearnold.coachesassistant.data.GameEventEntity
 import com.lukearnold.coachesassistant.data.PlayerEntity
 import com.lukearnold.coachesassistant.data.Sport
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 /**
@@ -260,11 +270,67 @@ class ScreenBehaviourTest {
     fun drillsBeingGenerated_canBeCancelled() {
         var cancelled = 0
         compose.setContent {
-            TrainingResultsPanel(uiState = TrainingUiState.Loading, sport = Sport.BASKETBALL, onCancel = { cancelled++ })
+            TrainingResultsPanel(uiState = TrainingUiState.Loading, sport = Sport.BASKETBALL, onCancel = { cancelled++ }, onRemoveDrill = {})
         }
 
         compose.onNodeWithText("Cancel").performClick()
 
         assertEquals(1, cancelled)
+    }
+
+    private val relay = Drill("Dribble Relay", "Players dribble around cones and back.", "Keep your head up.")
+    private val circle = Drill("Passing Circle", "Players pass around a circle.", "Chest pass with both hands.")
+
+    private fun showDrills(removed: MutableList<Drill>) {
+        compose.setContent {
+            // In a Column, as on the Training screen, so the cards don't sit on top of each other.
+            Column {
+                TrainingResultsPanel(
+                    uiState = TrainingUiState.Success(
+                        listOf(relay, circle),
+                        DrillSource(Sport.BASKETBALL, "Under 10's", AiProvider.GEMINI, "gemini-test"),
+                    ),
+                    sport = Sport.BASKETBALL,
+                    onCancel = {},
+                    onRemoveDrill = { removed += it },
+                )
+            }
+        }
+    }
+
+    @Test
+    fun reportingADrill_needsAReason_thenOpensAnEmailToTheDeveloperAndRemovesTheDrill() {
+        val removed = mutableListOf<Drill>()
+        showDrills(removed)
+
+        compose.onAllNodesWithText("Report")[0].performClick()
+        dialogButton("Send report").assertIsNotEnabled()
+        compose.onNodeWithText("Unsafe for players").performClick()
+        compose.onNodeWithText("More details (optional)").performTextInput("Too much contact")
+        dialogButton("Send report").performClick()
+
+        val email = shadowOf(compose.activity).nextStartedActivity
+        assertEquals(Intent.ACTION_SENDTO, email.action)
+        assertEquals(arrayOf(DRILL_REPORT_EMAIL).toList(), email.getStringArrayExtra(Intent.EXTRA_EMAIL)?.toList())
+        val body = email.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
+        assertTrue(body, "Reason: Unsafe for players" in body && "Details: Too much contact" in body && "Dribble Relay" in body)
+        assertEquals(listOf(relay), removed)
+        compose.onNode(isDialog()).assertDoesNotExist()
+    }
+
+    @Test
+    fun reportingADrill_withNoEmailApp_keepsTheDialogOpenAndGivesTheAddress() {
+        val removed = mutableListOf<Drill>()
+        // Make an intent nothing can handle throw, as on a real device with no email app.
+        shadowOf(compose.activity.application).checkActivities(true)
+        showDrills(removed)
+
+        compose.onAllNodesWithText("Report")[0].performClick()
+        compose.onNodeWithText("Offensive or inappropriate").performClick()
+        dialogButton("Send report").performClick()
+
+        compose.onNodeWithText("No email app was found", substring = true).assertExists()
+        compose.onNodeWithText(DRILL_REPORT_EMAIL, substring = true).assertExists()
+        assertTrue(removed.isEmpty())
     }
 }

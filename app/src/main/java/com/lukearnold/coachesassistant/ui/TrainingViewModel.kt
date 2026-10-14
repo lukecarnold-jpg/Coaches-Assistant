@@ -14,6 +14,7 @@ import com.lukearnold.coachesassistant.ai.AiRequestException
 import com.lukearnold.coachesassistant.ai.AiSettingsStore
 import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
 import com.lukearnold.coachesassistant.ai.Drill
+import com.lukearnold.coachesassistant.ai.DrillSource
 import com.lukearnold.coachesassistant.ai.DrillTextGenerator
 import com.lukearnold.coachesassistant.ai.buildDrillPrompt
 import com.lukearnold.coachesassistant.ai.hasLocalNetworkPermission
@@ -30,7 +31,7 @@ import kotlinx.coroutines.launch
 sealed class TrainingUiState {
     object Idle : TrainingUiState()
     object Loading : TrainingUiState()
-    data class Success(val drills: List<Drill>) : TrainingUiState()
+    data class Success(val drills: List<Drill>, val source: DrillSource) : TrainingUiState()
     data class Error(val message: UiText) : TrainingUiState()
 }
 
@@ -136,15 +137,22 @@ class TrainingViewModel(
         generation?.cancel()
         if (_uiState.value !is TrainingUiState.Loading) stateBeforeGenerating = _uiState.value
         _uiState.value = TrainingUiState.Loading
+        val modelOverride = _modelOverrides.value[provider].orEmpty()
+        val source = DrillSource(
+            sport = sport,
+            ageGroup = ageGroup,
+            provider = provider,
+            model = if (provider == AiProvider.OTHER) customEndpoint.model else modelOverride.ifBlank { provider.defaultModel.orEmpty() },
+        )
         generation = viewModelScope.launch {
             try {
-                val text = generatorFor(provider, customEndpoint, _modelOverrides.value[provider].orEmpty())
+                val text = generatorFor(provider, customEndpoint, modelOverride)
                     .generateText(buildDrillPrompt(sport, ageGroup, languageTag), apiKey)
                 val drills = parseDrills(text)
                 _uiState.value = if (drills.isEmpty()) {
                     TrainingUiState.Error(uiText(R.string.drills_parse_failed))
                 } else {
-                    TrainingUiState.Success(drills)
+                    TrainingUiState.Success(drills, source)
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -160,6 +168,16 @@ class TrainingViewModel(
         generation?.cancel()
         generation = null
         _uiState.value = stateBeforeGenerating
+    }
+
+    /**
+     * Takes a reported [drill] off the list, so content the coach found offensive doesn't stay on
+     * screen. Removing the last one goes back to the empty state.
+     */
+    fun removeDrill(drill: Drill) {
+        val state = _uiState.value as? TrainingUiState.Success ?: return
+        val remaining = state.drills - drill
+        _uiState.value = if (remaining.isEmpty()) TrainingUiState.Idle else state.copy(drills = remaining)
     }
 
     private fun describeError(provider: AiProvider, e: Exception): UiText = when {

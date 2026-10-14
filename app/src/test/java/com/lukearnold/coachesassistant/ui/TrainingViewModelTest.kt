@@ -9,6 +9,7 @@ import com.lukearnold.coachesassistant.ai.AiProvider
 import com.lukearnold.coachesassistant.ai.AiRequestException
 import com.lukearnold.coachesassistant.ai.AiSettingsStore
 import com.lukearnold.coachesassistant.ai.CustomEndpointConfig
+import com.lukearnold.coachesassistant.ai.DrillSource
 import com.lukearnold.coachesassistant.ai.DrillTextGenerator
 import com.lukearnold.coachesassistant.ai.SecretCipher
 import com.lukearnold.coachesassistant.data.Sport
@@ -171,6 +172,41 @@ class TrainingViewModelTest {
 
         assertTrue(firstCancelled)
         assertTrue(state is TrainingUiState.Success)
+    }
+
+    @Test
+    fun drills_rememberWhatTheyWereGeneratedFrom_forAReport() {
+        val vm = viewModel()
+        vm.updateApiKey(AiProvider.GEMINI, "key")
+
+        val state = vm.generate() as TrainingUiState.Success
+
+        // The provider's default model, since none was chosen in Settings.
+        assertEquals(DrillSource(Sport.BASKETBALL, "Under 10's", AiProvider.GEMINI, AiProvider.GEMINI.defaultModel!!), state.source)
+    }
+
+    @Test
+    fun drills_fromTheOtherProvider_nameItsModelButNotItsEndpoint() {
+        val vm = viewModel()
+        vm.selectProvider(AiProvider.OTHER)
+        vm.updateCustomEndpoint(CustomEndpointConfig("http://192.168.1.20:11434/v1/chat/completions", "llama3"))
+
+        val state = vm.generate() as TrainingUiState.Success
+
+        assertEquals(DrillSource(Sport.BASKETBALL, "Under 10's", AiProvider.OTHER, "llama3"), state.source)
+    }
+
+    @Test
+    fun removeDrill_takesAReportedDrillOffTheList_andTheLastOneLeavesTheEmptyState() {
+        val vm = viewModel()
+        vm.updateApiKey(AiProvider.GEMINI, "key")
+        val (first, second) = (vm.generate() as TrainingUiState.Success).drills
+
+        vm.removeDrill(first)
+        assertEquals(listOf(second), (vm.uiState.value as TrainingUiState.Success).drills)
+
+        vm.removeDrill(second)
+        assertEquals(TrainingUiState.Idle, vm.uiState.value)
     }
 
     private companion object {

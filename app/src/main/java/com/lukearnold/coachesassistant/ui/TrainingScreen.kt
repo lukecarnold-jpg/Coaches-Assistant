@@ -1,24 +1,38 @@
 package com.lukearnold.coachesassistant.ui
 
+import android.content.ActivityNotFoundException
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lukearnold.coachesassistant.BuildConfig
 import com.lukearnold.coachesassistant.R
 import com.lukearnold.coachesassistant.ai.ACCESS_LOCAL_NETWORK
+import com.lukearnold.coachesassistant.ai.DRILL_REPORT_EMAIL
 import com.lukearnold.coachesassistant.ai.Drill
+import com.lukearnold.coachesassistant.ai.DrillReportReason
+import com.lukearnold.coachesassistant.ai.buildDrillReport
+import com.lukearnold.coachesassistant.ai.toEmailIntent
 import com.lukearnold.coachesassistant.data.Sport
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,7 +113,12 @@ fun TrainingScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(layout.sectionGap),
                 ) {
-                    TrainingResultsPanel(uiState = uiState, sport = sport, onCancel = trainingViewModel::cancelGeneration)
+                    TrainingResultsPanel(
+                        uiState = uiState,
+                        sport = sport,
+                        onCancel = trainingViewModel::cancelGeneration,
+                        onRemoveDrill = trainingViewModel::removeDrill,
+                    )
                 }
             }
         }
@@ -129,7 +148,12 @@ fun TrainingScreen(
                 isLoading = uiState is TrainingUiState.Loading,
             )
 
-            TrainingResultsPanel(uiState = uiState, sport = sport, onCancel = trainingViewModel::cancelGeneration)
+            TrainingResultsPanel(
+                uiState = uiState,
+                sport = sport,
+                onCancel = trainingViewModel::cancelGeneration,
+                onRemoveDrill = trainingViewModel::removeDrill,
+            )
         }
     }
 }
@@ -191,8 +215,9 @@ fun TrainingSelectionPanel(
     }
 }
 
+/** [onRemoveDrill] takes a drill off the list once the coach has reported it. */
 @Composable
-fun TrainingResultsPanel(uiState: TrainingUiState, sport: Sport, onCancel: () -> Unit) {
+fun TrainingResultsPanel(uiState: TrainingUiState, sport: Sport, onCancel: () -> Unit, onRemoveDrill: (Drill) -> Unit) {
     when (uiState) {
         is TrainingUiState.Idle -> {
             EmptyMessage(stringResource(R.string.training_empty, stringResource(sport.label)))
@@ -214,8 +239,31 @@ fun TrainingResultsPanel(uiState: TrainingUiState, sport: Sport, onCancel: () ->
         }
 
         is TrainingUiState.Success -> {
+            val context = LocalContext.current
+            var reporting by remember { mutableStateOf<Drill?>(null) }
+
             uiState.drills.forEach { drill ->
-                DrillCard(drill)
+                DrillCard(drill, onReport = { reporting = drill })
+            }
+
+            reporting?.let { drill ->
+                ReportDrillDialog(
+                    onDismiss = { reporting = null },
+                    onSend = { reason, details ->
+                        val report = buildDrillReport(drill, uiState.source, reason, details, BuildConfig.VERSION_NAME, Build.VERSION.RELEASE)
+                        val opened = try {
+                            context.startActivity(report.toEmailIntent())
+                            true
+                        } catch (_: ActivityNotFoundException) {
+                            false
+                        }
+                        if (opened) {
+                            reporting = null
+                            onRemoveDrill(drill)
+                        }
+                        opened
+                    },
+                )
             }
         }
 
@@ -238,7 +286,7 @@ fun TrainingResultsPanel(uiState: TrainingUiState, sport: Sport, onCancel: () ->
 }
 
 @Composable
-fun DrillCard(drill: Drill) {
+fun DrillCard(drill: Drill, onReport: () -> Unit) {
     val layout = LocalResponsiveLayout.current
 
     OutlinedCard(modifier = Modifier.fillMaxWidth()) {
@@ -274,6 +322,88 @@ fun DrillCard(drill: Drill) {
                 text = drill.teachingPoints,
                 style = MaterialTheme.typography.bodySmall,
             )
+
+            TextButton(onClick = onReport, modifier = Modifier.align(Alignment.End)) {
+                Icon(Icons.Outlined.Flag, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(layout.tinyGap))
+                Text(stringResource(R.string.report_drill))
+            }
         }
     }
+}
+
+/**
+ * Asks why a drill is being reported, as Google Play requires for AI-generated content. [onSend]
+ * opens the email app with the report and returns false if there isn't one, in which case the
+ * dialog stays open and gives the address to write to instead.
+ */
+@Composable
+fun ReportDrillDialog(onDismiss: () -> Unit, onSend: (DrillReportReason, String) -> Boolean) {
+    val layout = LocalResponsiveLayout.current
+    var reason by rememberSaveable { mutableStateOf<DrillReportReason?>(null) }
+    var details by rememberSaveable { mutableStateOf("") }
+    var noEmailApp by rememberSaveable { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.report_drill_title)) },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(layout.smallGap),
+            ) {
+                Column(modifier = Modifier.selectableGroup()) {
+                    DrillReportReason.entries.forEach { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(selected = reason == option, role = Role.RadioButton) { reason = option }
+                                .padding(vertical = layout.tinyGap),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = reason == option, onClick = null)
+                            Spacer(Modifier.width(layout.smallGap))
+                            Text(stringResource(option.label))
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = details,
+                    onValueChange = { details = it },
+                    label = { Text(stringResource(R.string.report_details_label)) },
+                    minLines = 2,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = stringResource(R.string.report_drill_explanation),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                if (noEmailApp) {
+                    // Selectable, so the address can be copied into whatever the coach uses instead.
+                    SelectionContainer {
+                        Text(
+                            text = stringResource(R.string.report_no_email_app, DRILL_REPORT_EMAIL),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { reason?.let { noEmailApp = !onSend(it, details) } },
+                enabled = reason != null,
+            ) {
+                Text(stringResource(R.string.send_report))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+    )
 }

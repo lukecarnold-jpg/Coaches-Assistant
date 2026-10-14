@@ -111,6 +111,16 @@
     <string name="generate_ai_drills">Genera esercizi con l’IA</string>
     <string name="description">Descrizione</string>
     <string name="teaching_points">Punti chiave</string>
+    <string name="report_drill">Segnala</string>
+    <string name="report_drill_title">Segnala questo esercizio</string>
+    <string name="report_reason_offensive">Offensivo o inappropriato</string>
+    <string name="report_reason_unsafe">Pericoloso per i giocatori</string>
+    <string name="report_reason_inaccurate">Sbagliato o poco utile</string>
+    <string name="report_reason_other">Altro motivo</string>
+    <string name="report_details_label">Altri dettagli (facoltativo)</string>
+    <string name="report_drill_explanation">Si apre la tua app di posta con questo esercizio e le tue risposte, pronti da inviare allo sviluppatore. Non viene inviato nulla finché non invii l’email. L’esercizio viene tolto dall’elenco.</string>
+    <string name="send_report">Invia segnalazione</string>
+    <string name="report_no_email_app">Nessuna app di posta trovata. Invia la segnalazione a %1$s.</string>
     <string name="remove_this_player_question">Rimuovere questo giocatore?</string>
     <string name="remove">Rimuovi</string>
     <string name="team_roster">Rosa della squadra</string>
