@@ -22,7 +22,7 @@ This repository is public. Please don't report a security problem in a public is
 Report privately in one of these ways:
 
 - **Preferred:** [report a vulnerability on GitHub](https://github.com/lukecarnold-jpg/Coaches-Assistant/security/advisories/new). Only you and the maintainer can see the report. A fix can be developed in a private fork, and an advisory is published when it ships.
-- **Email:** send it to **lukec.arnold@gmail.com** with a subject starting with `[Security]`.
+- **Email:** send it to **lonrad.apps@gmail.com** with a subject starting with `[Security]`.
 
 Either way, please include:
 
