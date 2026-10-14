@@ -115,6 +115,16 @@
     <string name="generate_ai_drills">Generate AI Drills</string>
     <string name="description">Description</string>
     <string name="teaching_points">Teaching Points</string>
+    <string name="report_drill">Report</string>
+    <string name="report_drill_title">Report this drill</string>
+    <string name="report_reason_offensive">Offensive or inappropriate</string>
+    <string name="report_reason_unsafe">Unsafe for players</string>
+    <string name="report_reason_inaccurate">Wrong or not useful</string>
+    <string name="report_reason_other">Something else</string>
+    <string name="report_details_label">More details (optional)</string>
+    <string name="report_drill_explanation">Your email app opens with this drill and your answers, ready to send to the developer. Nothing is sent until you send the email. The drill is removed from the list.</string>
+    <string name="send_report">Send report</string>
+    <string name="report_no_email_app">No email app was found. Email your report to %1$s.</string>
     <string name="remove_this_player_question">Remove this player?</string>
     <string name="remove">Remove</string>
     <string name="team_roster">Team roster</string>
