@@ -1,4 +1,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="auth_prompt_title">Confirmez votre identité</string>
+    <string name="backup_password_title">Protéger cette sauvegarde par un mot de passe ?</string>
+    <string name="backup_password_hint">La sauvegarde est chiffrée : sans le mot de passe, personne ne peut lire les noms ni les matchs qu’elle contient. Si vous perdez le mot de passe, la sauvegarde ne pourra plus être ouverte.</string>
+    <string name="backup_password_field">Mot de passe</string>
+    <string name="backup_password_confirm_field">Confirmer le mot de passe</string>
+    <string name="backup_password_mismatch">Les mots de passe ne correspondent pas.</string>
+    <string name="backup_password_too_short">Utilisez au moins 8 caractères.</string>
+    <string name="backup_password_skip">Enregistrer sans mot de passe</string>
+    <string name="backup_password_restore_title">Cette sauvegarde est protégée</string>
+    <string name="backup_password_restore_hint">Saisissez le mot de passe utilisé pour l’enregistrer.</string>
+    <string name="ai_reply_too_large">La réponse de l’IA est trop volumineuse pour être lue.</string>
     <string name="app_name">Coaches Assistant</string>
     <string name="content_language_tag">fr</string>
     <string name="app_name_legacy" tools:ignore="UnusedResources">Coaches Assistant (ancienne)</string>
@@ -487,7 +498,7 @@
 
     <!-- The game clock notification -->
     <string name="game_clock_notification_setting">Afficher le chrono dans les notifications</string>
-    <string name="game_clock_notification_setting_description">Pendant que le chrono tourne, une notification silencieuse affiche la période, le score et le temps restant, y compris sur l’écran de verrouillage, avec un bouton pour arrêter le chrono.</string>
+    <string name="game_clock_notification_setting_description">Pendant que le chrono tourne, une notification silencieuse affiche la période, le score et le temps restant, avec un bouton pour arrêter le chrono. Sur l’écran de verrouillage, seul le chrono apparaît.</string>
     <string name="game_clock_notification_channel">Chrono du match</string>
     <string name="game_clock_notification_channel_description">Le chrono du match pendant qu’une période se joue.</string>
     <string name="game_clock_notification_title">%1$s · %2$s</string>

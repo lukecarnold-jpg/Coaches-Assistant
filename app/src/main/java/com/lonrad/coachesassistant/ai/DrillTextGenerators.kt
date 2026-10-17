@@ -6,6 +6,8 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -50,6 +52,10 @@ private val httpClient = OkHttpClient.Builder()
     // Generous, because a local server (e.g. Ollama) loads its model on the first request after
     // being idle, which can take a minute on its own before any text comes back.
     .readTimeout(120, TimeUnit.SECONDS)
+    // The key travels in a header, and OkHttp would resend it to wherever a redirect points. None of
+    // the providers' APIs redirect, so a redirect is reported as an error rather than followed.
+    .followRedirects(false)
+    .followSslRedirects(false)
     // The platform allows cleartext so the Other provider can reach local servers (see
     // network_security_config.xml); this enforces the local-only part on every request actually
     // sent, including redirects, so an https endpoint can't be redirected to plain http.
@@ -68,6 +74,19 @@ private val httpClient = OkHttpClient.Builder()
 
 private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
 
+/** The most of a reply that's read. A drill reply is a few kilobytes, so this only stops a runaway server. */
+private const val MAX_REPLY_BYTES = 1L shl 20
+
+/**
+ * The generateContent URL for [model]. The model name is one path segment, so a name containing `/`
+ * or `..` stays inside the models path rather than reaching another endpoint on the same host.
+ */
+internal fun geminiUrl(model: String): HttpUrl = "https://generativelanguage.googleapis.com/".toHttpUrl().newBuilder()
+    .addPathSegment("v1beta")
+    .addPathSegment("models")
+    .addPathSegment("$model:generateContent")
+    .build()
+
 /**
  * Calls the Gemini API's REST endpoint directly, like the Anthropic and OpenAI generators, rather
  * than through Google's deprecated Android client SDK.
@@ -84,7 +103,7 @@ class GeminiTextGenerator(private val model: String) : DrillTextGenerator {
         }
 
         val request = Request.Builder()
-            .url("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent")
+            .url(geminiUrl(model))
             .addHeader("x-goog-api-key", apiKey)
             .post(body.toString().toRequestBody(jsonMediaType))
             .build()
@@ -190,7 +209,13 @@ private suspend fun executeForText(
     wasCutOff: (JSONObject) -> Boolean,
 ): String {
     httpClient.newCall(request).executeAsync().use { response ->
-        val bodyString = withContext(Dispatchers.IO) { response.body.string() }
+        val bodyString = withContext(Dispatchers.IO) {
+            response.body.source().use { source ->
+                source.request(MAX_REPLY_BYTES + 1)
+                if (source.buffer.size > MAX_REPLY_BYTES) throw UserFacingException(R.string.ai_reply_too_large)
+                source.readUtf8()
+            }
+        }
 
         if (!response.isSuccessful) {
             val apiMessage = runCatching {

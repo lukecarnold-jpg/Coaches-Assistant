@@ -3,6 +3,7 @@ package com.lonrad.coachesassistant.ui
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lonrad.coachesassistant.BuildConfig
 import com.lonrad.coachesassistant.R
 import com.lonrad.coachesassistant.data.UserFacingException
 import kotlinx.coroutines.CancellationException
@@ -27,7 +28,8 @@ internal fun ViewModel.launchSafely(
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
-        Log.e(TAG, "Action failed", e)
+        // A release build logs only the failure's type: its message and stack trace can carry the coach's data.
+        if (BuildConfig.DEBUG) Log.e(TAG, "Action failed", e) else Log.e(TAG, "Action failed: ${e.javaClass.simpleName}")
         messages.emit(UiMessage(if (e is UserFacingException) e.toUiText(fallback = failure) else uiText(failure)))
     }
 }

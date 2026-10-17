@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="file_too_large">That file is too large to be read.</string>
+    <string name="backup_password_needed">This backup is protected with a password. Enter it to restore.</string>
+    <string name="backup_password_wrong">That password doesn\'t open this backup, or the file is damaged. Nothing was changed.</string>
     <string name="backup_damaged">This backup file is damaged.</string>
     <string name="backup_damaged_nothing_changed">This backup file is damaged. Nothing was changed.</string>
     <string name="backup_file_unopenable">Unable to open the backup file</string>

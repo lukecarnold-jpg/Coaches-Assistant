@@ -5,9 +5,26 @@
     server on the local network over plain http (e.g. Ollama on a laptop). Android can't scope
     this to private IP ranges, so the app enforces that itself: the shared OkHttp client refuses
     any plain-http request, including redirects, to a host that isn't on the local network (see
-    isLocalNetworkHost in ai/CustomEndpointConfig.kt). Every built-in endpoint is https.
+    isLocalNetworkHost in ai/CustomEndpointConfig.kt).
     -->
     <base-config
         cleartextTrafficPermitted="true"
-        tools:ignore="InsecureBaseConfiguration" />
+        tools:ignore="InsecureBaseConfiguration">
+        <!-- Only the system's certificate authorities are trusted, never ones a user has installed. -->
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <!--
+    The built-in providers are https only: cleartext is refused here at the platform level too, so
+    even a bug in the app's own check couldn't send a key over plain http to one of them.
+    -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.anthropic.com</domain>
+        <domain includeSubdomains="true">api.openai.com</domain>
+        <domain includeSubdomains="true">generativelanguage.googleapis.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
 </network-security-config>

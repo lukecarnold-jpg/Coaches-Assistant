@@ -9,12 +9,17 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.lonrad.coachesassistant.R
 import com.lonrad.coachesassistant.data.AppDatabase
+import com.lonrad.coachesassistant.data.BackupFormat
+import com.lonrad.coachesassistant.data.BackupFormatException
 import com.lonrad.coachesassistant.data.BackupIo
 import com.lonrad.coachesassistant.data.GameCsvIo
 import com.lonrad.coachesassistant.data.GameRepository
 import com.lonrad.coachesassistant.data.Sport
+import com.lonrad.coachesassistant.shared.R as SharedR
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /** Moving data in and out for [sport]: backup and restore, CSV and notes files, and clearing data. */
@@ -44,11 +49,15 @@ class DataViewModel(
         }
     }
 
-    /** Saves every sport's data (not just this one's) to [uri]; see BackupIo. */
-    fun exportBackup(uri: Uri) {
+    /** The text of an encrypted backup that's been picked and is waiting for its password, or null. */
+    private val _pendingRestore = MutableStateFlow<String?>(null)
+    val pendingRestore = _pendingRestore.asStateFlow()
+
+    /** Saves every sport's data (not just this one's) to [uri], encrypted with [password] if it isn't null. */
+    fun exportBackup(uri: Uri, password: String?) {
         viewModelScope.launch {
             runCatching {
-                backupIo.export(getApplication<Application>().contentResolver, uri)
+                backupIo.export(getApplication<Application>().contentResolver, uri, password)
             }.onSuccess { counts ->
                 _messages.emit(UiMessage(uiText(R.string.msg_backup_saved, playerCount(counts.players), gameCount(counts.games))))
             }.onFailure {
@@ -57,16 +66,52 @@ class DataViewModel(
         }
     }
 
-    /** Replaces all data, for every sport, with the backup at [uri]; nothing changes if it can't be read. */
-    fun restoreBackup(uri: Uri) {
+    /**
+     * Reads the backup at [uri]. A plain one replaces all data, for every sport, straight away; an
+     * encrypted one waits in [pendingRestore] for its password. Nothing changes if it can't be read.
+     */
+    fun chooseRestoreFile(uri: Uri) {
         viewModelScope.launch {
             runCatching {
-                backupIo.restore(getApplication<Application>().contentResolver, uri)
-            }.onSuccess { counts ->
-                _messages.emit(UiMessage(uiText(R.string.msg_restored, playerCount(counts.players), gameCount(counts.games))))
+                backupIo.readFile(getApplication<Application>().contentResolver, uri)
+            }.onSuccess { text ->
+                if (BackupFormat.isEncrypted(text)) {
+                    _pendingRestore.value = text
+                } else {
+                    restore(text, password = null)
+                }
             }.onFailure {
                 _messages.emit(UiMessage(it.toUiText(fallback = R.string.msg_restore_failed)))
             }
+        }
+    }
+
+    /**
+     * Restores the encrypted backup waiting in [pendingRestore]. A wrong password keeps it waiting
+     * so the coach can try again; any other outcome ends the restore.
+     */
+    fun restoreWithPassword(password: String) {
+        val text = _pendingRestore.value ?: return
+        viewModelScope.launch {
+            restore(text, password)
+        }
+    }
+
+    /** Gives up on the encrypted backup waiting for its password. */
+    fun cancelRestore() {
+        _pendingRestore.value = null
+    }
+
+    private suspend fun restore(text: String, password: String?) {
+        runCatching {
+            backupIo.restore(text, password)
+        }.onSuccess { counts ->
+            _pendingRestore.value = null
+            _messages.emit(UiMessage(uiText(R.string.msg_restored, playerCount(counts.players), gameCount(counts.games))))
+        }.onFailure {
+            val wrongPassword = it is BackupFormatException && it.messageRes == SharedR.string.backup_password_wrong
+            if (!wrongPassword) _pendingRestore.value = null
+            _messages.emit(UiMessage(it.toUiText(fallback = R.string.msg_restore_failed)))
         }
     }
 

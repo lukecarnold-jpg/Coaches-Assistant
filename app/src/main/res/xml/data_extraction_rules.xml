@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
+    <!-- Rosters and games go to Google's cloud only when the backup is end-to-end encrypted with the
+         phone's screen lock (clientSideEncryption). Without that, Android skips them, so the cloud
+         copy never holds names that Google can read. Backup files exported from the app are unaffected. -->
     <cloud-backup>
-        <include domain="database" path="basketball_rotation.db"/>
-        <include domain="database" path="basketball_rotation.db-shm"/>
-        <include domain="database" path="basketball_rotation.db-wal"/>
+        <include domain="database" path="basketball_rotation.db" requireFlags="clientSideEncryption"/>
+        <include domain="database" path="basketball_rotation.db-shm" requireFlags="clientSideEncryption"/>
+        <include domain="database" path="basketball_rotation.db-wal" requireFlags="clientSideEncryption"/>
         <!-- Settings that make sense on a new phone. Not ai_settings (its API keys are encrypted
              with a key that can't leave this device) or game_day_prefs (this device's Do Not
              Disturb state). -->

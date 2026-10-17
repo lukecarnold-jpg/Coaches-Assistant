@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,6 +45,29 @@ class AiSettingsStoreTest {
         assertEquals("sk-secret", store.apiKey(AiProvider.ANTHROPIC))
         assertFalse(prefs.getString(AiProvider.ANTHROPIC.storageKey, null)!!.contains("sk-secret"))
         assertEquals("", store.apiKey(AiProvider.OPENAI))
+    }
+
+    @Test
+    fun rekeyApiKeys_movesEverySavedKeyToTheNewCipher_andDropsOneItCantRead() {
+        val newCipher = object : SecretCipher {
+            override fun encrypt(plaintext: String) = "new:$plaintext"
+            override fun decrypt(encoded: String): String {
+                require(encoded.startsWith("new:")) { "not ours" }
+                return encoded.removePrefix("new:")
+            }
+        }
+        AiSettingsStore(prefs, reversingCipher).apply {
+            setApiKey(AiProvider.ANTHROPIC, "sk-1")
+            setApiKey(AiProvider.OPENAI, "sk-2")
+        }
+        prefs.edit().putString(AiProvider.OPENAI.storageKey, "unreadable").commit()
+
+        val store = AiSettingsStore(prefs, newCipher)
+        store.rekeyApiKeys(from = reversingCipher, to = newCipher)
+
+        assertEquals("sk-1", store.apiKey(AiProvider.ANTHROPIC))
+        assertEquals("new:sk-1", prefs.getString(AiProvider.ANTHROPIC.storageKey, null))
+        assertNull(prefs.getString(AiProvider.OPENAI.storageKey, null))
     }
 
     @Test

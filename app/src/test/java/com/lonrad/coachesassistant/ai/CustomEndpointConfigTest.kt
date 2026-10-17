@@ -1,5 +1,6 @@
 package com.lonrad.coachesassistant.ai
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -23,6 +24,14 @@ class CustomEndpointConfigTest {
             "api.openai.com", "8.8.8.8", "172.32.0.1", "192.169.1.1", "100.128.0.1", "2001:db8::1",
             "local.example.com", "999.1.1.1",
         ).forEach { assertFalse("$it should not count as local", isLocalNetworkHost(it)) }
+    }
+
+    @Test
+    fun endpointHost_isTheHostNameOrNullForNonUrls() {
+        assertEquals("api.example.com", endpointHost("  https://api.example.com/v1/chat/completions "))
+        assertEquals("192.168.1.20", endpointHost("http://192.168.1.20:11434/v1/chat/completions"))
+        assertNull(endpointHost("not a url"))
+        assertNull(endpointHost(""))
     }
 
     @Test

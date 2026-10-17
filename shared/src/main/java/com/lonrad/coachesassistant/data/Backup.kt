@@ -17,18 +17,84 @@ data class BackupData(
 )
 
 /** A backup file that can't be restored, with a message fit to show the user. */
-class BackupFormatException(@StringRes messageRes: Int) : UserFacingException(messageRes)
+open class BackupFormatException(@StringRes messageRes: Int) : UserFacingException(messageRes)
+
+/** An encrypted backup, which can't be read until the coach gives its password. */
+class BackupPasswordRequiredException : BackupFormatException(R.string.backup_password_needed)
 
 /**
  * The backup file format: JSON with each table written field by field, so it stays readable as
- * the database schema changes (a later version reads older files by filling in defaults). The
- * [FORMAT_VERSION] goes up only when a change would stop an older app reading new files.
+ * the database schema changes (a later version reads older files by filling in defaults).
+ *
+ * A plain backup is [FORMAT_VERSION]. A password-protected backup is [ENCRYPTED_FORMAT_VERSION]: an
+ * envelope whose `data` is the encrypted plain backup (see [BackupCrypto]). Older apps don't know
+ * that version, so they say it was made by a newer app rather than misreading it. The version goes
+ * up only when a change would stop an older app reading new files.
  */
 object BackupFormat {
     const val FORMAT_VERSION = 1
+    const val ENCRYPTED_FORMAT_VERSION = 2
     private const val APP_TAG = "coaches-assistant"
 
-    fun encode(data: BackupData, exportedAt: Long): String = JSONObject().apply {
+    /** The backup as text: plain when [password] is null or blank, otherwise encrypted with it. */
+    fun encode(data: BackupData, exportedAt: Long, password: String? = null): String {
+        val plain = plainJson(data, exportedAt).toString()
+        if (password.isNullOrEmpty()) return plain
+        val header = JSONObject()
+            .put("app", APP_TAG)
+            .put("formatVersion", ENCRYPTED_FORMAT_VERSION)
+            .put("encrypted", true)
+        val aad = associatedData(ENCRYPTED_FORMAT_VERSION, BackupCrypto.ITERATIONS)
+        val sealed = BackupCrypto.seal(plain.toByteArray(Charsets.UTF_8), password, aad)
+        return header
+            .put("iterations", sealed.iterations)
+            .put("salt", encodeBase64(sealed.salt))
+            .put("iv", encodeBase64(sealed.iv))
+            .put("data", encodeBase64(sealed.ciphertext))
+            .toString()
+    }
+
+    /** Whether [text] is a password-protected backup. Anything that isn't JSON counts as not. */
+    fun isEncrypted(text: String): Boolean = try {
+        JSONObject(text).optBoolean("encrypted", false)
+    } catch (_: JSONException) {
+        false
+    }
+
+    /**
+     * Parses and checks a whole backup; throws [BackupFormatException] if it can't be restored. An
+     * encrypted backup needs [password]; without one this throws [BackupPasswordRequiredException].
+     */
+    fun decode(text: String, password: String? = null): BackupData {
+        val root = parseTop(text)
+        val version = root.optInt("formatVersion", -1)
+        if (version > ENCRYPTED_FORMAT_VERSION) throw BackupFormatException(R.string.backup_from_newer_app)
+        if (version < 1) throw BackupFormatException(R.string.backup_damaged)
+
+        if (root.optBoolean("encrypted", false)) {
+            if (version != ENCRYPTED_FORMAT_VERSION) throw BackupFormatException(R.string.backup_damaged)
+            if (password == null) throw BackupPasswordRequiredException()
+            val sealed = try {
+                SealedBackup(
+                    iterations = root.getInt("iterations"),
+                    salt = decodeBase64(root.getString("salt")),
+                    iv = decodeBase64(root.getString("iv")),
+                    ciphertext = decodeBase64(root.getString("data")),
+                )
+            } catch (_: JSONException) {
+                throw BackupFormatException(R.string.backup_damaged)
+            } catch (_: IllegalArgumentException) {
+                throw BackupFormatException(R.string.backup_damaged)
+            }
+            val aad = associatedData(version, sealed.iterations)
+            val plain = String(BackupCrypto.open(sealed, password, aad), Charsets.UTF_8)
+            return decodePlain(parseTop(plain))
+        }
+        if (version == ENCRYPTED_FORMAT_VERSION) throw BackupFormatException(R.string.backup_damaged)
+        return decodePlain(root)
+    }
+
+    private fun plainJson(data: BackupData, exportedAt: Long): JSONObject = JSONObject().apply {
         put("app", APP_TAG)
         put("formatVersion", FORMAT_VERSION)
         put("exportedAt", exportedAt)
@@ -38,38 +104,38 @@ object BackupFormat {
         put("gamePlayers", JSONArray(data.gamePlayers.map(::gamePlayerJson)))
         put("cricketScorecards", JSONArray(data.cricketScorecards.map(::scorecardJson)))
         put("cricketFieldPositions", JSONArray(data.cricketFieldPositions.map(::fieldPositionJson)))
-    }.toString()
+    }
 
-    /** Parses and checks a whole backup; throws [BackupFormatException] if it can't be restored. */
-    fun decode(text: String): BackupData {
+    private fun parseTop(text: String): JSONObject {
         val root = try {
             JSONObject(text)
         } catch (_: JSONException) {
             throw BackupFormatException(R.string.backup_not_a_backup)
         }
-        if (root.optString("app") != APP_TAG) {
-            throw BackupFormatException(R.string.backup_not_a_backup)
-        }
-        val version = root.optInt("formatVersion", -1)
-        if (version > FORMAT_VERSION) {
-            throw BackupFormatException(R.string.backup_from_newer_app)
-        }
-        if (version < 1) throw BackupFormatException(R.string.backup_damaged)
-
-        return try {
-            BackupData(
-                players = root.getJSONArray("players").objects().map(::playerFrom),
-                games = root.getJSONArray("games").objects().map(::gameFrom),
-                gameEvents = root.getJSONArray("gameEvents").objects().map(::eventFrom),
-                gamePlayers = root.getJSONArray("gamePlayers").objects().map(::gamePlayerFrom),
-                // Added with cricket; backups from before then have none.
-                cricketScorecards = root.optJSONArray("cricketScorecards")?.objects()?.map(::scorecardFrom).orEmpty(),
-                cricketFieldPositions = root.optJSONArray("cricketFieldPositions")?.objects()?.map(::fieldPositionFrom).orEmpty(),
-            )
-        } catch (_: JSONException) {
-            throw BackupFormatException(R.string.backup_damaged)
-        }
+        if (root.optString("app") != APP_TAG) throw BackupFormatException(R.string.backup_not_a_backup)
+        return root
     }
+
+    private fun decodePlain(root: JSONObject): BackupData = try {
+        BackupData(
+            players = root.getJSONArray("players").objects().map(::playerFrom),
+            games = root.getJSONArray("games").objects().map(::gameFrom),
+            gameEvents = root.getJSONArray("gameEvents").objects().map(::eventFrom),
+            gamePlayers = root.getJSONArray("gamePlayers").objects().map(::gamePlayerFrom),
+            // Added with cricket; backups from before then have none.
+            cricketScorecards = root.optJSONArray("cricketScorecards")?.objects()?.map(::scorecardFrom).orEmpty(),
+            cricketFieldPositions = root.optJSONArray("cricketFieldPositions")?.objects()?.map(::fieldPositionFrom).orEmpty(),
+        )
+    } catch (_: JSONException) {
+        throw BackupFormatException(R.string.backup_damaged)
+    }
+
+    /** The header fields an encrypted backup's ciphertext is bound to, so changing them is detected. */
+    private fun associatedData(version: Int, iterations: Int): ByteArray =
+        "$APP_TAG/$version/$iterations".toByteArray(Charsets.UTF_8)
+
+    private fun encodeBase64(bytes: ByteArray): String = java.util.Base64.getEncoder().encodeToString(bytes)
+    private fun decodeBase64(text: String): ByteArray = java.util.Base64.getDecoder().decode(text)
 
     private fun JSONArray.objects(): List<JSONObject> = (0 until length()).map { getJSONObject(it) }
 

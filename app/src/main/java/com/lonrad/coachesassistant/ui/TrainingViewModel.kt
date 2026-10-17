@@ -17,6 +17,7 @@ import com.lonrad.coachesassistant.ai.Drill
 import com.lonrad.coachesassistant.ai.DrillSource
 import com.lonrad.coachesassistant.ai.DrillTextGenerator
 import com.lonrad.coachesassistant.ai.buildDrillPrompt
+import com.lonrad.coachesassistant.ai.endpointHost
 import com.lonrad.coachesassistant.ai.hasLocalNetworkPermission
 import com.lonrad.coachesassistant.ai.needsLocalNetworkPermission
 import com.lonrad.coachesassistant.ai.parseDrills
@@ -77,8 +78,16 @@ class TrainingViewModel(
         _selectedProvider.value = provider
     }
 
+    /**
+     * Saves the Other provider's endpoint. A key belongs to the service it was given to, so when the
+     * endpoint moves to a different host, the saved key is dropped rather than sent there.
+     */
     fun updateCustomEndpoint(config: CustomEndpointConfig) {
         val trimmed = CustomEndpointConfig(config.endpointUrl.trim(), config.model.trim())
+        val previousHost = endpointHost(_customEndpoint.value.endpointUrl)
+        if (previousHost != null && endpointHost(trimmed.endpointUrl) != previousHost) {
+            clearApiKey(AiProvider.OTHER)
+        }
         store.customEndpoint = trimmed
         _customEndpoint.value = trimmed
     }

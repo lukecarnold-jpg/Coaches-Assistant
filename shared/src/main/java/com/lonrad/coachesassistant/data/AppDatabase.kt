@@ -6,6 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Database(
     entities = [
@@ -37,6 +39,27 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun gamePlayerDao(): GamePlayerDao
     abstract fun cricketDao(): CricketDao
 
+    /**
+     * Overwrites deleted rows with zeros instead of leaving their text in the file's free space, so a
+     * removed player's name isn't readable from the database file. SQLite sets this per connection,
+     * so it runs each time the database opens.
+     */
+    object SecureDelete : RoomDatabase.Callback() {
+        override fun onOpen(db: SupportSQLiteDatabase) {
+            db.query("PRAGMA secure_delete = ON").use { it.moveToFirst() }
+        }
+    }
+
+    /**
+     * Rewrites the file without the pages that deletes freed, and folds the write-ahead log into it.
+     * VACUUM can't run inside a transaction, so call this after the transaction that deleted the rows.
+     */
+    suspend fun compactAfterDelete() = withContext(Dispatchers.IO) {
+        val db = openHelper.writableDatabase
+        db.query("PRAGMA wal_checkpoint(TRUNCATE)").use { it.moveToFirst() }
+        db.query("VACUUM").use { it.moveToFirst() }
+    }
+
     companion object {
         @Volatile
         private var instance: AppDatabase? = null
@@ -50,6 +73,7 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     .addMigrations(MIGRATION_11_12, MIGRATION_12_13)
                     .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
+                    .addCallback(SecureDelete)
                     .build()
                     .also { instance = it }
             }

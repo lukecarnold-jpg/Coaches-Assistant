@@ -67,6 +67,29 @@ class TrainingViewModelTest {
         builtInGeminiKey = builtInGeminiKey,
     )
 
+    @Test
+    fun movingTheOtherEndpointToAnotherHost_dropsItsKey() {
+        val vm = viewModel()
+        vm.updateCustomEndpoint(CustomEndpointConfig("https://one.example.com/v1/chat/completions", "m"))
+        vm.updateApiKey(AiProvider.OTHER, "sk-other")
+
+        vm.updateCustomEndpoint(CustomEndpointConfig("https://two.example.net/v1/chat/completions", "m"))
+
+        assertEquals("", store.apiKey(AiProvider.OTHER))
+        assertEquals("", vm.apiKeys.value[AiProvider.OTHER])
+    }
+
+    @Test
+    fun changingOnlyThePathOnTheSameHost_keepsTheOtherKey() {
+        val vm = viewModel()
+        vm.updateCustomEndpoint(CustomEndpointConfig("https://one.example.com/v1/chat/completions", "m"))
+        vm.updateApiKey(AiProvider.OTHER, "sk-other")
+
+        vm.updateCustomEndpoint(CustomEndpointConfig("https://one.example.com/v2/chat/completions", "m"))
+
+        assertEquals("sk-other", store.apiKey(AiProvider.OTHER))
+    }
+
     private fun TrainingViewModel.generate(): TrainingUiState {
         generateDrills(Sport.BASKETBALL, "Under 10's", "en")
         shadowOf(Looper.getMainLooper()).idle()

@@ -79,6 +79,24 @@ class BackupIoTest {
     }
 
     @Test
+    fun encryptedBackup_restoresOnlyWithItsPassword() = runBlocking {
+        seed()
+        val before = backupIo.readAll()
+        val file = BackupFormat.encode(before, exportedAt = 0L, password = "pw-123456")
+
+        backupIo.replaceAll(BackupData(emptyList(), emptyList(), emptyList(), emptyList()))
+        try {
+            backupIo.restore(file)
+            fail("Expected BackupPasswordRequiredException")
+        } catch (_: BackupPasswordRequiredException) {
+        }
+        assertTrue(database.playerDao().getAll().isEmpty())
+
+        backupIo.restore(file, password = "pw-123456")
+        assertEquals(before, backupIo.readAll())
+    }
+
+    @Test
     fun restore_ofADamagedBackup_changesNothing() = runBlocking {
         seed()
         val current = backupIo.readAll()

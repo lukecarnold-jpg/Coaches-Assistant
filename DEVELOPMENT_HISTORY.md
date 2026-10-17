@@ -285,6 +285,20 @@ Tagged `v4.2.0` in October 2026.
 - Exported CSVs put a `'` in front of any value starting with `=`, `+`, `-`, or `@`, so a player or game name can't run as a formula when the file is opened in a spreadsheet; importing a roster removes it again
 - CI's GitHub token is read-only in the workflow itself, and every action is pinned to a commit SHA (Dependabot updates the pins)
 - The Gradle wrapper checks the distribution's SHA-256 checksum
+- The lock screen shows only the game clock or "Time to sub", not the game, score, or player names; the details appear once the phone is unlocked
+- Rosters and games are left out of Android's cloud backup unless it's end-to-end encrypted (Android 12+), and never on Android 11 and older
+- The API key field is marked as a password, so keyboards don't learn, suggest, or sync the key
+- The HTTP client doesn't follow redirects, so an API key is never resent to another address
+- Backups can be protected with a password (AES-256-GCM, key from PBKDF2-HMAC-SHA256); restoring an encrypted backup asks for its password first. Plain backups are unchanged and still restore in older versions
+- Showing an API key, backing up or restoring, and deleting data ask for the phone's unlock when a screen lock is set
+- API keys work only while the phone is unlocked (Android 9+). Saved keys move to the new key on first launch; an "Other" key is dropped when its endpoint moves to another host
+- The window refuses screenshots while an API key is shown
+- Deleted rows are overwritten, and clearing data compacts the database file
+- Replies over 1 MB, backup files over 32 MB, and roster files over 8 MB are refused
+- The built-in providers' hosts refuse plain http at the platform level, and only system certificate authorities are trusted
+- Release builds log only the type of a failed action
+- Taps on a covered screen are ignored on Android 8 to 11
+- The deprecated AndroidX Security Crypto library is no longer in the published app; only the transition build still includes it, to move keys saved by pre-4.2 builds
 
 ## Current repository review
 - Two modules: the app (`:app`) and `:baselineprofile`, which generates the baseline profile and holds a startup benchmark.

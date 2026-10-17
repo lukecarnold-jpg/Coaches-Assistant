@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import androidx.test.core.app.ApplicationProvider
 import com.lonrad.coachesassistant.data.GameEntity
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -49,6 +50,19 @@ class GameClockNotificationTest {
         assertEquals("Rnd 3 · Q2", notification.extras.getString(Notification.EXTRA_TITLE))
         assertEquals("Us 4 – 2 Rivals", notification.extras.getCharSequence(Notification.EXTRA_TEXT).toString())
         assertEquals("Stop clock", notification.actions.single().title.toString())
+    }
+
+    @Test
+    fun onTheLockScreen_onlyTheClockShows() {
+        GameClockNotification.sync(app, listOf(running), now)
+
+        val notification = shown().single()
+        assertEquals(Notification.VISIBILITY_PRIVATE, notification.visibility)
+        val lockScreen = notification.publicVersion!!
+        assertEquals("Game clock", lockScreen.extras.getString(Notification.EXTRA_TITLE))
+        assertNull(lockScreen.extras.getCharSequence(Notification.EXTRA_TEXT))
+        assertEquals(now + 360_000L, lockScreen.`when`)
+        assertTrue(lockScreen.extras.getBoolean(Notification.EXTRA_CHRONOMETER_COUNT_DOWN))
     }
 
     @Test

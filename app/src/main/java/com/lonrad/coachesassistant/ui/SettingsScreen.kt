@@ -2,6 +2,7 @@ package com.lonrad.coachesassistant.ui
 
 import android.net.Uri
 import android.os.Build
+import android.view.WindowManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -32,6 +34,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +49,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -78,8 +82,13 @@ fun SettingsScreen(
     onSaveModel: (AiProvider, String) -> Unit = { _, _ -> },
     currentSport: Sport? = null,
     onSwitchSport: () -> Unit = {},
-    onBackup: (Uri) -> Unit = {},
+    /** Saves a backup to the file, encrypted with the password when it's not null. */
+    onBackup: (Uri, String?) -> Unit = { _, _ -> },
     onRestore: (Uri) -> Unit = {},
+    /** An encrypted backup has been picked and is waiting for its password. */
+    encryptedRestorePending: Boolean = false,
+    onRestorePassword: (String) -> Unit = {},
+    onCancelRestore: () -> Unit = {},
     keepScreenOnWhileClockRuns: Boolean = true,
     onKeepScreenOnWhileClockRunsChange: (Boolean) -> Unit = {},
     clockNotification: Boolean = false,
@@ -95,9 +104,17 @@ fun SettingsScreen(
     val layout = LocalResponsiveLayout.current
     var showConfirm by remember { mutableStateOf(value = false) }
     var showRestoreConfirm by remember { mutableStateOf(value = false) }
+    val context = LocalContext.current
+    val unlockTitle = stringResource(R.string.auth_prompt_title)
+    // The password for the backup being saved: set when the coach chooses it, used once the file is picked.
+    var showBackupPassword by remember { mutableStateOf(value = false) }
+    var backupPassword by remember { mutableStateOf<String?>(null) }
     val backupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json"),
-    ) { uri -> uri?.let(onBackup) }
+    ) { uri ->
+        uri?.let { onBackup(it, backupPassword) }
+        backupPassword = null
+    }
     // Any file type: backups saved to cloud drives or downloads don't always keep a JSON type,
     // and the contents are checked before anything is restored.
     val restoreLauncher = rememberLauncherForActivityResult(
@@ -110,13 +127,20 @@ fun SettingsScreen(
     val savedKey = apiKeys[selectedProvider].orEmpty()
     var apiKeyInput by remember(selectedProvider, savedKey) { mutableStateOf(savedKey) }
     var apiKeyVisible by remember { mutableStateOf(value = false) }
+    // While the key is on screen the window refuses screenshots and screen recordings. It's cleared
+    // again when the key is hidden or the screen goes away.
+    DisposableEffect(apiKeyVisible) {
+        val visible = apiKeyVisible
+        val window = context.findActivity()?.window
+        if (visible) window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose { if (visible) window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+    }
     var endpointUrlInput by remember(customEndpoint.endpointUrl) { mutableStateOf(customEndpoint.endpointUrl) }
     var modelInput by remember(customEndpoint.model) { mutableStateOf(customEndpoint.model) }
     val savedModelOverride = modelOverrides[selectedProvider].orEmpty()
     var modelOverrideInput by remember(selectedProvider, savedModelOverride) { mutableStateOf(savedModelOverride) }
     val isOther = selectedProvider == AiProvider.OTHER
     val endpointProblem = if (isOther) endpointUrlProblem(endpointUrlInput) else null
-    val context = LocalContext.current
     val endpointNeedsLocalNetwork = endpointProblem == null && needsLocalNetworkPermission(
         selectedProvider,
         CustomEndpointConfig(endpointUrlInput, modelInput),
@@ -291,9 +315,19 @@ fun SettingsScreen(
                 onValueChange = { apiKeyInput = it },
                 label = { Text(stringResource(R.string.provider_api_key, stringResource(selectedProvider.label))) },
                 singleLine = true,
+                // Tells the keyboard this is a password, so it doesn't learn, suggest, or sync the key.
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
                 visualTransformation = if (apiKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { apiKeyVisible = !apiKeyVisible }) {
+                    IconButton(
+                        onClick = {
+                            if (apiKeyVisible) {
+                                apiKeyVisible = false
+                            } else {
+                                context.confirmDeviceUnlock(unlockTitle) { apiKeyVisible = true }
+                            }
+                        },
+                    ) {
                         Icon(
                             imageVector = if (apiKeyVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = if (apiKeyVisible) stringResource(R.string.hide_api_key) else stringResource(R.string.show_api_key),
@@ -309,8 +343,8 @@ fun SettingsScreen(
                 val modelChanged = !isOther && modelOverrideInput.trim() != savedModelOverride
                 Button(
                     onClick = {
-                        onSaveApiKey(selectedProvider, apiKeyInput.trim())
-                        if (modelChanged) onSaveModel(selectedProvider, modelOverrideInput.trim())
+                        // The endpoint goes first: saving it can clear the Other key if the host changed,
+                        // and the key typed here must survive that.
                         if (isOther) {
                             onSaveCustomEndpoint(CustomEndpointConfig(endpointUrlInput.trim(), modelInput.trim()))
                             // Ask now, while the user is setting it up, rather than on first use.
@@ -318,6 +352,8 @@ fun SettingsScreen(
                                 localNetworkPermissionLauncher.launch(ACCESS_LOCAL_NETWORK)
                             }
                         }
+                        onSaveApiKey(selectedProvider, apiKeyInput.trim())
+                        if (modelChanged) onSaveModel(selectedProvider, modelOverrideInput.trim())
                     },
                     enabled = ((apiKeyInput.trim() != savedKey) || endpointChanged || modelChanged) && (endpointProblem == null),
                 ) {
@@ -354,7 +390,7 @@ fun SettingsScreen(
             )
             Spacer(Modifier.height(layout.smallGap))
             Row(horizontalArrangement = Arrangement.spacedBy(layout.smallGap)) {
-                Button(onClick = { backupLauncher.launch("coaches-assistant-backup-${LocalDate.now()}.json") }) {
+                Button(onClick = { context.confirmDeviceUnlock(unlockTitle) { showBackupPassword = true } }) {
                     Text(stringResource(R.string.back_up_all_data))
                 }
                 OutlinedButton(onClick = { showRestoreConfirm = true }) {
@@ -384,6 +420,26 @@ fun SettingsScreen(
             Text(stringResource(R.string.to_view_exported_csv_files_use_your_device_s_fil))
         }
 
+        if (showBackupPassword) {
+            BackupPasswordDialog(
+                saving = true,
+                onConfirm = { password ->
+                    showBackupPassword = false
+                    backupPassword = password.ifEmpty { null }
+                    backupLauncher.launch("coaches-assistant-backup-${LocalDate.now()}.json")
+                },
+                onDismiss = { showBackupPassword = false },
+            )
+        }
+
+        if (encryptedRestorePending) {
+            BackupPasswordDialog(
+                saving = false,
+                onConfirm = onRestorePassword,
+                onDismiss = onCancelRestore,
+            )
+        }
+
         if (showRestoreConfirm) {
             AlertDialog(
                 onDismissRequest = { showRestoreConfirm = false },
@@ -397,7 +453,7 @@ fun SettingsScreen(
                     TextButton(
                         onClick = {
                             showRestoreConfirm = false
-                            restoreLauncher.launch(arrayOf("*/*"))
+                            context.confirmDeviceUnlock(unlockTitle) { restoreLauncher.launch(arrayOf("*/*")) }
                         },
                     ) {
                         Text(stringResource(R.string.choose_backup_file), color = MaterialTheme.colorScheme.error)
@@ -427,8 +483,8 @@ fun SettingsScreen(
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            onClearAllData()
                             showConfirm = false
+                            context.confirmDeviceUnlock(unlockTitle) { onClearAllData() }
                         },
                     ) {
                         Text(stringResource(R.string.delete_everything), color = MaterialTheme.colorScheme.error)
@@ -486,8 +542,8 @@ fun SettingsScreen(
                         }
                         TextButton(
                             onClick = {
-                                onClearSelectedData(deletePlayers, deleteGames, deleteEvents)
                                 showDeleteOptions = false
+                                context.confirmDeviceUnlock(unlockTitle) { onClearSelectedData(deletePlayers, deleteGames, deleteEvents) }
                             },
                             enabled = deletePlayers || deleteGames || deleteEvents,
                         ) {

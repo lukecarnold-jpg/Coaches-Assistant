@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.sp
@@ -102,6 +104,12 @@ class MainActivity : AppCompatActivity() {
 @Composable
 private fun RotationApp() {
     val context = LocalContext.current
+    // On Android 8 to 11 another app's window can sit over this one and take taps, which is how a
+    // coach could be tricked into confirming a delete or revealing a key. Ignore taps made while
+    // covered. Android 12 and later already do this for every app. Dialogs are separate windows and
+    // aren't covered by this.
+    val view = LocalView.current
+    SideEffect { view.filterTouchesWhenObscured = true }
     // Created here, above the sport picker, so there's one for the whole app however many sports
     // are visited.
     viewModel<GameSyncViewModel>(factory = GameSyncViewModel.Factory)
@@ -179,6 +187,7 @@ private fun SportApp(
     }
     val navTabSpecs = remember(sport) { navTabSpecsFor(sport) }
     val gameActions = remember(appViewModel, dataViewModel) { gameActions(appViewModel, dataViewModel) }
+    val restorePending by dataViewModel.pendingRestore.collectAsStateWithLifecycle()
 
     val players by appViewModel.players.collectAsStateWithLifecycle()
     val games by appViewModel.games.collectAsStateWithLifecycle()
@@ -389,7 +398,10 @@ private fun SportApp(
                             currentSport = sport,
                             onSwitchSport = onSwitchSport,
                             onBackup = dataViewModel::exportBackup,
-                            onRestore = dataViewModel::restoreBackup,
+                            onRestore = dataViewModel::chooseRestoreFile,
+                            encryptedRestorePending = restorePending != null,
+                            onRestorePassword = dataViewModel::restoreWithPassword,
+                            onCancelRestore = dataViewModel::cancelRestore,
                             // Cricket has no lineup to field short-handed.
                             minimumOnCourt = if (sport.usesScorecards) null else minimumOnCourt,
                             suggestSubs = suggestSubs,

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="file_too_large">El archivo es demasiado grande para leerlo.</string>
+    <string name="backup_password_needed">Esta copia está protegida con una contraseña. Introdúcela para restaurarla.</string>
+    <string name="backup_password_wrong">Esa contraseña no abre esta copia, o el archivo está dañado. No se ha cambiado nada.</string>
     <string name="backup_damaged">Este archivo de copia está dañado.</string>
     <string name="backup_damaged_nothing_changed">Este archivo de copia está dañado. No se ha cambiado nada.</string>
     <string name="backup_file_unopenable">No se puede abrir el archivo de copia</string>

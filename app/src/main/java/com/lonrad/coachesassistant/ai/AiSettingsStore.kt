@@ -2,12 +2,11 @@ package com.lonrad.coachesassistant.ai
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.core.content.edit
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import java.io.File
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -24,8 +23,11 @@ interface SecretCipher {
 /**
  * AES-256-GCM with a key that lives in the Android Keystore and never leaves it. Output is
  * Base64 of the 12-byte IV followed by the ciphertext and tag.
+ *
+ * With [unlockedDeviceOnly] the key can be used only while the phone is unlocked (Android 9+), so a
+ * locked phone can't have its keys decrypted by something running in the background.
  */
-class KeystoreSecretCipher(private val keyAlias: String) : SecretCipher {
+class KeystoreSecretCipher(private val keyAlias: String, private val unlockedDeviceOnly: Boolean) : SecretCipher {
     override fun encrypt(plaintext: String): String {
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, key())
@@ -50,17 +52,25 @@ class KeystoreSecretCipher(private val keyAlias: String) : SecretCipher {
                     .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                     .setKeySize(256)
+                    .apply {
+                        if (unlockedDeviceOnly && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) setUnlockedDeviceRequired(true)
+                    }
                     .build(),
             )
             generateKey()
         }
     }
 
-    private companion object {
+    companion object {
         const val KEYSTORE = "AndroidKeyStore"
-        const val TRANSFORMATION = "AES/GCM/NoPadding"
-        const val IV_BYTES = 12
-        const val TAG_BITS = 128
+        private const val TRANSFORMATION = "AES/GCM/NoPadding"
+        private const val IV_BYTES = 12
+        private const val TAG_BITS = 128
+
+        /** Removes a Keystore key, e.g. the old one once its saved keys have moved to a new one. */
+        fun deleteKey(keyAlias: String) {
+            KeyStore.getInstance(KEYSTORE).apply { load(null) }.deleteEntry(keyAlias)
+        }
     }
 }
 
@@ -100,6 +110,22 @@ class AiSettingsStore(
 
     private fun modelKey(provider: AiProvider) = "model_${provider.name}"
 
+    /**
+     * Re-encrypts every saved API key from [from] to [to], for when the Keystore key changes. A key
+     * that [from] can't read is dropped, so the user enters it again rather than it failing later.
+     */
+    fun rekeyApiKeys(from: SecretCipher, to: SecretCipher) {
+        val rekeyed = AiProvider.entries.mapNotNull { provider ->
+            val stored = prefs.getString(provider.storageKey, null) ?: return@mapNotNull null
+            provider to runCatching { to.encrypt(from.decrypt(stored)) }.getOrNull()
+        }
+        prefs.edit {
+            rekeyed.forEach { (provider, encrypted) ->
+                if (encrypted == null) remove(provider.storageKey) else putString(provider.storageKey, encrypted)
+            }
+        }
+    }
+
     var selectedProvider: AiProvider
         get() = AiProvider.entries.firstOrNull { it.name == prefs.getString(KEY_SELECTED_PROVIDER, null) }
             ?: AiProvider.GEMINI
@@ -138,63 +164,48 @@ class AiSettingsStore(
 
     companion object {
         private const val PREFS_NAME = "ai_settings"
-        private const val KEYSTORE_ALIAS = "ai_api_keys"
-        private const val KEY_SELECTED_PROVIDER = "selected_ai_provider"
-        private const val KEY_CUSTOM_ENDPOINT_URL = "custom_endpoint_url"
-        private const val KEY_CUSTOM_MODEL = "custom_model"
 
-        // Earlier storage: a plaintext file holding only a Gemini key, then an
-        // EncryptedSharedPreferences file (androidx.security-crypto, now deprecated) plus the Tink
-        // keyset file that library keeps alongside it.
+        // The key saved keys were first encrypted with, and the one they're encrypted with now.
+        private const val OLD_KEYSTORE_ALIAS = "ai_api_keys"
+        private const val KEYSTORE_ALIAS = "ai_api_keys_unlocked"
+        private const val KEY_STORAGE_VERSION = "api_key_storage_version"
+        private const val CURRENT_STORAGE_VERSION = 2
+        internal const val KEY_SELECTED_PROVIDER = "selected_ai_provider"
+        internal const val KEY_CUSTOM_ENDPOINT_URL = "custom_endpoint_url"
+        internal const val KEY_CUSTOM_MODEL = "custom_model"
+
+        // Earlier storage: a plaintext file holding only a Gemini key. (The EncryptedSharedPreferences
+        // file that came after it is read by LegacyKeyImport, in the transition build only.)
         private const val PLAINTEXT_PREFS_NAME = "training_prefs"
         private const val PLAINTEXT_GEMINI_KEY = "gemini_api_key"
-        private const val ENCRYPTED_PREFS_NAME = "training_prefs_secure"
-        private const val TINK_KEYSET_PREFS_NAME = "__androidx_security_crypto_encrypted_prefs__"
 
         fun create(context: Context): AiSettingsStore {
-            val store = AiSettingsStore(
-                context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE),
-                KeystoreSecretCipher(KEYSTORE_ALIAS),
-            )
-            migrateEncryptedPrefs(context, store)
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val store = AiSettingsStore(prefs, KeystoreSecretCipher(KEYSTORE_ALIAS, unlockedDeviceOnly = true))
+            migrateKeystoreKey(prefs, store)
+            // Keys saved by pre-4.2 builds in EncryptedSharedPreferences; only the transition build has an importer.
+            LegacyKeyImport.all(context).forEach { it.importInto(context, store) }
             migratePlaintextPrefs(context, store)
             return store
         }
 
+        /**
+         * Moves the saved keys from the key they were first encrypted with to the unlocked-only key,
+         * then deletes the old key. Runs once: the version marker records that it has happened.
+         */
+        private fun migrateKeystoreKey(prefs: SharedPreferences, store: AiSettingsStore) {
+            if (prefs.getInt(KEY_STORAGE_VERSION, 1) >= CURRENT_STORAGE_VERSION) return
+
+            store.rekeyApiKeys(
+                from = KeystoreSecretCipher(OLD_KEYSTORE_ALIAS, unlockedDeviceOnly = false),
+                to = KeystoreSecretCipher(KEYSTORE_ALIAS, unlockedDeviceOnly = true),
+            )
+            prefs.edit { putInt(KEY_STORAGE_VERSION, CURRENT_STORAGE_VERSION) }
+            runCatching { KeystoreSecretCipher.deleteKey(OLD_KEYSTORE_ALIAS) }
+        }
+
         private fun prefsFileExists(context: Context, name: String) =
             File(context.applicationInfo.dataDir, "shared_prefs/$name.xml").exists()
-
-        /**
-         * One-time move out of EncryptedSharedPreferences. If the old file can't be read (a
-         * known failure mode of that library), its keys are lost and the user re-enters them;
-         * either way the old files are deleted so this only ever runs once.
-         */
-        @Suppress("DEPRECATION")
-        private fun migrateEncryptedPrefs(context: Context, store: AiSettingsStore) {
-            if (!prefsFileExists(context, ENCRYPTED_PREFS_NAME)) return
-
-            runCatching {
-                val masterKey = MasterKey.Builder(context)
-                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                    .build()
-                val old = EncryptedSharedPreferences.create(
-                    context,
-                    ENCRYPTED_PREFS_NAME,
-                    masterKey,
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-                )
-                store.importLegacy(
-                    legacyApiKey = { old.getString(it.storageKey, null) },
-                    legacySelectedProvider = old.getString(KEY_SELECTED_PROVIDER, null),
-                    legacyEndpoint = old.getString(KEY_CUSTOM_ENDPOINT_URL, null)?.let { url ->
-                        CustomEndpointConfig(url, old.getString(KEY_CUSTOM_MODEL, null).orEmpty())
-                    },
-                )
-            }
-            context.deleteSharedPreferences(ENCRYPTED_PREFS_NAME)
-            context.deleteSharedPreferences(TINK_KEYSET_PREFS_NAME)
-        }
 
         private fun migratePlaintextPrefs(context: Context, store: AiSettingsStore) {
             if (!prefsFileExists(context, PLAINTEXT_PREFS_NAME)) return

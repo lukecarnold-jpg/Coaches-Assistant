@@ -1,4 +1,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="auth_prompt_title">Confirm it\'s you</string>
+    <string name="backup_password_title">Protect this backup with a password?</string>
+    <string name="backup_password_hint">The backup is encrypted, so nobody can read the names and games in it without the password. If you lose the password, the backup can\'t be opened.</string>
+    <string name="backup_password_field">Password</string>
+    <string name="backup_password_confirm_field">Confirm password</string>
+    <string name="backup_password_mismatch">The passwords don\'t match.</string>
+    <string name="backup_password_too_short">Use at least 8 characters.</string>
+    <string name="backup_password_skip">Save without a password</string>
+    <string name="backup_password_restore_title">This backup is protected</string>
+    <string name="backup_password_restore_hint">Enter the password it was saved with.</string>
+    <string name="ai_reply_too_large">The AI\'s reply was too large to read.</string>
     <string name="app_name">Coaches Assistant</string>
     <!-- The language of this set of strings, as a language tag ("fr", "pt-BR"). Generated drills
          are requested in this language, so a translation must set it to its own. -->
@@ -478,7 +489,7 @@
 
     <!-- The game clock notification -->
     <string name="game_clock_notification_setting">Show the running clock in notifications</string>
-    <string name="game_clock_notification_setting_description">While a game clock runs, a silent notification shows the period, score, and time left, including on the lock screen, with a button to stop the clock.</string>
+    <string name="game_clock_notification_setting_description">While a game clock runs, a silent notification shows the period, score, and time left, with a button to stop the clock. On the lock screen only the clock shows.</string>
     <string name="game_clock_notification_channel">Game clock</string>
     <string name="game_clock_notification_channel_description">The running game clock, while a period is being played.</string>
     <!-- e.g. "Game 2 · Q3" -->

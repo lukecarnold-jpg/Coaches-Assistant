@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import com.lonrad.coachesassistant.shared.R
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -73,7 +74,7 @@ class BackupFormatTest {
 
     @Test
     fun decode_rejectsBackupsFromANewerVersion() {
-        val newer = JSONObject(BackupFormat.encode(data, 0L)).put("formatVersion", BackupFormat.FORMAT_VERSION + 1)
+        val newer = JSONObject(BackupFormat.encode(data, 0L)).put("formatVersion", BackupFormat.ENCRYPTED_FORMAT_VERSION + 1)
         assertRejected(newer.toString(), R.string.backup_from_newer_app)
     }
 
@@ -95,9 +96,86 @@ class BackupFormatTest {
         assertSame(stopped, result[1])
     }
 
-    private fun assertRejected(text: String, @StringRes expectedMessage: Int) {
+    @Test
+    fun encrypted_roundTripsWithTheRightPassword() {
+        val file = BackupFormat.encode(data, 0L, password = "correct horse")
+
+        assertTrue(BackupFormat.isEncrypted(file))
+        assertEquals(data, BackupFormat.decode(file, password = "correct horse"))
+    }
+
+    @Test
+    fun encrypted_doesNotContainThePlainText() {
+        val file = BackupFormat.encode(data, 0L, password = "pw-123456")
+
+        assertFalse(file.contains("Alex"))
+        assertFalse(file.contains("Rivals"))
+    }
+
+    @Test
+    fun encrypted_withoutAPassword_asksForOne() {
+        val file = BackupFormat.encode(data, 0L, password = "pw-123456")
+
         try {
-            BackupFormat.decode(text)
+            BackupFormat.decode(file)
+            fail("Expected BackupPasswordRequiredException")
+        } catch (e: BackupPasswordRequiredException) {
+            assertEquals(R.string.backup_password_needed, e.messageRes)
+        }
+    }
+
+    @Test
+    fun encrypted_withAWrongPassword_isRefusedWithoutChangingAnything() {
+        val file = BackupFormat.encode(data, 0L, password = "pw-123456")
+
+        try {
+            BackupFormat.decode(file, password = "pw-654321")
+            fail("Expected BackupFormatException")
+        } catch (e: BackupFormatException) {
+            assertEquals(R.string.backup_password_wrong, e.messageRes)
+        }
+    }
+
+    @Test
+    fun encrypted_changedHeaderOrCiphertextIsDetected() {
+        val file = BackupFormat.encode(data, 0L, password = "pw-123456")
+        val root = JSONObject(file)
+
+        // The iteration count is bound to the ciphertext: a different count fails to open.
+        val otherCount = JSONObject(file).put("iterations", root.getInt("iterations") + 1)
+        assertRejected(otherCount.toString(), R.string.backup_password_wrong, password = "pw-123456")
+
+        // Flipping a byte of the ciphertext fails the GCM tag check.
+        val bytes = java.util.Base64.getDecoder().decode(root.getString("data"))
+        bytes[0] = (bytes[0].toInt() xor 1).toByte()
+        val tampered = JSONObject(file).put("data", java.util.Base64.getEncoder().encodeToString(bytes))
+        assertRejected(tampered.toString(), R.string.backup_password_wrong, password = "pw-123456")
+    }
+
+    @Test
+    fun encrypted_anAbsurdIterationCountIsRefused() {
+        val file = BackupFormat.encode(data, 0L, password = "pw-123456")
+        val huge = JSONObject(file).put("iterations", Int.MAX_VALUE)
+
+        assertRejected(huge.toString(), R.string.backup_damaged, password = "pw-123456")
+    }
+
+    @Test
+    fun aPlainBackup_isNotEncrypted_andDecodesWithoutAPassword() {
+        val file = BackupFormat.encode(data, 0L)
+
+        assertFalse(BackupFormat.isEncrypted(file))
+        assertEquals(data, BackupFormat.decode(file))
+    }
+
+    @Test
+    fun blankPassword_meansAPlainBackup() {
+        assertFalse(BackupFormat.isEncrypted(BackupFormat.encode(data, 0L, password = "")))
+    }
+
+    private fun assertRejected(text: String, @StringRes expectedMessage: Int, password: String? = null) {
+        try {
+            BackupFormat.decode(text, password)
             fail("Expected BackupFormatException")
         } catch (e: BackupFormatException) {
             assertEquals(expectedMessage, e.messageRes)

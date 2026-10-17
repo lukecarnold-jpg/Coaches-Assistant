@@ -145,6 +145,14 @@ android {
     }
 
     sourceSets {
+        // The transition build alone compiles the code that moves keys out of the deprecated encrypted
+        // store (src/legacy); the published app has none of it.
+        if (legacyTransitionBuild) {
+            getByName("main") {
+                java.srcDir("src/legacy/java")
+                resources.srcDir("src/legacy/resources")
+            }
+        }
         // Room's MigrationTestHelper loads each version's exported schema JSON as an asset at
         // "<schemaLocation>/<db qualified name>/<version>.json". Robolectric (used by
         // AppDatabaseMigrationTest) resolves unit test assets from the *debug variant's* merged
@@ -204,7 +212,10 @@ dependencies {
     implementation(libs.androidx.profileinstaller)
     baselineProfile(project(":baselineprofile"))
 
-    implementation(libs.androidx.security.crypto)
+    // Reads the encrypted API keys that pre-4.2 builds saved, so only the transition build includes it (src/legacy).
+    if (legacyTransitionBuild) implementation(libs.androidx.security.crypto)
+    // Asks for the phone's own unlock before showing a key, moving a backup, or deleting data; see ui/DeviceAuth.kt.
+    implementation(libs.androidx.biometric)
     implementation(libs.okhttp)
     // Call.executeAsync(), so leaving the Training tab cancels a drill request in flight.
     implementation(libs.okhttp.coroutines)

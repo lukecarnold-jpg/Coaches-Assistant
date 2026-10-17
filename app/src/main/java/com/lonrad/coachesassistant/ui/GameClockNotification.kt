@@ -92,27 +92,42 @@ object GameClockNotification {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val resources = context.resources
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stat_game_clock)
-            .setContentTitle(context.getString(R.string.game_clock_notification_title, game.title, game.periodLabel().resolve(resources)))
-            .setContentText(game.scoreLine().resolve(resources))
-            .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setOngoing(true)
-            .setSilent(true)
-            .setOnlyAlertOnce(true)
-            .setShowWhen(true)
-            .setUsesChronometer(true)
-            .setContentIntent(openApp)
-            .addAction(0, context.getString(R.string.game_clock_notification_stop), stopClock)
-        if (remaining != null) {
-            // Counts down to the end of the period, then goes away (the clock stops itself there).
-            builder.setWhen(now + remaining).setChronometerCountDown(true)
-            if (remaining > 0) builder.setTimeoutAfter(remaining)
-        } else {
-            // No set period length: count up from when the period's time started.
-            builder.setWhen(now - game.currentGameTimeMillis(now))
+
+        // The clock itself, which both the full notification and the lock-screen version show.
+        fun withClock(builder: NotificationCompat.Builder): NotificationCompat.Builder {
+            if (remaining != null) {
+                // Counts down to the end of the period, then goes away (the clock stops itself there).
+                builder.setWhen(now + remaining).setChronometerCountDown(true)
+                if (remaining > 0) builder.setTimeoutAfter(remaining)
+            } else {
+                // No set period length: count up from when the period's time started.
+                builder.setWhen(now - game.currentGameTimeMillis(now))
+            }
+            return builder
+                .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
+                .setOngoing(true)
+                .setSilent(true)
+                .setOnlyAlertOnce(true)
+                .setShowWhen(true)
+                .setUsesChronometer(true)
         }
+        // On the lock screen only the clock shows, not the team, opponent, score, or period, which
+        // can name the game and the players' school or club.
+        val lockScreenVersion = withClock(
+            NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_stat_game_clock)
+                .setContentTitle(context.getString(R.string.game_clock_notification_channel)),
+        ).build()
+        val builder = withClock(
+            NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_stat_game_clock)
+                .setContentTitle(context.getString(R.string.game_clock_notification_title, game.title, game.periodLabel().resolve(resources)))
+                .setContentText(game.scoreLine().resolve(resources))
+                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+                .setPublicVersion(lockScreenVersion)
+                .setContentIntent(openApp)
+                .addAction(0, context.getString(R.string.game_clock_notification_stop), stopClock),
+        )
         @Suppress("MissingPermission") // canPost() was checked by sync()
         NotificationManagerCompat.from(context).notify(notificationId(game.id), builder.build())
     }

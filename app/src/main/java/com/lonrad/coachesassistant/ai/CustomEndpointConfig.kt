@@ -28,6 +28,9 @@ fun endpointUrlProblem(url: String): Int? {
     return null
 }
 
+/** The host name of [url], or null if it isn't a URL. Used to tell when an endpoint moves to another service. */
+fun endpointHost(url: String): String? = url.trim().toHttpUrlOrNull()?.host
+
 /**
  * Whether [host] names a machine on the local network rather than the public internet: loopback,
  * private and link-local IP ranges (including 100.64.0.0/10, which Tailscale uses), local-only

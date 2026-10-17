@@ -60,7 +60,7 @@ class GameCsvIo(private val database: AppDatabase) {
         sport: Sport,
         allowedPositions: Collection<String> = emptyList(),
     ): RosterImportResult = withContext(Dispatchers.IO) {
-        val lines = contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readLines() }
+        val lines = contentResolver.openInputStream(uri)?.use { it.readTextUpTo(MAX_CSV_BYTES).lines() }
             ?: throw UserFacingException(R.string.import_file_unopenable)
         // Skip header if present
         val rows = lines.drop(if (lines.firstOrNull()?.contains("name", ignoreCase = true) == true) 1 else 0)
@@ -94,6 +94,11 @@ class GameCsvIo(private val database: AppDatabase) {
     }
 
     private fun rosterKey(name: String, jerseyNumber: Int?) = name.trim().lowercase() to jerseyNumber
+
+    companion object {
+        /** A roster is a few hundred rows; this only stops a wrong file from exhausting memory. */
+        const val MAX_CSV_BYTES = 8 * 1024 * 1024
+    }
 
     suspend fun exportGameCsv(contentResolver: ContentResolver, gameId: Long, uri: Uri) {
         withContext(Dispatchers.IO) {

@@ -133,6 +133,12 @@ object SubReminders {
                 .putExtra(EXTRA_PLAYER_OFF, suggestion.playerOff.player.id),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+        // On the lock screen only the title shows: the line names the players on and off the court.
+        val lockScreenVersion = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_game_clock)
+            .setContentTitle(context.getString(R.string.sub_suggestion_title))
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .build()
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_game_clock)
             .setContentTitle(context.getString(R.string.sub_suggestion_title))
@@ -140,7 +146,8 @@ object SubReminders {
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setPublicVersion(lockScreenVersion)
             .setAutoCancel(true)
             .setContentIntent(openApp)
             .addAction(0, context.getString(R.string.sub_now), subNow)

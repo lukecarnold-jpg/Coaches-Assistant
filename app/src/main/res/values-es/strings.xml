@@ -1,4 +1,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="auth_prompt_title">Confirma tu identidad</string>
+    <string name="backup_password_title">¿Proteger esta copia con una contraseña?</string>
+    <string name="backup_password_hint">La copia va cifrada: sin la contraseña nadie puede leer los nombres ni los partidos que contiene. Si pierdes la contraseña, la copia no se podrá abrir.</string>
+    <string name="backup_password_field">Contraseña</string>
+    <string name="backup_password_confirm_field">Repite la contraseña</string>
+    <string name="backup_password_mismatch">Las contraseñas no coinciden.</string>
+    <string name="backup_password_too_short">Usa al menos 8 caracteres.</string>
+    <string name="backup_password_skip">Guardar sin contraseña</string>
+    <string name="backup_password_restore_title">Esta copia está protegida</string>
+    <string name="backup_password_restore_hint">Introduce la contraseña con la que se guardó.</string>
+    <string name="ai_reply_too_large">La respuesta de la IA es demasiado grande para leerla.</string>
     <string name="app_name">Coaches Assistant</string>
     <string name="content_language_tag">es</string>
     <string name="app_name_legacy" tools:ignore="UnusedResources">Coaches Assistant (antigua)</string>
@@ -487,7 +498,7 @@
 
     <!-- The game clock notification -->
     <string name="game_clock_notification_setting">Mostrar el reloj en las notificaciones</string>
-    <string name="game_clock_notification_setting_description">Mientras corre el reloj, una notificación silenciosa muestra el periodo, el marcador y el tiempo restante, también en la pantalla de bloqueo, con un botón para parar el reloj.</string>
+    <string name="game_clock_notification_setting_description">Mientras corre el reloj, una notificación silenciosa muestra el periodo, el marcador y el tiempo restante, con un botón para parar el reloj. En la pantalla de bloqueo solo aparece el reloj.</string>
     <string name="game_clock_notification_channel">Reloj del partido</string>
     <string name="game_clock_notification_channel_description">El reloj del partido mientras se juega un periodo.</string>
     <string name="game_clock_notification_title">%1$s · %2$s</string>

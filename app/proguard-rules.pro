@@ -7,3 +7,6 @@
 # rather than shipping the real file names.
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
+
+# The transition build's key importer is found through ServiceLoader (META-INF/services), not by name.
+-keep class * implements com.lonrad.coachesassistant.ai.LegacyKeyImport { <init>(); }

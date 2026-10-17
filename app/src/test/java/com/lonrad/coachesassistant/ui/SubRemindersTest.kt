@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import com.lonrad.coachesassistant.data.PlayerEntity
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -68,5 +69,19 @@ class SubRemindersTest {
 
         SubReminders.cancel(app)
         assertTrue(shadowOf(app.getSystemService(NotificationManager::class.java)).allNotifications.isEmpty())
+    }
+
+    @Test
+    fun onTheLockScreen_onlyTheTitleShows_notTheNames() {
+        shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        SubReminders.notify(app, gameId = 3, suggestion)
+
+        val notification = shadowOf(app.getSystemService(NotificationManager::class.java)).allNotifications.single()
+        assertEquals(Notification.VISIBILITY_PRIVATE, notification.visibility)
+        val lockScreen = notification.publicVersion!!
+        assertEquals("Time to sub", lockScreen.extras.getString(Notification.EXTRA_TITLE))
+        assertNull(lockScreen.extras.getCharSequence(Notification.EXTRA_TEXT))
+
+        SubReminders.cancel(app)
     }
 }

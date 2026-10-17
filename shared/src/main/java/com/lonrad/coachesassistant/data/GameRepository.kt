@@ -346,6 +346,7 @@ class GameRepository(
             gameDao.deleteAll() // game_events.gameId is ON DELETE CASCADE
             playerDao.deleteAll()
         }
+        database.compactAfterDelete()
     }
 
     /** Deletes the chosen categories of [sport]'s data, leaving every other sport's alone. */
@@ -376,6 +377,7 @@ class GameRepository(
                 playerDao.deleteAllBySport(sport.name) // game_players.playerId is ON DELETE CASCADE
             }
         }
+        database.compactAfterDelete()
     }
 
     /** Resets the clock to the start of the period; see [setGameTime] for when it refuses. */

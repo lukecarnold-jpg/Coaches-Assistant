@@ -68,17 +68,26 @@ These are the properties the app is built to keep, so a report that breaks one o
 
 - **No backend.** Rosters, games, and notes stay on the device. The app has no accounts, advertising, analytics, or crash reporting. See the [privacy policy](docs/privacy-policy.md).
 - **Minimal network traffic.** The only network traffic is drill generation. It sends the selected sport, age group, and app language, plus your API key, to the provider you chose. No player names, game data, or notes are sent.
+- **Lock screen shows no names.** On a locked phone, the clock notification shows only the clock, and the substitution notification shows only "Time to sub". The game, score, and player names appear once the phone is unlocked.
+- **Deleted data is overwritten.** The database overwrites deleted rows, and clearing data compacts the file, so removed names aren't left in its free space.
+- **Backups can be encrypted.** A backup can be protected with a password. It's then encrypted with AES-256-GCM under a key derived from the password with PBKDF2-HMAC-SHA256 (600,000 iterations), and the password is needed to restore it. A backup without a password is plain text.
 
 ### API keys
 
-- **Encrypted on the device.** Keys are encrypted with AES-256-GCM using a key held in the Android Keystore that can't be exported.
+- **Encrypted on the device.** Keys are encrypted with AES-256-GCM using a key held in the Android Keystore that can't be exported. On Android 9 and later that key works only while the phone is unlocked, and keys saved under an older key were moved to it on first launch.
 - **Never backed up.** Keys are excluded from Android cloud backups, device transfers, and the app's own backup files, so a key never leaves the device where it was entered.
 - **Sent only in request headers.** Keys go in request headers, never in URLs, so they don't end up in server or proxy logs as part of a URL.
+- **Typed as a password.** The key field tells the keyboard it's a password, so keyboards don't learn, suggest, or sync the key.
+- **Shown only after the phone's unlock.** Revealing a key asks for the phone's PIN, pattern, password, or biometric when the phone has a screen lock. While it's shown, the window refuses screenshots and screen recordings.
+- **Dropped when the endpoint changes host.** An "Other" key is removed when its endpoint moves to a different host, so it's never sent to a new service.
 - **No keys in release builds.** The optional `GEMINI_API_KEY` from `local.properties` is only compiled into debug builds. Release APKs and bundles don't contain a provider key.
 
 ### Network
 
 - **Plain HTTP only on the local network.** The app allows cleartext at the platform level only so the "Other" provider can reach a server on the local network, such as Ollama on a laptop. The shared HTTP client refuses any plain `http://` request, including a redirect, to a host that isn't on the local network.
+- **No redirects.** The shared HTTP client doesn't follow redirects, so an API key is never resent to an address a server redirects to. A redirect is reported as an error.
+- **HTTPS enforced by the platform for the built-in providers.** Cleartext is refused for the three providers' hosts, and only system-installed certificate authorities are trusted, never ones a user has installed.
+- **Size limits.** A reply over 1 MB is refused. The Gemini model name stays in its one path segment, so it can't change which endpoint is called.
 - **HTTPS for the built-in providers.** Every built-in provider uses HTTPS.
 - **Local network permission on Android 17+.** The app asks for local network access only when the configured endpoint is on the local network.
 
@@ -86,6 +95,10 @@ These are the properties the app is built to keep, so a report that breaks one o
 
 - **One exported component.** The launcher activity is the only exported component. The notification receivers and the substitution reminder service aren't exported.
 - **Permissions only when needed.** Notifications, local network access, and Do Not Disturb access are requested only when you turn on the feature that needs them.
+- **Device unlock for sensitive actions.** Showing an API key, backing up or restoring, and deleting data ask for the phone's unlock (AndroidX Biometric) when a screen lock is set. Without a screen lock they proceed as before.
+- **Deprecated library only in the transition build.** AndroidX Security Crypto is compiled only into the transition build (`-PlegacyAppId`), which moves keys saved by pre-4.2 builds. The published app doesn't include it.
+- **Release logs carry no data.** A release build logs only the type of a failed action, not its message or stack trace.
+- **Taps on covered screens are ignored on Android 8 to 11,** so another app's overlay can't take a tap meant for a confirmation. Android 12 and later do this for every app.
 - **Exported CSVs are safe to open in a spreadsheet.** Values that start with `=`, `+`, `-`, or `@` are written with a leading `'`, so a spreadsheet shows them as text instead of running them as formulas. Re-importing a roster removes the `'` again.
 
 ### Build and release
@@ -105,6 +118,8 @@ These are the properties the app is built to keep, so a report that breaks one o
 These are deliberate trade-offs, not vulnerabilities. Reports that show a practical way to exploit one are still welcome.
 
 - **Local data isn't encrypted by the app.** The database and settings rely on Android's app sandbox and the device's file-based encryption. A locked, encrypted phone protects them, while a rooted or unlocked one doesn't.
-- **Android backups include rosters and games.** If Android backup is turned on, the database is included in the device's backup, protected however Android protects that backup. API keys are not included.
-- **Exported files are plain text.** Backup files, CSVs, and notes you export aren't encrypted. They contain player names and game details, so store and share them with care.
+- **Android backups include rosters and games only when encrypted.** On Android 12 and later, the database goes into Android's cloud backup only when the backup is end-to-end encrypted, which needs a screen lock on the phone. On Android 11 and older it isn't in the cloud backup at all. Device-to-device transfer still includes it. API keys are never included.
+- **Exported files are plain text unless protected.** CSVs and notes aren't encrypted. A backup is encrypted only when you set a password. They contain player names and game details, so store and share them with care.
+- **Confirmation dialogs aren't covered by the Android 8 to 11 touch filter.** They are separate windows. Android 12 and later block overlay taps for them.
+- **The device-unlock checks rely on the phone's screen lock.** With no lock set, there's nothing to check against, so those actions proceed.
 - **The local network check is name-based.** It looks at the host name without resolving it, so a name on a private domain, or a bare single-label name, could still point at a public address. It guards against mistakes rather than guaranteeing that plain HTTP stays on the local network.

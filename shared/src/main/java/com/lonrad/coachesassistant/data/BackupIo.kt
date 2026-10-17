@@ -56,24 +56,35 @@ class BackupIo(private val database: AppDatabase) {
         }
     }
 
-    suspend fun export(contentResolver: ContentResolver, uri: Uri): BackupCounts {
+    /** Writes the backup to [uri], encrypted with [password] when it isn't blank. */
+    suspend fun export(contentResolver: ContentResolver, uri: Uri, password: String? = null): BackupCounts {
         val data = readAll()
         withContext(Dispatchers.IO) {
             contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
-                writer.write(BackupFormat.encode(data, exportedAt = System.currentTimeMillis()))
+                writer.write(BackupFormat.encode(data, exportedAt = System.currentTimeMillis(), password = password))
             } ?: throw UserFacingException(R.string.backup_file_unopenable)
         }
         return BackupCounts(players = data.players.size, games = data.games.size)
     }
 
-    /** Reads and checks the whole file before touching the database. */
-    suspend fun restore(contentResolver: ContentResolver, uri: Uri): BackupCounts {
-        val text = withContext(Dispatchers.IO) {
-            contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
-                ?: throw UserFacingException(R.string.backup_file_unopenable)
-        }
-        val data = BackupFormat.decode(text)
+    /** The backup file's text, or a [UserFacingException] if it's too large to be a backup. */
+    suspend fun readFile(contentResolver: ContentResolver, uri: Uri): String = withContext(Dispatchers.IO) {
+        contentResolver.openInputStream(uri)?.use { it.readTextUpTo(MAX_BACKUP_BYTES) }
+            ?: throw UserFacingException(R.string.backup_file_unopenable)
+    }
+
+    /**
+     * Checks the whole backup in [text] before touching the database. An encrypted one needs
+     * [password] (see [BackupFormat.decode]).
+     */
+    suspend fun restore(text: String, password: String? = null): BackupCounts {
+        val data = BackupFormat.decode(text, password)
         replaceAll(data)
         return BackupCounts(players = data.players.size, games = data.games.size)
+    }
+
+    companion object {
+        /** Far more than a season's backup needs; keeps a wrong file from exhausting memory. */
+        const val MAX_BACKUP_BYTES = 32 * 1024 * 1024
     }
 }

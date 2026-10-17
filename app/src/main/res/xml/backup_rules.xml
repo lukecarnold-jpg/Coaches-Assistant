@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older (data_extraction_rules.xml covers 12 and later). This format can't require
+     end-to-end encryption, so the rosters and games database is left out: they reach Google's cloud
+     only on Android 12 and later, and only when encrypted. -->
 <full-backup-content>
-    <include domain="database" path="basketball_rotation.db"/>
-    <include domain="database" path="basketball_rotation.db-shm"/>
-    <include domain="database" path="basketball_rotation.db-wal"/>
     <!-- Settings that make sense on a new phone. Not ai_settings (its API keys are encrypted
          with a key that can't leave this device) or game_day_prefs (this device's Do Not
          Disturb state). -->

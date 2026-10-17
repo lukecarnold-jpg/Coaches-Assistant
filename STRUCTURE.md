@@ -13,7 +13,7 @@ export, and persistence infrastructure.
 ├── .github/
 │   ├── dependabot.yml                 # Weekly dependency and Actions update PRs
 │   └── workflows/
-│       └── android-ci.yml             # Tests, lint, and a release build on pushes/PRs to master
+│       └── android-ci.yml             # Tests, lint, release and transition builds on pushes/PRs to master
 ├── app/
 │   ├── schemas/                       # Exported Room database schemas
 │   ├── proguard-rules.pro             # Release R8 rules (keeps line numbers for crash reports)
@@ -93,6 +93,8 @@ presentation helpers:
 - `ResponsiveLayout.kt` - compact and expanded layout decisions.
 - `Theme.kt` - the app's Material 3 theme (dark mode and Android 12+ dynamic color).
 - `FileExport.kt` - shared file-export launcher.
+- `DeviceAuth.kt` - asks for the phone's unlock (`confirmDeviceUnlock`) before showing a key, moving a backup, or deleting data.
+- `BackupPasswordDialog.kt` - asks for a backup's password, twice when saving.
 - `SportConfig.kt` - sport-specific rules: players on court and the minimum to field a team, scoring, periods, positions, and infractions.
 - `SportPreferences.kt` - remembers the last selected sport.
 - `CricketGameScreen.kt` / `CricketField.kt` - cricket's Game tab: the score, a scorecard per player, and the field plan diagram.
@@ -119,10 +121,12 @@ The data package defines the multi-sport domain model and local Room database:
 - `Sport.kt` - supported sport enum and sport metadata.
 - `Entities.kt` - Room entities for players, games, game events, and each game's lineup (`game_players`: who's on court or absent).
 - `Dao.kt` - Room data access objects.
-- `AppDatabase.kt` - Room database, version 15, and migrations.
+- `AppDatabase.kt` - Room database, version 15, and migrations; secure delete on every open, and compaction after clearing data.
 - `GameRepository.kt` - repository operations used by the view models.
 - `Cricket.kt` / `CricketPosition.kt` / `CricketRepository.kt` - cricket's scorecards and field plans (entities, overs and totals helpers, the fielding positions and where they go on the field), and saving them.
-- `Backup.kt` / `BackupIo.kt` - the whole-app backup file format, and backing up to / restoring from a file the user picks.
+- `Backup.kt` / `BackupIo.kt` - the whole-app backup file format (plain, or password-protected as format 2), and backing up to / restoring from a file the user picks.
+- `BackupCrypto.kt` - password protection for backups: PBKDF2-HMAC-SHA256 for the key, AES-256-GCM for the contents.
+- `ReadTextUpTo.kt` - reads a backup or roster file with a size limit, so a wrong file can't exhaust memory.
 - `GameCsvIo.kt` - roster CSV import and export, game CSV export, and the coaching notes TXT export.
 - `MvpVotes.kt` - serialization and parsing for MVP vote data.
 - `UserFacingException.kt` - failures that carry a message (a string resource) for the user.
@@ -141,8 +145,10 @@ The AI package is used by the Training tab (every sport):
 - `DrillParsing.kt` - prompt construction and response parsing.
 - `DrillTextGenerators.kt` - provider-specific text generation implementations
   for Gemini, Anthropic, OpenAI, and custom OpenAI-compatible services.
+- `LegacyKeyImport.kt` - the hook for copying keys out of older storage. Only the transition build provides one, found through `ServiceLoader`.
 - `AiSettingsStore.kt` - the selected provider, endpoint, and API keys, with
-  keys encrypted by an Android Keystore key.
+  keys encrypted by an Android Keystore key that's usable only while the phone
+  is unlocked. Keys saved under the older key are moved to it once.
 - `LocalNetworkAccess.kt` - when the Other provider points at a server on the
   local network, which needs Android 17's local network permission.
 
@@ -214,7 +220,8 @@ Stop clock action.
 
 `network_security_config.xml` allows plain http so the Other provider can
 reach a local server; `DrillTextGenerators.kt` refuses any plain http request
-that isn't to the local network.
+that isn't to the local network. The three built-in providers' hosts refuse
+cleartext outright, and only system certificate authorities are trusted.
 
 ## Tests
 
@@ -226,7 +233,8 @@ Robolectric:
   against a local mock server (`DrillTextGeneratorsTest`), endpoint URL
   checks, local network detection, and the encrypted settings store.
 - `data/` - the repository against an in-memory Room database, database
-  migrations (from the exported schemas), backup format and restore, CSV
+  security settings, database migrations (from the exported schemas), backup
+  format (plain and encrypted) and restore, CSV
   import and export, event types, game totals, and MVP votes.
 - `ui/` - player and season stats, playing-time targets, sport configuration,
   confirmation and other message text, the clock editor, keep-screen-on, the
@@ -237,11 +245,17 @@ Robolectric:
 plays a whole game in the real app (`./gradlew connectedDebugAndroidTest`, emulator
 only, since it deletes the app's data first). CI
 (`.github/workflows/android-ci.yml`) checks formatting, then runs the tests, lint, and a release
-build on every push and pull request to master, and builds a signed release
-bundle on pushes when the signing secrets are set (see README, "Publishing").
+build on every push and pull request to master, builds the transition build
+(`-PlegacyAppId`), checks that the release build has no deprecated storage library,
+and builds a signed release bundle on pushes when the signing secrets are set (see
+README, "Publishing").
 
 ## Build and dependency configuration
 
+- `app/src/legacy/` holds the code and service registration that move keys out of the
+  deprecated `EncryptedSharedPreferences` file. Only the transition build
+  (`-PlegacyAppId`) adds that folder and the `androidx.security:security-crypto`
+  dependency; the published app has neither.
 - `settings.gradle.kts` configures plugin/dependency repositories and includes
   the `:app` module.
 - Root `build.gradle.kts` declares shared Android, Kotlin Compose, and KSP

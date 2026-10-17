@@ -56,6 +56,21 @@ jobs:
       - name: Build release APK
         run: ./gradlew assembleRelease
 
+      # The transition build (installed over the old app ID to move its data across) exists only
+      # with -PlegacyAppId, so build it here too, or it could break without anyone noticing.
+      - name: Build transition build
+        run: ./gradlew assembleDebug -PlegacyAppId
+
+      # The published app must not include the deprecated Security Crypto library, which only the
+      # transition build reads from. Fail the build if it creeps back into the release classpath.
+      - name: Check the release build has no deprecated storage library
+        run: |
+          deps=$(./gradlew :app:dependencies --configuration releaseRuntimeClasspath --console=plain)
+          if grep -q "security-crypto" <<< "$deps"; then
+            echo "::error::security-crypto is in the release classpath; it belongs only to the transition build (-PlegacyAppId)."
+            exit 1
+          fi
+
       # R8's mapping for this build, which turns an obfuscated release stack trace back into real
       # class, method, and line names. Kept for every build since any commit might be released.
       - name: Upload R8 mapping

@@ -1,4 +1,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="auth_prompt_title">Conferma la tua identità</string>
+    <string name="backup_password_title">Proteggere questo backup con una password?</string>
+    <string name="backup_password_hint">Il backup è cifrato: senza la password nessuno può leggere i nomi e le partite che contiene. Se perdi la password, il backup non potrà più essere aperto.</string>
+    <string name="backup_password_field">Password</string>
+    <string name="backup_password_confirm_field">Conferma password</string>
+    <string name="backup_password_mismatch">Le password non coincidono.</string>
+    <string name="backup_password_too_short">Usa almeno 8 caratteri.</string>
+    <string name="backup_password_skip">Salva senza password</string>
+    <string name="backup_password_restore_title">Questo backup è protetto</string>
+    <string name="backup_password_restore_hint">Inserisci la password usata per salvarlo.</string>
+    <string name="ai_reply_too_large">La risposta dell’IA è troppo grande per essere letta.</string>
     <string name="app_name">Coaches Assistant</string>
     <string name="content_language_tag">it</string>
     <string name="app_name_legacy" tools:ignore="UnusedResources">Coaches Assistant (vecchia)</string>
@@ -487,7 +498,7 @@
 
     <!-- The game clock notification -->
     <string name="game_clock_notification_setting">Mostra il cronometro nelle notifiche</string>
-    <string name="game_clock_notification_setting_description">Mentre il cronometro corre, una notifica silenziosa mostra periodo, punteggio e tempo rimanente, anche sulla schermata di blocco, con un pulsante per fermare il cronometro.</string>
+    <string name="game_clock_notification_setting_description">Mentre il cronometro corre, una notifica silenziosa mostra periodo, punteggio e tempo rimanente, con un pulsante per fermare il cronometro. Sulla schermata di blocco appare solo il cronometro.</string>
     <string name="game_clock_notification_channel">Cronometro della partita</string>
     <string name="game_clock_notification_channel_description">Il cronometro della partita mentre si gioca un periodo.</string>
     <string name="game_clock_notification_title">%1$s · %2$s</string>

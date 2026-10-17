@@ -71,6 +71,35 @@ class DrillTextGeneratorsTest {
     }
 
     @Test
+    fun geminiModelName_staysInsideTheModelsPath() {
+        assertEquals(
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+            geminiUrl("gemini-3.8-flash").toString(),
+        )
+        // A slash or a dot-dot in the name is encoded as part of the one segment, so it can't reach another path.
+        val escaped = geminiUrl("../../other/x").encodedPath
+        assertEquals("/v1beta/models/..%2F..%2Fother%2Fx:generateContent", escaped)
+    }
+
+    @Test
+    fun aRedirect_isReported_andTheKeyIsNotSentOn() {
+        server.enqueue(
+            MockResponse.Builder().code(302).addHeader("Location", server.url("/elsewhere").toString()).build(),
+        )
+
+        try {
+            runBlocking {
+                CustomTextGenerator(CustomEndpointConfig(server.url("/v1/chat/completions").toString(), "local-model"))
+                    .generateText("prompt", apiKey = "secret")
+            }
+            fail("Expected the redirect to be reported")
+        } catch (e: AiRequestException) {
+            assertEquals(302, e.httpCode)
+        }
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test
     fun anErrorReply_carriesTheStatusAndTheApisMessage() {
         reply(code = 401, body = """{"error":{"message":"bad key"}}""")
 
