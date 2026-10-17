@@ -26,6 +26,9 @@ export, and persistence infrastructure.
 ├── baselineprofile/                   # Generates the baseline profile; startup benchmark
 ├── docs/
 │   └── privacy-policy.md              # Privacy policy draft for the Play listing
+├── user-guide/
+│   ├── Coaches_Assistant_User_Guide.docx  # Coach-facing guide with screenshots for each sport
+│   └── screenshots/                   # Emulator screenshots used in the guide (sample data)
 ├── gradle/
 │   ├── libs.versions.toml             # Central dependency and plugin versions
 │   └── wrapper/                       # Gradle wrapper configuration
