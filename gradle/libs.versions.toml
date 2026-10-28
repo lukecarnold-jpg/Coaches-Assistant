@@ -1,5 +1,5 @@
 [versions]
-agp = "9.4.1"
+agp = "9.5.0"
 # The Compose compiler plugin is versioned with Kotlin.
 kotlin = "2.4.21"
 ksp = "2.3.12"
@@ -13,7 +13,7 @@ room = "2.8.5"
 composeBom = "2026.09.00"
 securityCrypto = "1.1.0"
 json = "20260814"
-okhttp = "5.5.0"
+okhttp = "5.5.1"
 robolectric = "4.17"
 androidxTestCore = "1.7.0"
 androidxTestRunner = "1.7.0"
